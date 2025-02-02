@@ -1,7 +1,8 @@
 import Phaser from "phaser";
 
 class Player extends Phaser.Physics.Arcade.Sprite {
-    private speed: number = 200;
+    private speed: number = 200; // Horizontal speed for movement
+    private jumpSpeed: number = 300; // Vertical speed for jumping
     private playerBody: Phaser.Physics.Arcade.Body; // Declare a separate playerBody property
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -30,6 +31,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.playerBody.setVelocityX(-this.speed); // Move left
         } else if (cursorKeys.right.isDown) {
             this.playerBody.setVelocityX(this.speed); // Move right
+        }
+
+        // Jumping with the Spacebar (only if on the ground)
+        if (cursorKeys.space.isDown) {
+            this.playerBody.setVelocityY(-this.jumpSpeed); // Apply upward velocity to simulate jump
         }
     }
 }
