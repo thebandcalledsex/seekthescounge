@@ -34,7 +34,7 @@ clean:
 # Serve ts files directly with Webpack Dev Server (Live Reload)
 server:
 	cp index-dev-ts.html index.html
-	npx vite
+	$(TS_COMPILER) && npx vite
 
 # Deploy to the website
 deploy:
