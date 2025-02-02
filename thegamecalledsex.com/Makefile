@@ -17,7 +17,7 @@ all: build
 build:
 	$(TS_COMPILER)
 
-# Build a dev distribution
+# Build a dev distribution for local compiled testing
 dist: $(SRC_DIR)/*.ts index-dev-js.html
 	cp index-dev-js.html index.html
 	$(TS_COMPILER) && $(BUNDLER) --mode production
@@ -31,9 +31,9 @@ clean:
 	rm -rf $(DIST_DIR)/*
 	rm -f index.html
 
-# Serve with Webpack Dev Server (Live Reload)
+# Serve ts files directly with Webpack Dev Server (Live Reload)
 server:
-	cp index-dev.html index.html
+	cp index-dev-ts.html index.html
 	npx vite
 
 # Deploy to the website
@@ -48,4 +48,4 @@ deploy:
 
 	echo "put -r $(DIST_DIR)/* $(FTP_REMOTE_DIR)/src/" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
 
-.PHONY: all clean watch good
+.PHONY: all build dist good clean server deploy
