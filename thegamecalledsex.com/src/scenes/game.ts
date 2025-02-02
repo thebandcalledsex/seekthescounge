@@ -1,9 +1,11 @@
 import Phaser from "phaser";
 import Player from "../entities/player";
+import Obstacle from "../entities/obstacle";
 
 class Game extends Phaser.Scene {
     private player!: Player;
-    private cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys; 
+    private obstacle!: Obstacle;
+    private cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
 
     constructor() {
         super({ key: "Game" });
@@ -28,9 +30,12 @@ class Game extends Phaser.Scene {
 
         this.player = new Player(this, 100, 100); // Create player at (100,100)
 
+        this.obstacle = new Obstacle(this, 200, 100);
+
+        this.physics.add.collider(this.player, this.obstacle); // Add collision between player and obstacle
+
         // Enable keyboard input for arrow keys
         this.cursorKeys = this.input.keyboard!.createCursorKeys(); // Create cursor keys input
-
     }
 
     update() {
