@@ -11,7 +11,8 @@ all: build
 
 # Build for production (compiles TS and bundles with Webpack)
 build:
-	cp index.prod.html index.html && $(TS_COMPILER) && $(BUNDLER) --mode production 
+	cp index.prod.html index.html
+	$(TS_COMPILER) && $(BUNDLER) --mode production 
 
 # Format the entire src directory with Prettier
 good:
@@ -24,6 +25,7 @@ clean:
 
 # Serve with Webpack Dev Server (Live Reload)
 serve:
-	cp index.dev.html index.html && npx vite
+	cp index.dev.html index.html
+	npx vite
 
 .PHONY: all clean watch good
