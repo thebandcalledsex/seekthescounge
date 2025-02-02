@@ -9,10 +9,14 @@ TS_CONFIG = tsconfig.json
 # Default target: Build for production
 all: build
 
-# Build for production (compiles TS and bundles with Webpack)
+# Compile only
 build:
+	$(TS_COMPILER)
+
+# Build a production distribution
+dist:
 	cp index.prod.html index.html
-	$(TS_COMPILER) && $(BUNDLER) --mode production 
+	$(TS_COMPILER) && $(BUNDLER) --mode production
 
 # Format the entire src directory with Prettier
 good:
