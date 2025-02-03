@@ -18,8 +18,8 @@ class OnScreenInput implements InputSource {
         this.createOnScreenButtons();
 
         // Add a global listener for pointerup to reset button states
-        this.scene.input.on('pointerup', () => {
-            // Global pointerup handler to reset buttons when 
+        this.scene.input.on("pointerup", () => {
+            // Global pointerup handler to reset buttons when
             // the pointer is released outside of a button's area.
             this.pointerDown = false;
         });
