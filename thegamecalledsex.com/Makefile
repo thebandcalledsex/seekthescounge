@@ -38,6 +38,9 @@ server:
 
 # Deploy to the website
 deploy: $(SRC_DIR)/**/* index-prod.html
+
+	sh utilities/increment_version.sh
+
 	cp index-prod.html index.html
 	$(TS_COMPILER) --project $(TS_CONFIG) && $(BUNDLER) --mode production
 
@@ -47,5 +50,10 @@ deploy: $(SRC_DIR)/**/* index-prod.html
 	echo "put index.html $(FTP_REMOTE_DIR)/index.html" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
 
 	echo "put -r $(DIST_DIR)/* $(FTP_REMOTE_DIR)/src/" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
+
+reset-version:
+	sh utilities/reset_version.sh
+
+
 
 .PHONY: all build dist good clean server deploy
