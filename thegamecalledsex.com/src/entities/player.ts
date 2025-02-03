@@ -22,20 +22,21 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.setTint(0x00ff10); // Temporary green color
     }
 
-    update(cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys) {
+    public update(moveLeft: boolean, moveRight: boolean, jump: boolean) {
         // Reset horizontal velocity each frame
         this.playerBody.setVelocityX(0);
 
         // Horizontal movement (Left and Right)
-        if (cursorKeys.left.isDown) {
+        if (moveLeft) {
             this.playerBody.setVelocityX(-this.speed); // Move left
-        } else if (cursorKeys.right.isDown) {
+        }
+        if (moveRight) {
             this.playerBody.setVelocityX(this.speed); // Move right
         }
 
-        // Jumping with the Spacebar (only if on the ground)
-        if (cursorKeys.space.isDown) {
-            this.playerBody.setVelocityY(-this.jumpSpeed); // Apply upward velocity to simulate jump
+        // Jump
+        if (jump && this.playerBody.onFloor()) {
+            this.playerBody.setVelocityY(-this.jumpSpeed);
         }
     }
 }

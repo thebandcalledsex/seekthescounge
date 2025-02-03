@@ -1,24 +1,25 @@
 import Phaser from "phaser";
 import Player from "../entities/player";
 import Obstacle from "../entities/obstacle";
+import InputController from "../input/input-controller";
 
 class Game extends Phaser.Scene {
     private player!: Player;
     private obstacle!: Obstacle;
-    private cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
+    private inputController!: InputController;
 
     constructor() {
         super({ key: "Game" });
     }
 
-    preload() {
+    public preload() {
         // Load assets here
         console.log("Preloading assets....");
         // Example: Load a player sprite
         // Example: Load a background image
     }
 
-    create() {
+    public create() {
         // Create game objects here
         console.log("Creating game objects...");
 
@@ -30,19 +31,22 @@ class Game extends Phaser.Scene {
 
         this.player = new Player(this, 100, 100); // Create player at (100,100)
 
-        this.obstacle = new Obstacle(this, 200, 100);
+        //this.obstacle = new Obstacle(this, 200, 100);
+        //this.physics.add.collider(this.player, this.obstacle); // Add collision between player and obstacle
 
-        this.physics.add.collider(this.player, this.obstacle); // Add collision between player and obstacle
-
-        // Enable keyboard input for arrow keys
-        this.cursorKeys = this.input.keyboard!.createCursorKeys(); // Create cursor keys input
+        // Instantiate the input controller
+        this.inputController = new InputController(this);
     }
 
-    update() {
+    public update() {
         // Update game objects here every frame
 
-        // Update the player with the current cursor key input
-        this.player.update(this.cursorKeys);
+        // Check for player input
+        this.player.update(
+            this.inputController.isLeftPressed(),
+            this.inputController.isRightPressed(),
+            this.inputController.isJumpPressed(),
+        );
     }
 }
 
