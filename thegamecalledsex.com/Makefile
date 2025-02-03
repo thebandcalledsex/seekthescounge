@@ -11,16 +11,16 @@ DIST_DIR = dist
 TS_CONFIG = tsconfig.json
 
 # Default target: Build for production
-all: build
+all: clean build
 
 # Compile only
 build:
-	$(TS_COMPILER)
+	$(TS_COMPILER) --project $(TS_CONFIG)
 
 # Build a dev distribution for local compiled testing
-dist: $(SRC_DIR)/*.ts index-dev-js.html
+dist: $(SRC_DIR)/**/* index-dev-js.html
 	cp index-dev-js.html index.html
-	$(TS_COMPILER) && $(BUNDLER) --mode production
+	$(TS_COMPILER) --project $(TS_CONFIG) && $(BUNDLER) --mode production
 
 # Format the src directory with Prettier
 good:
@@ -34,12 +34,12 @@ clean:
 # Serve ts files directly with Webpack Dev Server (Live Reload)
 server:
 	cp index-dev-ts.html index.html
-	$(TS_COMPILER) && npx vite
+	$(TS_COMPILER) --project $(TS_CONFIG) && npx vite
 
 # Deploy to the website
-deploy:
+deploy: $(SRC_DIR)/**/* index-prod.html
 	cp index-prod.html index.html
-	$(TS_COMPILER) && $(BUNDLER) --mode production
+	$(TS_COMPILER) --project $(TS_CONFIG) && $(BUNDLER) --mode production
 
 	@echo FTP_SERVER: $(FTP_SERVER)
 	@echo FTP_USER: $(FTP_USER)
