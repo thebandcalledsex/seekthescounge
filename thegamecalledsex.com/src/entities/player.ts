@@ -17,9 +17,24 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         //body.setBounce(0.2); // Add slight bounce
 
-        // Temporary square shape until a sprite is added
-        this.setDisplaySize(27, 27);
-        this.setTint(0x00ff10); // Temporary green color
+        // Create the animation
+        scene.anims.create({
+            key: "idle",
+            frames: scene.anims.generateFrameNames("player", {
+                prefix: "ROVERT TGCS #idle ",
+                start: 0,
+                end: 15,
+                suffix: ".aseprite",
+            }),
+            frameRate: 10,
+            repeat: -1,
+        });
+
+        // Scale the player sprite
+        this.setScale(2);
+
+        // Play the animation
+        this.play("idle");
     }
 
     public update(moveLeft: boolean, moveRight: boolean, jump: boolean) {

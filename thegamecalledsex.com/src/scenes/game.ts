@@ -16,8 +16,8 @@ class Game extends Phaser.Scene {
     public preload() {
         // Load assets here
         console.log("Preloading assets....");
-        // Example: Load a player sprite
-        // Example: Load a background image
+        
+        this.load.atlas("player", "../../assets/idle.png", "../../assets/idle.json");
     }
 
     public create() {
@@ -25,7 +25,7 @@ class Game extends Phaser.Scene {
         console.log("Creating game objects...");
 
         this.player = new Player(this, 100, 100); // Create player at (100,100)
-
+        
         // Add some id text to the screen for development
         this.add.text(10, 10, GAME_VERSION, { font: "16px Courier" });
 
@@ -34,6 +34,8 @@ class Game extends Phaser.Scene {
 
         // Instantiate the input controller
         this.inputController = new InputController(this);
+
+        
     }
 
     public update() {
