@@ -7,6 +7,7 @@ BUNDLER = npx webpack
 TS_COMPILER = npx tsc
 FORMATTER = npx prettier --write
 SRC_DIR = src
+ASSETS_DIR = assets
 DIST_DIR = dist
 TS_CONFIG = tsconfig.json
 
@@ -50,6 +51,8 @@ deploy: $(SRC_DIR)/**/* index-prod.html
 	echo "put index.html $(FTP_REMOTE_DIR)/index.html" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
 
 	echo "put -r $(DIST_DIR)/* $(FTP_REMOTE_DIR)/src/" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
+
+	echo "put -r $(ASSETS_DIR)/* $(FTP_REMOTE_DIR)/assets/" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
 
 reset-version:
 	sh utilities/reset_version.sh
