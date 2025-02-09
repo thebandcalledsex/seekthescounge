@@ -17,7 +17,7 @@ class Game extends Phaser.Scene {
         // Load assets here
         console.log("Preloading assets....");
         
-        this.load.atlas("player", "../../assets/idle.png", "../../assets/idle.json");
+        this.load.atlas("player", "../../assets/rovert/idle.png", "../../assets/rovert/idle.json");
     }
 
     public create() {
