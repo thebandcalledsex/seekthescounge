@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import InputSource from "./input-source";
+import { GAME_WIDTH, GAME_HEIGHT } from "../constants";
 
 class OnScreenInput implements InputSource {
     private scene: Phaser.Scene;
@@ -45,7 +46,7 @@ class OnScreenInput implements InputSource {
 
         // Define the position of the left button
         const leftButtonX = 25;
-        const leftButtonY = 150;
+        const leftButtonY = GAME_HEIGHT - 25;
 
         // Create the left button
         const leftButton = new Phaser.GameObjects.Rectangle(
@@ -73,7 +74,7 @@ class OnScreenInput implements InputSource {
 
         // Define the position of the right button
         const rightButtonX = leftButtonX + buttonWidth + 10;
-        const rightButtonY = 150;
+        const rightButtonY = GAME_HEIGHT - 25;
 
         // Create the right button
         const rightButton = new Phaser.GameObjects.Rectangle(
@@ -116,8 +117,8 @@ class OnScreenInput implements InputSource {
         });
 
         // Define the position of the jump button
-        const jumpButtonX = 300;
-        const jumpButtonY = 150;
+        const jumpButtonX = GAME_WIDTH - 25;
+        const jumpButtonY = GAME_HEIGHT - 25;
 
         // Create the jump button
         const jumpButton = new Phaser.GameObjects.Rectangle(
