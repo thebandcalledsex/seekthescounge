@@ -1,12 +1,12 @@
 import Phaser from "phaser";
 
-class Player extends Phaser.Physics.Arcade.Sprite {
-    private speed: number = 200; // Horizontal speed for movement
-    private jumpSpeed: number = 300; // Vertical speed for jumping
+abstract class Player extends Phaser.Physics.Arcade.Sprite {
+    protected speed: number = 200; // Horizontal speed for movement
+    protected jumpSpeed: number = 200; // Vertical speed for jumping
     private playerBody: Phaser.Physics.Arcade.Body; // Declare a separate playerBody property
 
-    constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, x, y, "player"); // Use "player" as a placeholder texture key
+    constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
+        super(scene, x, y, texture); // Use "player" as a placeholder texture key
 
         scene.add.existing(this); // Add player to the scene
         scene.physics.world.enable(this); // Enable dynamic physics body (Phaser.Physics.Arcade.Body)
@@ -17,24 +17,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         //body.setBounce(0.2); // Add slight bounce
 
-        // Create the animation
-        scene.anims.create({
-            key: "idle",
-            frames: scene.anims.generateFrameNames("player", {
-                prefix: "ROVERT TGCS #idle ",
-                start: 0,
-                end: 15,
-                suffix: ".aseprite",
-            }),
-            frameRate: 10,
-            repeat: -1,
-        });
-
         // Scale the player sprite
         this.setScale(2);
-
-        // Play the animation
-        this.play("idle");
     }
 
     public update(moveLeft: boolean, moveRight: boolean, jump: boolean) {
@@ -56,4 +40,58 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
 }
 
+class Rovert extends Player {
+
+    protected speed: number = 150; // Horizontal speed for movement
+    protected jumpSpeed: number = 300; // Vertical speed for
+
+    constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
+        super(scene, x, y, texture);
+
+        // Create the animation
+        scene.anims.create({
+            key: "idle",
+            frames: scene.anims.generateFrameNames("rovert-idle", {
+                prefix: "ROVERT TGCS #idle ",
+                start: 0,
+                end: 15,
+                suffix: ".aseprite",
+            }),
+            frameRate: 10,
+            repeat: -1,
+        });
+
+        // Play the animation
+        this.play("idle");
+    }
+}
+
+class Shuey extends Player {
+
+    protected speed: number = 300; // Horizontal speed for movement
+    protected jumpSpeed: number = 300; // Vertical speed for
+
+    constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
+        super(scene, x, y, texture);
+
+        // Create the animation
+        scene.anims.create({
+            key: "shuey-idle",
+            frames: scene.anims.generateFrameNames("shuey-idle", {
+                prefix: "SHUEY TGCS #IDLE INSIDE ",
+                start: 0,
+                end: 7,
+                suffix: ".aseprite",
+            }),
+            frameRate: 10,
+            repeat: -1,
+        });
+
+        // Play the animation
+        this.play("shuey-idle");
+    }
+
+}
+
 export default Player;
+export { Rovert, Shuey };
