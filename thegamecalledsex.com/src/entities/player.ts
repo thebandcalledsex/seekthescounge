@@ -37,9 +37,9 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         }
         if (moveRight) {
             this.playerBody.setVelocityX(this.speed); // Move right
-            
+
             if (this.lastDirection === "left") {
-               this.handleDirectionChange("right");
+                this.handleDirectionChange("right");
             }
             this.lastDirection = "right";
         }
@@ -91,7 +91,6 @@ class Rovert extends Player {
     protected handleDirectionChange(direction: "left" | "right"): void {
         // Rovert doesn’t change direction
     }
-
 }
 
 class Shuey extends Player {
@@ -134,8 +133,12 @@ class Shuey extends Player {
     protected playIdleAnimation(direction: "left" | "right"): void {
         const newAnimation = direction === "left" ? "shuey-idle-left" : "shuey-idle-right";
 
-        // Only update animation if it’s different from the current one
-        if (this.anims.currentAnim?.key !== newAnimation) {
+        // Play the animation if there is no animation playing of if the current animation is different than the new one.
+        if (
+            !this.anims.isPlaying ||
+            !this.anims.currentAnim ||
+            this.anims.currentAnim.key !== newAnimation
+        ) {
             this.play(newAnimation);
         }
     }
