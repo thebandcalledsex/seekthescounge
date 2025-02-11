@@ -19,16 +19,24 @@ class Game extends Phaser.Scene {
         // Load assets here
         console.log("Preloading assets....");
 
+        // Load rovert assets
         this.load.atlas(
             "rovert-idle",
             "../../assets/rovert/idle.png",
             "../../assets/rovert/idle.json",
         );
 
+        // Load shuey assets
         this.load.atlas(
-            "shuey-idle",
-            "../../assets/shuey/idle.png",
-            "../../assets/shuey/idle.json",
+            "shuey-idle-right",
+            "../../assets/shuey/idle-right.png",
+            "../../assets/shuey/idle-right.json",
+        );
+
+        this.load.atlas(
+            "shuey-idle-left",
+            "../../assets/shuey/idle-left.png",
+            "../../assets/shuey/idle-left.json",
         );
     }
 
@@ -36,7 +44,7 @@ class Game extends Phaser.Scene {
         // Create game objects here
         console.log("Creating game objects...");
 
-        this.rovert = new Rovert(this, 100, 100, "rovert-idle"); // Create rovert at (100,100)
+        //this.rovert = new Rovert(this, 100, 100, "rovert-idle"); // Create rovert at (100,100)
 
         this.shuey = new Shuey(this, 200, 100, "shuey-idle"); // Create shuey at (200,100)
 
@@ -54,11 +62,11 @@ class Game extends Phaser.Scene {
         // Update game objects here every frame
 
         // Check for input for rovert
-        this.rovert.update(
-            this.inputController.isLeftPressed(),
-            this.inputController.isRightPressed(),
-            this.inputController.isJumpPressed(),
-        );
+        // this.rovert.update(
+        //     this.inputController.isLeftPressed(),
+        //     this.inputController.isRightPressed(),
+        //     this.inputController.isJumpPressed(),
+        // );
 
         // Check for input for shuey
         this.shuey.update(

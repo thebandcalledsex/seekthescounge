@@ -28,9 +28,11 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         // Horizontal movement (Left and Right)
         if (moveLeft) {
             this.playerBody.setVelocityX(-this.speed); // Move left
+            this.handleIdleAnimation("left");
         }
         if (moveRight) {
             this.playerBody.setVelocityX(this.speed); // Move right
+            this.handleIdleAnimation("right");
         }
 
         // Jump
@@ -38,6 +40,8 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             this.playerBody.setVelocityY(-this.jumpSpeed);
         }
     }
+
+    protected abstract handleIdleAnimation(direction: "left" | "right"): void;
 }
 
 class Rovert extends Player {
@@ -63,6 +67,10 @@ class Rovert extends Player {
         // Play the animation
         this.play("idle");
     }
+
+    protected handleIdleAnimation(direction: "left" | "right"): void {
+        this.play("idle");
+    }
 }
 
 class Shuey extends Player {
@@ -72,10 +80,10 @@ class Shuey extends Player {
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
         super(scene, x, y, texture);
 
-        // Create the animation
+        // Create the idle-right animation
         scene.anims.create({
-            key: "shuey-idle",
-            frames: scene.anims.generateFrameNames("shuey-idle", {
+            key: "shuey-idle-right",
+            frames: scene.anims.generateFrameNames("shuey-idle-right", {
                 prefix: "SHUEY TGCS #IDLE INSIDE ",
                 start: 0,
                 end: 7,
@@ -85,8 +93,29 @@ class Shuey extends Player {
             repeat: -1,
         });
 
-        // Play the animation
-        this.play("shuey-idle");
+        // Create the idle-left animation
+        scene.anims.create({
+            key: "shuey-idle-left",
+            frames: scene.anims.generateFrameNames("shuey-idle-left", {
+                prefix: "SHUEY TGCS #IDLE INSIDE LEFt ",
+                start: 0,
+                end: 7,
+                suffix: ".aseprite",
+            }),
+            frameRate: 10,
+            repeat: -1,
+        });
+
+        // Default to right idle animation
+        this.play("shuey-idle-right");
+    }
+
+    protected handleIdleAnimation(direction: "left" | "right"): void {
+        if (direction === "left") {
+            this.play("shuey-idle-left");
+        } else {
+            this.play("shuey-idle-right");
+        }
     }
 }
 
