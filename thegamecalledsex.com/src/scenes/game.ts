@@ -7,7 +7,7 @@ import { GAME_VERSION } from "../constants";
 
 class Game extends Phaser.Scene {
     private rovert!: Rovert;
-    private shuey!: Shuey;  
+    private shuey!: Shuey;
     private obstacle!: Obstacle;
     private inputController!: InputController;
 
@@ -18,10 +18,18 @@ class Game extends Phaser.Scene {
     public preload() {
         // Load assets here
         console.log("Preloading assets....");
-        
-        this.load.atlas("rovert-idle", "../../assets/rovert/idle.png", "../../assets/rovert/idle.json");
 
-        this.load.atlas("shuey-idle", "../../assets/shuey/idle.png", "../../assets/shuey/idle.json");
+        this.load.atlas(
+            "rovert-idle",
+            "../../assets/rovert/idle.png",
+            "../../assets/rovert/idle.json",
+        );
+
+        this.load.atlas(
+            "shuey-idle",
+            "../../assets/shuey/idle.png",
+            "../../assets/shuey/idle.json",
+        );
     }
 
     public create() {
@@ -31,7 +39,7 @@ class Game extends Phaser.Scene {
         this.rovert = new Rovert(this, 100, 100, "rovert-idle"); // Create rovert at (100,100)
 
         this.shuey = new Shuey(this, 200, 100, "shuey-idle"); // Create shuey at (200,100)
-        
+
         // Add some id text to the screen for development
         this.add.text(10, 10, GAME_VERSION, { font: "16px Courier" });
 
@@ -40,7 +48,6 @@ class Game extends Phaser.Scene {
 
         // Instantiate the input controller
         this.inputController = new InputController(this);
-        
     }
 
     public update() {

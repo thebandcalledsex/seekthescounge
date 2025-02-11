@@ -41,7 +41,6 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 }
 
 class Rovert extends Player {
-
     protected speed: number = 150; // Horizontal speed for movement
     protected jumpSpeed: number = 300; // Vertical speed for
 
@@ -67,7 +66,6 @@ class Rovert extends Player {
 }
 
 class Shuey extends Player {
-
     protected speed: number = 300; // Horizontal speed for movement
     protected jumpSpeed: number = 300; // Vertical speed for
 
@@ -90,7 +88,6 @@ class Shuey extends Player {
         // Play the animation
         this.play("shuey-idle");
     }
-
 }
 
 export default Player;
