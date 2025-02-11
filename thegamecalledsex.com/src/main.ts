@@ -18,6 +18,7 @@ const config: Phaser.Types.Core.GameConfig = {
         mode: Phaser.Scale.FIT, // Scale the game to fit the screen
         autoCenter: Phaser.Scale.CENTER_BOTH, // Center the game horizontally and vertically
     },
+    pixelArt: true, // Enable pixel-perfect rendering
 };
 
 new Phaser.Game(config);
