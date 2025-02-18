@@ -1,12 +1,13 @@
 import Phaser from "phaser";
 import Game from "./scenes/game";
+import PlayerSelect from "./scenes/player-select";
 import { GAME_WIDTH, GAME_HEIGHT } from "./constants";
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
-    scene: [Game],
+    scene: [PlayerSelect, Game],
     physics: {
         default: "arcade",
         arcade: {
