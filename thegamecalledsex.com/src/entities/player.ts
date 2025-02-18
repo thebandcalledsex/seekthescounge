@@ -14,9 +14,9 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.setOrigin(0.5, 0.5); // Center the player sprite
 
         this.playerBody = this.body as Phaser.Physics.Arcade.Body;
-        this.playerBody.setCollideWorldBounds(true);
+        this.playerBody.setSize(16, 32); // Set the player body size
 
-        //body.setBounce(0.2); // Add slight bounce
+        this.playerBody.setCollideWorldBounds(true);
 
         // Scale the player sprite
         this.setScale(2);
@@ -67,34 +67,71 @@ class Rovert extends Player {
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
         super(scene, x, y, texture);
 
-        // Create the animation
+        this.setImmovable(true); // Prevent physics collisions from moving the player
+
+        // Create the idle-right animation
         scene.anims.create({
-            key: "idle",
-            frames: scene.anims.generateFrameNames("rovert-idle", {
-                prefix: "ROVERT TGCS #idle ",
+            key: "rovert-idle-right",
+            frames: scene.anims.generateFrameNames("rovert-idle-right", {
+                prefix: "ROVERT TGCS #IDLE INSIDE ",
                 start: 0,
-                end: 15,
+                end: 7,
                 suffix: ".aseprite",
             }),
             frameRate: 10,
             repeat: -1,
         });
 
-        // Play the animation
-        this.play("idle");
+        // Create the idle-left animation
+        scene.anims.create({
+            key: "rovert-idle-left",
+            frames: scene.anims.generateFrameNames("rovert-idle-left", {
+                prefix: "ROVERT TGCS #IDLE INSIDE LEFT ",
+                start: 0,
+                end: 7,
+                suffix: ".aseprite",
+            }),
+            frameRate: 10,
+            repeat: -1,
+        });
+
+        // Default to right idle animation
+        this.play("idle-right");
     }
 
     protected playIdleAnimation(direction: "left" | "right"): void {
-        this.play("idle");
+        const newAnimation = direction === "left" ? "rovert-idle-left" : "rovert-idle-right";
+
+        // Play the animation if there is no animation playing of if the current animation is different than the new one.
+        if (
+            !this.anims.isPlaying ||
+            !this.anims.currentAnim ||
+            this.anims.currentAnim.key !== newAnimation
+        ) {
+            this.play(newAnimation);
+        }
     }
 
+    // We may not need this once we have running/walking animations, this was just to aid in the transition before
+    // hitting the idle animation before we have the running animations.
     protected handleDirectionChange(direction: "left" | "right"): void {
-        // Rovert doesn’t change direction
+        // console.log("direction change: ", direction);
+
+        // Stop the current animation
+        this.anims.stop();
+
+        if (direction === "left") {
+            this.setTexture("rovert-idle-left");
+            this.setFrame("ROVERT TGCS #IDLE INSIDE LEFT 0.aseprite");
+        } else {
+            this.setTexture("rovert-idle-right");
+            this.setFrame("ROVERT TGCS #IDLE INSIDE 0.aseprite");
+        }
     }
 }
 
 class Shuey extends Player {
-    protected speed: number = 300; // Horizontal speed for movement
+    protected speed: number = 200; // Horizontal speed for movement
     protected jumpSpeed: number = 300; // Vertical speed for
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
