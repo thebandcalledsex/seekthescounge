@@ -57,6 +57,4 @@ deploy: $(SRC_DIR)/**/* index-prod.html
 reset-version:
 	sh utilities/reset_version.sh
 
-
-
 .PHONY: all build dist good clean server deploy
