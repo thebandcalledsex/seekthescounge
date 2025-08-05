@@ -14,7 +14,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.setOrigin(0.5, 0.5); // Center the player sprite
 
         this.playerBody = this.body as Phaser.Physics.Arcade.Body;
-        this.playerBody.setSize(16, 32); // Set the player body size
+        this.playerBody.setSize(8, 16); // Set the player body size
 
         this.playerBody.setCollideWorldBounds(true);
 
