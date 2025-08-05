@@ -11,15 +11,15 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
         scene.add.existing(this); // Add player to the scene
         scene.physics.world.enable(this); // Enable dynamic physics body (Phaser.Physics.Arcade.Body)
-        this.setOrigin(0.5, 0.5); // Center the player sprite
+        this.setOrigin(0.5, 2); // Center the player sprite
 
         this.playerBody = this.body as Phaser.Physics.Arcade.Body;
-        this.playerBody.setSize(8, 16); // Set the player body size
+        this.playerBody.setSize(16, 32); // Set the player body size
 
         this.playerBody.setCollideWorldBounds(true);
 
         // Scale the player sprite
-        this.setScale(2);
+        this.setScale(1);
     }
 
     public update(moveLeft: boolean, moveRight: boolean, jump: boolean) {
