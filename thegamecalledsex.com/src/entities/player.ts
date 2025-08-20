@@ -11,7 +11,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
         scene.add.existing(this); // Add player to the scene
         scene.physics.world.enable(this); // Enable dynamic physics body (Phaser.Physics.Arcade.Body)
-        this.setOrigin(0.5, 2); // Center the player sprite
+        this.setOrigin(0.5, 1); // Center the player sprite
 
         this.playerBody = this.body as Phaser.Physics.Arcade.Body;
         this.playerBody.setSize(16, 32); // Set the player body size
@@ -62,13 +62,10 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
 class Rovert extends Player {
     protected speed: number = 150; // Horizontal speed for movement
-    protected jumpSpeed: number = 300; // Vertical speed for
+    protected jumpSpeed: number = 200; // Vertical speed for
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
         super(scene, x, y, texture);
-
-        this.setImmovable(true); // Prevent physics collisions from moving the player
-
         // Create the idle-right animation
         scene.anims.create({
             key: "rovert-idle-right",
