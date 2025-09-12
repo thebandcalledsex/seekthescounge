@@ -1,0 +1,102 @@
+{ "frames": [
+   {
+    "filename": "shuey-animated #runner right 0.aseprite",
+    "frame": { "x": 0, "y": 0, "w": 13, "h": 18 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 7, "w": 13, "h": 18 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "shuey-animated #runner right 1.aseprite",
+    "frame": { "x": 13, "y": 0, "w": 13, "h": 18 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 7, "w": 13, "h": 18 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "shuey-animated #runner right 2.aseprite",
+    "frame": { "x": 26, "y": 0, "w": 13, "h": 18 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 7, "w": 13, "h": 18 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "shuey-animated #runner right 3.aseprite",
+    "frame": { "x": 0, "y": 18, "w": 13, "h": 18 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 7, "w": 13, "h": 18 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "shuey-animated #runner right 4.aseprite",
+    "frame": { "x": 13, "y": 18, "w": 13, "h": 18 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 7, "w": 13, "h": 18 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "shuey-animated #runner right 5.aseprite",
+    "frame": { "x": 26, "y": 18, "w": 13, "h": 18 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 7, "w": 13, "h": 18 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "shuey-animated #runner right 6.aseprite",
+    "frame": { "x": 0, "y": 36, "w": 13, "h": 18 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 7, "w": 13, "h": 18 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "shuey-animated #runner right 7.aseprite",
+    "frame": { "x": 13, "y": 36, "w": 13, "h": 18 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 7, "w": 13, "h": 18 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   }
+ ],
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.12-x64",
+  "image": "shuey animated.png",
+  "format": "RGBA8888",
+  "size": { "w": 39, "h": 54 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "idle right", "from": 1, "to": 8, "direction": "forward", "color": "#000000ff" },
+   { "name": "idle left", "from": 9, "to": 16, "direction": "forward", "color": "#000000ff" },
+   { "name": "runner no turn", "from": 17, "to": 24, "direction": "forward", "color": "#000000ff" },
+   { "name": "runner turning", "from": 25, "to": 32, "direction": "forward", "color": "#000000ff" },
+   { "name": "runner right", "from": 33, "to": 40, "direction": "forward", "color": "#000000ff" },
+   { "name": "runner left", "from": 41, "to": 48, "direction": "forward", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "back leg", "opacity": 255, "blendMode": "normal" },
+   { "name": "front leg", "opacity": 255, "blendMode": "normal" },
+   { "name": "shirt", "opacity": 255, "blendMode": "normal" },
+   { "name": "head", "opacity": 255, "blendMode": "normal" },
+   { "name": "knife", "opacity": 255, "blendMode": "normal" },
+   { "name": "ambert", "opacity": 255, "blendMode": "normal" },
+   { "name": "SHUEY CHICA", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}
