@@ -12,22 +12,22 @@ class PlayerSelect extends Phaser.Scene {
         // Load rovert idle assets
         this.load.atlas(
             "rovert-idle",
-            "../../assets/rovert/idle.png",
-            "../../assets/rovert/idle.json",
+            "../../assets/large-rovert/idle.png",
+            "../../assets/large-rovert/idle.json",
         );
 
         // Load rovert idle-right assets
         this.load.atlas(
             "rovert-idle-right",
-            "../../assets/rovert/idle-right.png",
-            "../../assets/rovert/idle-right.json",
+            "../../assets/large-rovert/idle-right.png",
+            "../../assets/large-rovert/idle-right.json",
         );
 
         // Load shuey idle-right assets
         this.load.atlas(
-            "shuey-idle-right",
-            "../../assets/shuey/idle-right.png",
-            "../../assets/shuey/idle-right.json",
+            "large-shuey-idle-right",
+            "../../assets/large-shuey/idle-right.png",
+            "../../assets/large-shuey/idle-right.json",
         );
     }
 
@@ -56,7 +56,7 @@ class PlayerSelect extends Phaser.Scene {
         // Define shuey animation
         this.anims.create({
             key: "shuey-idle",
-            frames: this.anims.generateFrameNames("shuey-idle-right", {
+            frames: this.anims.generateFrameNames("large-shuey-idle-right", {
                 prefix: "SHUEY TGCS #IDLE INSIDE ",
                 start: 0,
                 end: 7,
