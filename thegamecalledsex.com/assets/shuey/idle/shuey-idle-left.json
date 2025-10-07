@@ -80,12 +80,7 @@
   "size": { "w": 39, "h": 54 },
   "scale": "1",
   "frameTags": [
-   { "name": "idle right", "from": 1, "to": 8, "direction": "forward", "color": "#000000ff" },
-   { "name": "idle left", "from": 9, "to": 16, "direction": "forward", "color": "#000000ff" },
-   { "name": "runner no turn", "from": 17, "to": 24, "direction": "forward", "color": "#000000ff" },
-   { "name": "runner turning", "from": 25, "to": 32, "direction": "forward", "color": "#000000ff" },
-   { "name": "runner right", "from": 33, "to": 40, "direction": "forward", "color": "#000000ff" },
-   { "name": "runner left", "from": 41, "to": 48, "direction": "forward", "color": "#000000ff" }
+   { "name": "idle left", "from": 0, "to": 7, "direction": "forward", "color": "#000000ff" }
   ],
   "layers": [
    { "name": "back leg", "opacity": 255, "blendMode": "normal" },

@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { GAME_WIDTH, GAME_HEIGHT } from "../constants";
+import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION } from "../constants";
 
 class PlayerSelect extends Phaser.Scene {
     constructor() {
@@ -18,7 +18,7 @@ class PlayerSelect extends Phaser.Scene {
 
         // Load rovert idle-right assets
         this.load.atlas(
-            "rovert-idle-right",
+            "large-rovert-idle-right",
             "../../assets/large-rovert/idle-right.png",
             "../../assets/large-rovert/idle-right.json",
         );
@@ -32,6 +32,9 @@ class PlayerSelect extends Phaser.Scene {
     }
 
     public create() {
+        // Add game version to the screen for development
+        this.add.text(195, 120, GAME_VERSION, { font: "16px Courier" });
+
         // Create a title in the center of the screen
         this.add
             .text(GAME_WIDTH / 2, (GAME_HEIGHT * 1) / 8, "choose your player", {
