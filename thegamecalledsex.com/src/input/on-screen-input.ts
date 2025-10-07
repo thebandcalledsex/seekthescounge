@@ -1,164 +1,173 @@
 import Phaser from "phaser";
 import InputSource from "./input-source";
-import { GAME_WIDTH, GAME_HEIGHT } from "../constants";
 
 class OnScreenInput implements InputSource {
     private scene: Phaser.Scene;
-    private leftActivePointer: number | null = null; // Tracks active pointer ID for the left button
-    private rightActivePointer: number | null = null; // Tracks active pointer ID for the right button
-    private jumpActivePointer: number | null = null; // Tracks active pointer ID for the jump button
-    private leftPressed: boolean = false; // Stores if the left button is currently pressed
-    private rightPressed: boolean = false; // Stores if the right button is currently pressed
-    private jumpPressed: boolean = false; // Stores if the jump button is currently pressed
+
+    private leftActivePointer: number | null = null;
+    private rightActivePointer: number | null = null;
+    private jumpActivePointer: number | null = null;
+
+    private leftPressed = false;
+    private rightPressed = false;
+    private jumpPressed = false;
+
+    // store buttons so we can re-layout
+    private leftButton!: Phaser.GameObjects.Rectangle;
+    private rightButton!: Phaser.GameObjects.Rectangle;
+    private jumpButton!: Phaser.GameObjects.Rectangle;
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
-
-        // Enable multi-pointer support (allowing up to 3 simultaneous touches)
         this.scene.input.addPointer(3);
-
         this.createOnScreenButtons();
     }
 
     public isLeftPressed(): boolean {
         return this.leftPressed;
     }
-
     public isRightPressed(): boolean {
         return this.rightPressed;
     }
-
     public isJumpPressed(): boolean {
         return this.jumpPressed;
     }
 
+    /** Re-anchor buttons on current viewport size */
+    public layout() {
+        const w = this.scene.scale.width;
+        const h = this.scene.scale.height;
+
+        const buttonWidth = (1 / 10) * w;
+        const pad = (1 / 64) * w;
+
+        const leftX = buttonWidth / 2 + pad;
+        const y = h - buttonWidth / 2 - pad;
+        const sep = pad;
+        const rightX = leftX + buttonWidth + sep;
+
+        const jumpX = w - buttonWidth / 2 - pad;
+
+        this.leftButton.setSize(buttonWidth, buttonWidth).setPosition(leftX, y);
+        this.rightButton.setSize(buttonWidth, buttonWidth).setPosition(rightX, y);
+        this.jumpButton.setSize(buttonWidth, buttonWidth).setPosition(jumpX, y);
+    }
+
+    /** Clear press state (used on sleep/wake) */
+    public reset() {
+        this.leftActivePointer = this.rightActivePointer = this.jumpActivePointer = null;
+        this.leftPressed = this.rightPressed = this.jumpPressed = false;
+        if (this.leftButton) this.leftButton.setFillStyle(0x0000ff, 0.5);
+        if (this.rightButton) this.rightButton.setFillStyle(0x0000ff, 0.5);
+        if (this.jumpButton) this.jumpButton.setFillStyle(0x0000ff, 0.5);
+    }
+
     private createOnScreenButtons() {
-        const buttonWidth = (1 / 10) * GAME_WIDTH;
+
+        // Define button dimensions and positions relative to screen size
+        const w = this.scene.scale.width;
+        const h = this.scene.scale.height;
+        const buttonWidth = (1 / 10) * w;
         const buttonColor = 0x0000ff;
         const buttonAlpha = 0.5;
 
-        // Define the position of the left button
-        const leftButtonX = buttonWidth / 2 + (1 / 64) * GAME_WIDTH;
-        const leftButtonY = GAME_HEIGHT - buttonWidth / 2 - (1 / 64) * GAME_WIDTH;
+        const pad = (1 / 64) * w;
+        const leftButtonX = buttonWidth / 2 + pad;
+        const leftButtonY = h - buttonWidth / 2 - pad;
+        const separation = pad;
+        const rightButtonX = leftButtonX + buttonWidth + separation;
+        const jumpButtonX = w - buttonWidth / 2 - pad;
 
         // Left Button
-        const leftButton = new Phaser.GameObjects.Rectangle(
-            this.scene,
-            leftButtonX,
-            leftButtonY,
-            buttonWidth,
-            buttonWidth,
-            buttonColor,
-            buttonAlpha,
-        )
-            .setInteractive({ useHandCursor: true })
+        this.leftButton = this.scene.add
+            .rectangle(leftButtonX, leftButtonY, buttonWidth, buttonWidth, buttonColor, buttonAlpha)
+            .setDepth(9999)
+            .setScrollFactor(0)
             .setInteractive({ useHandCursor: true })
             .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
                 if (this.leftActivePointer === null) {
                     this.leftActivePointer = pointer.id;
                     this.leftPressed = true;
-                    leftButton.setFillStyle(0xff0000, 0.7);
+                    this.leftButton.setFillStyle(0xff0000, 0.7);
                 }
             });
-        this.scene.add.existing(leftButton);
-
-        // Define the position of the right button
-        const buttonSeparation = (1 / 64) * GAME_WIDTH;
-        const rightButtonX = leftButtonX + buttonWidth + buttonSeparation;
-        const rightButtonY = leftButtonY;
 
         // Right Button
-        const rightButton = new Phaser.GameObjects.Rectangle(
-            this.scene,
-            rightButtonX,
-            rightButtonY,
-            buttonWidth,
-            buttonWidth,
-            buttonColor,
-            buttonAlpha,
-        )
+        this.rightButton = this.scene.add
+            .rectangle(rightButtonX, leftButtonY, buttonWidth, buttonWidth, buttonColor, buttonAlpha)
+            .setDepth(9999)
+            .setScrollFactor(0)
             .setInteractive({ useHandCursor: true })
             .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
                 if (this.rightActivePointer === null) {
                     this.rightActivePointer = pointer.id;
                     this.rightPressed = true;
-                    rightButton.setFillStyle(0xff0000, 0.7);
+                    this.rightButton.setFillStyle(0xff0000, 0.7);
                 }
             });
-        this.scene.add.existing(rightButton);
-
-        // Listen for pointermove events to switch between left and right buttons
-        this.scene.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
-            if (this.leftActivePointer === pointer.id) {
-                if (rightButton.getBounds().contains(pointer.x, pointer.y)) {
-                    // Release left button
-                    this.leftActivePointer = null;
-                    this.leftPressed = false;
-                    leftButton.setFillStyle(0x0000ff, 0.5);
-
-                    // Switch to right button
-                    this.rightActivePointer = pointer.id;
-                    this.rightPressed = true;
-                    rightButton.setFillStyle(0xff0000, 0.7);
-                }
-            } else if (this.rightActivePointer === pointer.id) {
-                if (leftButton.getBounds().contains(pointer.x, pointer.y)) {
-                    // Release right button
-                    this.rightActivePointer = null;
-                    this.rightPressed = false;
-                    rightButton.setFillStyle(0x0000ff, 0.5);
-
-                    // Switch to left button
-                    this.leftActivePointer = pointer.id;
-                    this.leftPressed = true;
-                    leftButton.setFillStyle(0xff0000, 0.7);
-                }
-            }
-        });
-
-        // Define the position of the jump button
-        const jumpButtonX = GAME_WIDTH - buttonWidth / 2 - (1 / 64) * GAME_WIDTH;
-        const jumpButtonY = leftButtonY;
 
         // Jump Button
-        const jumpButton = new Phaser.GameObjects.Rectangle(
-            this.scene,
-            jumpButtonX,
-            jumpButtonY,
-            buttonWidth,
-            buttonWidth,
-            buttonColor,
-            buttonAlpha,
-        )
+        this.jumpButton = this.scene.add
+            .rectangle(jumpButtonX, leftButtonY, buttonWidth, buttonWidth, buttonColor, buttonAlpha)
+            .setDepth(9999)
+            .setScrollFactor(0)
             .setInteractive({ useHandCursor: true })
             .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
                 if (this.jumpActivePointer === null) {
                     this.jumpActivePointer = pointer.id;
                     this.jumpPressed = true;
-                    jumpButton.setFillStyle(0xff0000, 0.7);
+                    this.jumpButton.setFillStyle(0xff0000, 0.7);
                 }
             });
-        this.scene.add.existing(jumpButton);
 
-        // Listen for pointerup globally to release the correct button if the finger moves off
+        // pointermove: swap left/right if dragging across
+        this.scene.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+            if (this.leftActivePointer === pointer.id) {
+                if (this.rightButton.getBounds().contains(pointer.x, pointer.y)) {
+                    // Release left button
+                    this.leftActivePointer = null;
+                    this.leftPressed = false;
+                    this.leftButton.setFillStyle(0x0000ff, 0.5);
+                    
+                    // Switch to right button
+                    this.rightActivePointer = pointer.id;
+                    this.rightPressed = true;
+                    this.rightButton.setFillStyle(0xff0000, 0.7);
+                }
+            } else if (this.rightActivePointer === pointer.id) {
+                if (this.leftButton.getBounds().contains(pointer.x, pointer.y)) {
+                    // Release right button
+                    this.rightActivePointer = null;
+                    this.rightPressed = false;
+                    this.rightButton.setFillStyle(0x0000ff, 0.5);
+                    
+                    // Switch to left button
+                    this.leftActivePointer = pointer.id;
+                    this.leftPressed = true;
+                    this.leftButton.setFillStyle(0xff0000, 0.7);
+                }
+            }
+        });
+
+        // global pointerup
         this.scene.input.on("pointerup", (pointer: Phaser.Input.Pointer) => {
-            // log
-            console.log("global pointerup");
-
             if (this.leftActivePointer === pointer.id) {
                 this.leftActivePointer = null;
                 this.leftPressed = false;
-                leftButton.setFillStyle(0x0000ff, 0.5);
+                this.leftButton.setFillStyle(0x0000ff, 0.5);
             } else if (this.rightActivePointer === pointer.id) {
                 this.rightActivePointer = null;
                 this.rightPressed = false;
-                rightButton.setFillStyle(0x0000ff, 0.5);
+                this.rightButton.setFillStyle(0x0000ff, 0.5);
             } else if (this.jumpActivePointer === pointer.id) {
                 this.jumpActivePointer = null;
                 this.jumpPressed = false;
-                jumpButton.setFillStyle(0x0000ff, 0.5);
+                this.jumpButton.setFillStyle(0x0000ff, 0.5);
             }
         });
+
+        // initial anchor
+        this.layout();
     }
 }
 

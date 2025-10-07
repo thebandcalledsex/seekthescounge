@@ -1,6 +1,5 @@
 import InputSource from "./input-source";
 import KeyboardInput from "./keyboard-input";
-import OnScreenInput from "./on-screen-input";
 
 class InputController {
     private inputSources: InputSource[] = [];
@@ -8,7 +7,10 @@ class InputController {
     constructor(scene: Phaser.Scene) {
         // Register input sources
         this.inputSources.push(new KeyboardInput(scene));
-        this.inputSources.push(new OnScreenInput(scene));
+    }
+
+    public addInputSource(source: InputSource) {
+        this.inputSources.push(source);
     }
 
     // Check if any input source has the left movement pressed

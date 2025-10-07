@@ -2,17 +2,18 @@ import Phaser from "phaser";
 import Game from "./scenes/game";
 import PlayerSelect from "./scenes/player-select";
 import { GAME_WIDTH, GAME_HEIGHT } from "./constants";
+import UiScene from "./scenes/ui";
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
-    scene: [PlayerSelect, Game],
+    scene: [PlayerSelect, Game, UiScene],
     physics: {
         default: "arcade",
         arcade: {
             gravity: { x: 0, y: 500 },
-            debug: true, // Show physics bodies
+            debug: false, // Show physics bodies
         },
     },
     scale: {
