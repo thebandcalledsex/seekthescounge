@@ -63,7 +63,6 @@ class OnScreenInput implements InputSource {
     }
 
     private createOnScreenButtons() {
-
         // Define button dimensions and positions relative to screen size
         const w = this.scene.scale.width;
         const h = this.scene.scale.height;
@@ -94,7 +93,14 @@ class OnScreenInput implements InputSource {
 
         // Right Button
         this.rightButton = this.scene.add
-            .rectangle(rightButtonX, leftButtonY, buttonWidth, buttonWidth, buttonColor, buttonAlpha)
+            .rectangle(
+                rightButtonX,
+                leftButtonY,
+                buttonWidth,
+                buttonWidth,
+                buttonColor,
+                buttonAlpha,
+            )
             .setDepth(9999)
             .setScrollFactor(0)
             .setInteractive({ useHandCursor: true })
@@ -128,7 +134,7 @@ class OnScreenInput implements InputSource {
                     this.leftActivePointer = null;
                     this.leftPressed = false;
                     this.leftButton.setFillStyle(0x0000ff, 0.5);
-                    
+
                     // Switch to right button
                     this.rightActivePointer = pointer.id;
                     this.rightPressed = true;
@@ -140,7 +146,7 @@ class OnScreenInput implements InputSource {
                     this.rightActivePointer = null;
                     this.rightPressed = false;
                     this.rightButton.setFillStyle(0x0000ff, 0.5);
-                    
+
                     // Switch to left button
                     this.leftActivePointer = pointer.id;
                     this.leftPressed = true;
