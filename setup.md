@@ -63,3 +63,19 @@ Insrall Phaser.js using npm:
 npm install phaser  
 ```
 
+# Extras
+
+## Adding a public key to the website
+
+Found via the Dreamhost control panel:
+
+FTP_SERVER=vpsXXXXX.dreamhostps.com
+FTP_USER=dh_XXXXXX
+SSH_KEY_NAME={ssh key filename}
+
+```shell
+ssh-copy-id -i ~/.ssh/$(SSH_KEY_NAME).pub $(FTP_USER)@$(FTP_SERVER)
+ssh-copy-id -i ~/.ssh/tbcs.pub dh_hubz47@vps40077.dreamhostps.com
+```
+
+This is necessary to do again if the server starts asking for a password again when deploying via `make deploy`.

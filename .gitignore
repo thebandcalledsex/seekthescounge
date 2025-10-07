@@ -2,7 +2,7 @@ node_modules/
 dist/
 *.log
 .DS_Store
-.env
+.env*
 index.html
-thegamecalledsex.com/tsconfig.tsbuildinfo
-thegamecalledsex.com/bundle.js
+seekthescounge.com/tsconfig.tsbuildinfo
+seekthescounge.com/bundle.js

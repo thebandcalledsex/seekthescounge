@@ -7,7 +7,7 @@ export const CAMERA_FOLLOW_LERP_Y = 0.1;
 export const CAMERA_FOLLOW_OFFSET_X = -40;
 export const CAMERA_FOLLOW_OFFSET_Y = 0;
 
-export const GAME_VERSION = "0.60";
+export const GAME_VERSION = "0.61";
 
 // dialog box snap shut/snap open snappiness
 export const DIALOG_SNAP_OPEN_DURATION = 400; // ms

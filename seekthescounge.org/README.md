@@ -1,7 +1,5 @@
 
 
-
-
 ## Assets
 
 ### Key Differences Between Images and Sprites
@@ -53,3 +51,39 @@
 ## Git Shenanigans    
 
 git remote set-url origin git@github.com:thebandcalledsex/thegamecalledsex.git
+
+
+
+
+
+
+
+# Recommended Layer Structure for Tiled + Phaser
+
+## Background layers (no collision)
+- **Background** → sky, gradients, mountains, distant scenery
+- **MidBackground** → trees, clouds, parallax elements
+
+## Gameplay layers (collidable)
+- **Ground** → main walkable tiles (marked `collides = true`)
+- **Platforms** → floating or secondary collidable tiles
+- **Walls** (optional) → vertical collidable surfaces, if separated from ground
+
+## Decorative layers (no collision)
+- **DecoBack** → props/details drawn behind player
+- **DecoFront** → props/details drawn in front of player
+
+## Interactive/object layers
+- **Objects** → enemies, pickups, coins, triggers
+- **Spawns** → player/enemy spawn points
+- **Hazards** → spikes, lava, kill zones
+
+---
+
+## Tips
+- **Collision flagging**: in Tiled, set a tile property `collides = true` for ground/platform tiles.
+- **Draw order**: Background → Ground/Platforms → Player → Foreground/DecoFront.
+- **Parallax**: give background layers a scroll factor < 1 in Phaser (`layer.setScrollFactor(0.5)`).
+- **Organization**: keep collidable gameplay separate from decoration so you don’t accidentally collide with art.
+- **Depth control**: if needed, adjust `layer.setDepth(n)` in Phaser to force draw order.
+- **Objects layer**: great for spawning dynamic entities (coins, enemies) by reading properties in Phaser.
