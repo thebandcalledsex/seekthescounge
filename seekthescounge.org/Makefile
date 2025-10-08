@@ -45,6 +45,13 @@ deploy: $(SRC_DIR)/**/* index-prod.html
 	cp index-prod.html index.html
 	$(TS_COMPILER) --project $(TS_CONFIG) && $(BUNDLER) --mode production
 
+	# Bust browser caches with the new version by appending a unique timestamp to the bundle.js file ref in index.html
+	TIMESTAMP=$$(date +%Y%m%d-%H%M%S); \
+	sed -i '' -E \
+		-e 's|(src="src/[^"?]+\.js)\?v=[^"]*(")|\1?v='"$$TIMESTAMP"'\2|g' \
+		-e 's|(src="src/[^"?]+\.js)(")|\1?v='"$$TIMESTAMP"'\2|g' \
+	index.html
+
 	@echo FTP_SERVER: $(FTP_SERVER)
 	@echo FTP_USER: $(FTP_USER)
 
