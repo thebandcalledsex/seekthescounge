@@ -12,6 +12,8 @@ class Game extends Phaser.Scene {
     private inputController!: InputController;
     private dialog!: DialogManager;
 
+    private hasTouchedGround = false;
+
     constructor() {
         super({ key: "Game" });
     }
@@ -262,11 +264,6 @@ class Game extends Phaser.Scene {
             theme: { fill: 0x0f0f1a, borderOuter: 0xffffff, borderInner: undefined }, // single border
         });
 
-        // basic
-        this.dialog.say({
-            text: "Welcome! This is a 2-line, dialog box.",
-        });
-
         // Add a fullscreen button
         this.scale.fullscreenTarget = document.getElementById("game-container")!;
         const fullscreenButton = this.add
@@ -305,6 +302,16 @@ class Game extends Phaser.Scene {
             this.inputController.isRightPressed(),
             this.inputController.isJumpPressed(),
         );
+
+        // Check if the player has touched the ground
+        if (this.player.body && this.player.body.blocked.down && !this.hasTouchedGround) {
+            this.hasTouchedGround = true;
+
+            // Trigger dialog when the player touches the ground for the first time
+            this.dialog.say({
+                text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
+            });
+        }
     }
 }
 
