@@ -1,21 +1,44 @@
 import Phaser from "phaser";
 import InputSource from "./input-source";
+import { GAME_WIDTH, GAME_HEIGHT } from "../constants";
 
 class OnScreenInput implements InputSource {
     private scene: Phaser.Scene;
 
+    // track active pointers for each button
     private leftActivePointer: number | null = null;
     private rightActivePointer: number | null = null;
     private jumpActivePointer: number | null = null;
+    private attackActivePointer: number | null = null;
 
+    // current button state pressed/not pressed
     private leftPressed = false;
     private rightPressed = false;
     private jumpPressed = false;
+    private attackPressed = false;
+
+    // button dimensions, location, and transparency
+    private buttonWidth: number = 32;
+    private pad: number = (1 / 64) * GAME_WIDTH;
+    private buttonTransparencyLevel: number = 0.85;
 
     // store buttons so we can re-layout
-    private leftButton!: Phaser.GameObjects.Rectangle;
-    private rightButton!: Phaser.GameObjects.Rectangle;
-    private jumpButton!: Phaser.GameObjects.Rectangle;
+    private leftButton!: Phaser.GameObjects.Image;
+    private rightButton!: Phaser.GameObjects.Image;
+    private jumpButton!: Phaser.GameObjects.Image;
+    private attackButton!: Phaser.GameObjects.Image;
+
+    static preload(scene: Phaser.Scene) {
+        // Load button assets
+        scene.load.image("left-button-pressed", "../../assets/ui/left-button-pressed.png");
+        scene.load.image("left-button-idle", "../../assets/ui/left-button-idle.png");
+        scene.load.image("right-button-pressed", "../../assets/ui/right-button-pressed.png");
+        scene.load.image("right-button-idle", "../../assets/ui/right-button-idle.png");
+        scene.load.image("jump-button-pressed", "../../assets/ui/jump-button-pressed.png");
+        scene.load.image("jump-button-idle", "../../assets/ui/jump-button-idle.png");
+        scene.load.image("attack-button-pressed", "../../assets/ui/attack-button-pressed.png");
+        scene.load.image("attack-button-idle", "../../assets/ui/attack-button-idle.png");
+    }
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
@@ -32,125 +55,140 @@ class OnScreenInput implements InputSource {
     public isJumpPressed(): boolean {
         return this.jumpPressed;
     }
-
-    /** Re-anchor buttons on current viewport size */
-    public layout() {
-        const w = this.scene.scale.width;
-        const h = this.scene.scale.height;
-
-        const buttonWidth = (1 / 10) * w;
-        const pad = (1 / 64) * w;
-
-        const leftX = buttonWidth / 2 + pad;
-        const y = h - buttonWidth / 2 - pad;
-        const sep = pad;
-        const rightX = leftX + buttonWidth + sep;
-
-        const jumpX = w - buttonWidth / 2 - pad;
-
-        this.leftButton.setSize(buttonWidth, buttonWidth).setPosition(leftX, y);
-        this.rightButton.setSize(buttonWidth, buttonWidth).setPosition(rightX, y);
-        this.jumpButton.setSize(buttonWidth, buttonWidth).setPosition(jumpX, y);
+    public isAttackPressed(): boolean {
+        return this.attackPressed;
     }
 
-    /** Clear press state (used on sleep/wake) */
+    // Re-anchor buttons on current viewport size
+    public layout() {
+        const leftX = this.buttonWidth / 2 + this.pad;
+        const y = this.scene.scale.height - this.buttonWidth / 2 - this.pad;
+        const sep = this.pad;
+        const rightX = leftX + this.buttonWidth + sep;
+
+        const jumpX = this.scene.scale.width - this.buttonWidth / 2 - this.pad;
+
+        this.leftButton.setSize(this.buttonWidth, this.buttonWidth).setPosition(leftX, y);
+        this.rightButton.setSize(this.buttonWidth, this.buttonWidth).setPosition(rightX, y);
+        this.jumpButton.setSize(this.buttonWidth, this.buttonWidth).setPosition(jumpX, y);
+        this.attackButton
+            .setSize(this.buttonWidth, this.buttonWidth)
+            .setPosition(jumpX - this.buttonWidth - this.pad, y);
+    }
+
+    // Clear pressed button state
     public reset() {
-        this.leftActivePointer = this.rightActivePointer = this.jumpActivePointer = null;
-        this.leftPressed = this.rightPressed = this.jumpPressed = false;
-        if (this.leftButton) this.leftButton.setFillStyle(0x0000ff, 0.5);
-        if (this.rightButton) this.rightButton.setFillStyle(0x0000ff, 0.5);
-        if (this.jumpButton) this.jumpButton.setFillStyle(0x0000ff, 0.5);
+        this.leftActivePointer =
+            this.rightActivePointer =
+            this.jumpActivePointer =
+            this.attackActivePointer =
+                null;
+        this.leftPressed = this.rightPressed = this.jumpPressed = this.attackPressed = false;
+        if (this.leftButton) this.leftButton.setTexture("left-button-idle");
+        if (this.rightButton) this.rightButton.setTexture("right-button-idle");
+        if (this.jumpButton) this.jumpButton.setTexture("jump-button-idle");
+        if (this.attackButton) this.attackButton.setTexture("attack-button-idle");
     }
 
     private createOnScreenButtons() {
         // Define button dimensions and positions relative to screen size
         const w = this.scene.scale.width;
         const h = this.scene.scale.height;
-        const buttonWidth = (1 / 10) * w;
-        const buttonColor = 0x0000ff;
-        const buttonAlpha = 0.5;
+        // const buttonWidth = (1 / 10) * w;
 
-        const pad = (1 / 64) * w;
-        const leftButtonX = buttonWidth / 2 + pad;
-        const leftButtonY = h - buttonWidth / 2 - pad;
-        const separation = pad;
-        const rightButtonX = leftButtonX + buttonWidth + separation;
-        const jumpButtonX = w - buttonWidth / 2 - pad;
+        //const pad = (1 / 64) * w;
+        const leftButtonX = this.buttonWidth / 2 + this.pad;
+        const leftButtonY = h - this.buttonWidth / 2 - this.pad;
+        const separation = this.pad;
+        const rightButtonX = leftButtonX + this.buttonWidth + separation;
+        const jumpButtonX = w - this.buttonWidth / 2 - this.pad;
+        const attackButtonX = jumpButtonX - this.buttonWidth - this.pad;
 
         // Left Button
         this.leftButton = this.scene.add
-            .rectangle(leftButtonX, leftButtonY, buttonWidth, buttonWidth, buttonColor, buttonAlpha)
+            .image(leftButtonX, leftButtonY, "left-button-idle")
             .setDepth(9999)
             .setScrollFactor(0)
+            .setAlpha(this.buttonTransparencyLevel)
             .setInteractive({ useHandCursor: true })
             .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
                 if (this.leftActivePointer === null) {
                     this.leftActivePointer = pointer.id;
                     this.leftPressed = true;
-                    this.leftButton.setFillStyle(0xff0000, 0.7);
+                    this.leftButton.setTexture("left-button-pressed");
                 }
             });
 
         // Right Button
         this.rightButton = this.scene.add
-            .rectangle(
-                rightButtonX,
-                leftButtonY,
-                buttonWidth,
-                buttonWidth,
-                buttonColor,
-                buttonAlpha,
-            )
+            .image(rightButtonX, leftButtonY, "right-button-idle")
             .setDepth(9999)
             .setScrollFactor(0)
+            .setAlpha(this.buttonTransparencyLevel)
             .setInteractive({ useHandCursor: true })
             .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
                 if (this.rightActivePointer === null) {
                     this.rightActivePointer = pointer.id;
                     this.rightPressed = true;
-                    this.rightButton.setFillStyle(0xff0000, 0.7);
+                    this.rightButton.setTexture("right-button-pressed");
                 }
             });
 
         // Jump Button
         this.jumpButton = this.scene.add
-            .rectangle(jumpButtonX, leftButtonY, buttonWidth, buttonWidth, buttonColor, buttonAlpha)
+            .image(jumpButtonX, leftButtonY, "jump-button-idle")
             .setDepth(9999)
             .setScrollFactor(0)
+            .setAlpha(this.buttonTransparencyLevel)
             .setInteractive({ useHandCursor: true })
             .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
                 if (this.jumpActivePointer === null) {
                     this.jumpActivePointer = pointer.id;
                     this.jumpPressed = true;
-                    this.jumpButton.setFillStyle(0xff0000, 0.7);
+                    this.jumpButton.setTexture("jump-button-pressed");
                 }
             });
 
-        // pointermove: swap left/right if dragging across
+        // Attack Button
+        this.attackButton = this.scene.add
+            .image(attackButtonX, leftButtonY, "attack-button-idle")
+            .setDepth(9999)
+            .setScrollFactor(0)
+            .setAlpha(this.buttonTransparencyLevel)
+            .setInteractive({ useHandCursor: true })
+            .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+                if (this.attackActivePointer === null) {
+                    this.attackActivePointer = pointer.id;
+                    this.attackPressed = true;
+                    this.attackButton.setTexture("attack-button-pressed");
+                }
+            });
+
+        // Allow us to switch between the left right buttons wihout lifting a finger off
         this.scene.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
             if (this.leftActivePointer === pointer.id) {
                 if (this.rightButton.getBounds().contains(pointer.x, pointer.y)) {
                     // Release left button
                     this.leftActivePointer = null;
                     this.leftPressed = false;
-                    this.leftButton.setFillStyle(0x0000ff, 0.5);
+                    this.leftButton.setTexture("left-button-idle");
 
                     // Switch to right button
                     this.rightActivePointer = pointer.id;
                     this.rightPressed = true;
-                    this.rightButton.setFillStyle(0xff0000, 0.7);
+                    this.rightButton.setTexture("right-button-pressed");
                 }
             } else if (this.rightActivePointer === pointer.id) {
                 if (this.leftButton.getBounds().contains(pointer.x, pointer.y)) {
                     // Release right button
                     this.rightActivePointer = null;
                     this.rightPressed = false;
-                    this.rightButton.setFillStyle(0x0000ff, 0.5);
+                    this.rightButton.setTexture("right-button-idle");
 
                     // Switch to left button
                     this.leftActivePointer = pointer.id;
                     this.leftPressed = true;
-                    this.leftButton.setFillStyle(0xff0000, 0.7);
+                    this.leftButton.setTexture("left-button-pressed");
                 }
             }
         });
@@ -160,15 +198,19 @@ class OnScreenInput implements InputSource {
             if (this.leftActivePointer === pointer.id) {
                 this.leftActivePointer = null;
                 this.leftPressed = false;
-                this.leftButton.setFillStyle(0x0000ff, 0.5);
+                this.leftButton.setTexture("left-button-idle");
             } else if (this.rightActivePointer === pointer.id) {
                 this.rightActivePointer = null;
                 this.rightPressed = false;
-                this.rightButton.setFillStyle(0x0000ff, 0.5);
+                this.rightButton.setTexture("right-button-idle");
             } else if (this.jumpActivePointer === pointer.id) {
                 this.jumpActivePointer = null;
                 this.jumpPressed = false;
-                this.jumpButton.setFillStyle(0x0000ff, 0.5);
+                this.jumpButton.setTexture("jump-button-idle");
+            } else if (this.attackActivePointer === pointer.id) {
+                this.attackActivePointer = null;
+                this.attackPressed = false;
+                this.attackButton.setTexture("attack-button-idle");
             }
         });
 

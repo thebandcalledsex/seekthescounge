@@ -5,6 +5,7 @@ import InputController from "../input/input-controller";
 import UiScene from "./ui";
 import * as constants from "../constants";
 import DialogManager from "../ui/dialog";
+import OnScreenInput from "../input/on-screen-input";
 
 class Game extends Phaser.Scene {
     private player!: Rovert | Shuey;
@@ -69,9 +70,12 @@ class Game extends Phaser.Scene {
             "../../assets/shuey/running/shuey-running-right.json",
         );
 
-        // Load the tilemap for level1 and its tileset
+        // Load the tilemap for level 1 and its tileset
         this.load.tilemapTiledJSON("level1", "../../assets/maps/level1.json");
         this.load.image("desert-tiles", "../../assets/tilesets/desert.png");
+
+        // Load on-screen input button assets
+        OnScreenInput.preload(this);
     }
 
     public create() {
@@ -102,7 +106,6 @@ class Game extends Phaser.Scene {
         });
 
         // Register player animations
-
         if (!this.anims.exists("shuey-idle-right")) {
             this.anims.create({
                 key: "shuey-idle-right",
@@ -301,6 +304,7 @@ class Game extends Phaser.Scene {
             this.inputController.isLeftPressed(),
             this.inputController.isRightPressed(),
             this.inputController.isJumpPressed(),
+            this.inputController.isAttackPressed(),
         );
 
         // Check if the player has touched the ground

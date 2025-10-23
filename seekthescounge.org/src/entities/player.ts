@@ -22,7 +22,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.setScale(1);
     }
 
-    public update(moveLeft: boolean, moveRight: boolean, jump: boolean) {
+    public update(moveLeft: boolean, moveRight: boolean, jump: boolean, attack: boolean): void {
         // Reset horizontal velocity each frame
         this.playerBody.setVelocityX(0);
 
@@ -30,30 +30,29 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         if (moveLeft) {
             this.playerBody.setVelocityX(-this.speed); // Move left
 
-            if (this.lastDirection === "right") {
-                this.handleDirectionChange("left");
-            }
             this.lastDirection = "left";
         }
         if (moveRight) {
             this.playerBody.setVelocityX(this.speed); // Move right
 
-            if (this.lastDirection === "left") {
-                this.handleDirectionChange("right");
-            }
             this.lastDirection = "right";
         }
 
         // Jumping is fun
         if (jump && this.playerBody.onFloor()) {
-            this.playerBody.setVelocityY(-this.jumpSpeed);
+            this.jump();
+        }
+
+        // Attacking is cool too if you're into that sort of thing.
+        if (attack) {
+            this.attack();
         }
 
         // Choose animation based on movement state
         if (this.playerBody.velocity.x === 0 && this.playerBody.onFloor()) {
             // Idle animation
             this.playIdleAnimation(this.lastDirection);
-        } else if (this.playerBody.velocity.x !== 0 && this.playerBody.onFloor()) {
+        } else if (this.playerBody.velocity.x !== 0) {
             // Running animation
             this.playRunAnimation(this.lastDirection);
         }
@@ -63,7 +62,11 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
     protected abstract playRunAnimation(direction: "left" | "right"): void;
 
-    protected abstract handleDirectionChange(direction: "left" | "right"): void;
+    protected abstract attack(): void;
+
+    protected jump() {
+        this.playerBody.setVelocityY(-this.jumpSpeed);
+    }
 }
 
 class Rovert extends Player {
@@ -102,10 +105,9 @@ class Rovert extends Player {
         }
     }
 
-    // We may not need this once we have running/walking animations, this was just to aid in the transition before
-    // hitting the idle animation before we have the running animations.
-    protected handleDirectionChange(direction: "left" | "right"): void {
-        // console.log("direction change: ", direction);
+    protected attack(): void {
+        // Placeholder for Rovert's attack logic
+        console.log("Rovert attacks!");
     }
 }
 
@@ -146,10 +148,9 @@ class Shuey extends Player {
         }
     }
 
-    // We may not need this once we have running/walking animations, this was just to aid in the transition before
-    // hitting the idle animation before we have the running animations.
-    protected handleDirectionChange(direction: "left" | "right"): void {
-        // console.log("direction change: ", direction);
+    protected attack(): void {
+        // Placeholder for Shuey's attack logic
+        console.log("Shuey attacks!");
     }
 }
 

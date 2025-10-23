@@ -27,6 +27,11 @@ class InputController {
     public isJumpPressed(): boolean {
         return this.inputSources.some((source) => source.isJumpPressed());
     }
+
+    // Check if any input source has attack pressed
+    public isAttackPressed(): boolean {
+        return this.inputSources.some((source) => source.isAttackPressed());
+    }
 }
 
 export default InputController;

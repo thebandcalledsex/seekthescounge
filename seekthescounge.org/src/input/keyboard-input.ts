@@ -20,6 +20,10 @@ class KeyboardInput implements InputSource {
     public isJumpPressed(): boolean {
         return this.cursorKeys.space!.isDown;
     }
+
+    public isAttackPressed(): boolean {
+        return this.cursorKeys.shift!.isDown;
+    }
 }
 
 export default KeyboardInput;
