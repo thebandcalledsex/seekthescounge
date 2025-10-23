@@ -74,20 +74,37 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     public update(moveLeft: boolean, moveRight: boolean, jump: boolean, attack: boolean): void {
-        // Reset horizontal velocity each frame
-        this.playerBody.setVelocityX(0);
+        const wantsLeft = moveLeft && !moveRight;
+        const wantsRight = moveRight && !moveLeft;
 
-        // Horizontal movement (Left and Right)
-        if (moveLeft) {
-            this.playerBody.setVelocityX(-this.speed); // Move left
+        const blockedLeft =
+            this.playerBody.blocked.left ||
+            this.playerBody.touching.left ||
+            this.playerBody.wasTouching.left;
+        const blockedRight =
+            this.playerBody.blocked.right ||
+            this.playerBody.touching.right ||
+            this.playerBody.wasTouching.right;
 
-            this.lastDirection = "left";
+        // Reset horizontal velocity each frame    
+        let targetVelocityX = 0;
+
+        // Handle horizontal movement input
+        if (wantsLeft) {
+            if (blockedLeft) {
+            } else {
+                targetVelocityX = -this.speed;
+                this.lastDirection = "left";
+            }
+        } else if (wantsRight) {
+            if (blockedRight) {
+            } else {
+                targetVelocityX = this.speed;
+                this.lastDirection = "right";
+            }
         }
-        if (moveRight) {
-            this.playerBody.setVelocityX(this.speed); // Move right
 
-            this.lastDirection = "right";
-        }
+        this.playerBody.setVelocityX(targetVelocityX);
 
         // Jumping is fun
         if (jump && this.playerBody.onFloor()) {
@@ -105,12 +122,20 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.updateAttackState(now);
 
         // Choose animation based on movement state
-        if (this.playerBody.velocity.x === 0 && this.playerBody.onFloor()) {
-            // Idle animation
-            this.playIdleAnimation(this.lastDirection);
-        } else if (this.playerBody.velocity.x !== 0) {
+        const movedHorizontally = Math.abs(this.playerBody.deltaX()) > 1;
+        const touchingHorizontally =
+            this.playerBody.blocked.left ||
+            this.playerBody.blocked.right ||
+            this.playerBody.touching.left ||
+            this.playerBody.touching.right;
+        const onGround = this.playerBody.onFloor();
+
+        if (movedHorizontally && !touchingHorizontally) {
             // Running animation
             this.playRunAnimation(this.lastDirection);
+        } else if (onGround) {
+            // Idle animation
+            this.playIdleAnimation(this.lastDirection);
         }
     }
 
