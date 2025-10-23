@@ -86,7 +86,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             this.playerBody.touching.right ||
             this.playerBody.wasTouching.right;
 
-        // Reset horizontal velocity each frame    
+        // Reset horizontal velocity each frame
         let targetVelocityX = 0;
 
         // Handle horizontal movement input
@@ -376,8 +376,8 @@ class Rovert extends Player {
         cooldown: 320,
         damage: 1,
         knockback: {
-            horizontal: 36,
-            vertical: 0,
+            horizontal: 20,
+            vertical: 10,
             duration: 180,
         },
     };
@@ -428,7 +428,7 @@ class Shuey extends Player {
         damage: 1,
         knockback: {
             horizontal: 3,
-            vertical: 0,
+            vertical: 10,
             duration: 160,
         },
     };
