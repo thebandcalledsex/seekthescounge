@@ -1,17 +1,18 @@
 import Phaser from "phaser";
-import { Rovert } from "../entities/player";
-import { Shuey } from "../entities/player";
+import { Rovert, Shuey } from "../entities/player";
 import InputController from "../input/input-controller";
 import UiScene from "./ui";
 import * as constants from "../constants";
 import DialogManager from "../ui/dialog";
 import OnScreenInput from "../input/on-screen-input";
+import TrainingDummy from "../entities/training-dummy";
 
 class Game extends Phaser.Scene {
     private player!: Rovert | Shuey;
     private selectedPlayer: string = "Rovert";
     private inputController!: InputController;
     private dialog!: DialogManager;
+    private trainingDummies!: Phaser.Physics.Arcade.Group;
 
     private hasTouchedGround = false;
 
@@ -223,6 +224,11 @@ class Game extends Phaser.Scene {
             this.player.play("shuey-idle-right");
         }
 
+        // Create some training dummies
+        this.trainingDummies = this.physics.add.group();
+        const dummy = new TrainingDummy(this, this.player.x + 80, this.player.y - 16);
+        this.trainingDummies.add(dummy);
+
         // Set the world bounds
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels); // Adjust world bounds
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
@@ -238,8 +244,15 @@ class Game extends Phaser.Scene {
         );
         //this.cameras.main.setZoom(2); // Zoom in the camera
 
-        // Add collision between player and ground
+        // Add collision between entities and ground
         this.physics.add.collider(this.player, groundLayer);
+        this.physics.add.collider(this.trainingDummies, groundLayer);
+
+        // Add collision between player and training dummies
+        this.physics.add.collider(this.player, this.trainingDummies);
+
+        // Set training dummies as attack targets
+        this.player.setAttackTargets(this.trainingDummies);
 
         // Setup input handling
         this.inputController = new InputController(this);
@@ -266,8 +279,6 @@ class Game extends Phaser.Scene {
             useBitmapFontKey: "pixel",
             theme: { fill: 0x0f0f1a, borderOuter: 0xffffff, borderInner: undefined }, // single border
         });
-
-        
     }
 
     public update() {
@@ -286,9 +297,9 @@ class Game extends Phaser.Scene {
             this.hasTouchedGround = true;
 
             // Trigger dialog when the player touches the ground for the first time
-            this.dialog.say({
-                text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
-            });
+            // this.dialog.say({
+            //     text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
+            // });
         }
     }
 }
