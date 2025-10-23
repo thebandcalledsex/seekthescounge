@@ -81,7 +81,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         if (moveLeft) {
             this.playerBody.setVelocityX(-this.speed); // Move left
 
-                this.lastDirection = "left";
+            this.lastDirection = "left";
         }
         if (moveRight) {
             this.playerBody.setVelocityX(this.speed); // Move right
