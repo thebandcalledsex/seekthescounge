@@ -267,33 +267,7 @@ class Game extends Phaser.Scene {
             theme: { fill: 0x0f0f1a, borderOuter: 0xffffff, borderInner: undefined }, // single border
         });
 
-        // Add a fullscreen button
-        this.scale.fullscreenTarget = document.getElementById("game-container")!;
-        const fullscreenButton = this.add
-            .text(10, 40, "enter fullscreen", {
-                font: "16px Courier",
-                backgroundColor: "#000",
-                color: "#FFF",
-                padding: { left: 5, right: 5, top: 5, bottom: 5 },
-            })
-            .setInteractive()
-            .on("pointerdown", () => {
-                // flash the button to indicate it was pressed
-                fullscreenButton.setAlpha(0.5);
-                setTimeout(() => {
-                    fullscreenButton.setAlpha(1);
-                }, 100);
-
-                console.log("Fullscreen button tapped");
-
-                if (this.scale.isFullscreen) {
-                    this.scale.stopFullscreen();
-                    fullscreenButton.setText("enter fullscreen");
-                } else {
-                    this.scale.startFullscreen();
-                    fullscreenButton.setText("exit fullscreen");
-                }
-            });
+        
     }
 
     public update() {
