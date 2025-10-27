@@ -1,5 +1,10 @@
 import Phaser from "phaser";
-import { DIALOG_SNAP_CLOSE_DURATION, DIALOG_SNAP_OPEN_DURATION } from "../constants";
+import {
+    DIALOG_SNAP_CLOSE_DURATION,
+    DIALOG_SNAP_OPEN_DURATION,
+    DIALOG_FONT_SIZE,
+    DIALOG_CHAR_WIDTH_GUESS,
+} from "../constants";
 
 // Theme for the pixel panel.
 export interface DialogTheme {
@@ -87,9 +92,8 @@ class DialogBox {
     constructor(scene: Phaser.Scene, cfg: DialogConfig) {
         this.scene = scene;
 
-        // Defaults tuned for 2-row top-left dialog
         this.cfg = {
-            rows: cfg.rows ?? 2,
+            rows: cfg.rows ?? 3,
             lineHeight: cfg.lineHeight ?? 14,
             margin: cfg.margin ?? 8,
             cursorPad: cfg.cursorPad ?? 6,
@@ -126,7 +130,7 @@ class DialogBox {
         } else {
             this.textObj = scene.add.text(0, 0, "", {
                 fontFamily: "monospace",
-                fontSize: "10px",
+                fontSize: DIALOG_FONT_SIZE,
                 wordWrap: { width: 1, useAdvancedWrap: true },
             });
             (this.textObj as Phaser.GameObjects.Text).setLineSpacing(0);
@@ -184,7 +188,7 @@ class DialogBox {
                 scaleY: 0,
                 y: startY + h * 0.5, // shift so bottom edge visually "stays"
                 duration: DIALOG_SNAP_CLOSE_DURATION,
-                ease: "back.easeIn",
+                ease: "bounce.easeIn",
                 onComplete: () => {
                     this.container.setScale(1).setY(startY); // reset
                     this.hide();
@@ -207,7 +211,7 @@ class DialogBox {
                 scaleY: 1,
                 y: startY,
                 duration: DIALOG_SNAP_OPEN_DURATION,
-                ease: "Sine.easeInOut",
+                ease: "bounce.easeOut",
                 onComplete: () => {
                     res();
                 },
@@ -226,6 +230,12 @@ class DialogBox {
 
     // Show dialog text; resolves when finished or selection made.
     async show({ text, speed, choices, onChar }: SayOptions): Promise<number | void> {
+        // Short delay to avoid jarring instant pop-up
+        await delay(this.scene, 450);
+
+        // Animate dialog box opening
+        await this.animateShowSnapOpen();
+
         this.active = true;
         this.setVisible(true);
 
@@ -256,8 +266,9 @@ class DialogBox {
             await waitForAdvance(this.scene, this); // final confirm
         }
 
-        // your chosen exit animation here (example):
+        // animate dialog box closing
         await this.animateHideSnapShut();
+
         return chosen;
     }
 
@@ -296,11 +307,7 @@ class DialogBox {
 
         // Ensure correct wrap width on Phaser Text/BitmapText
         const wrapW = this.innerWidth();
-        if (this.textObj instanceof Phaser.GameObjects.BitmapText) {
-            // Phaser's BitmapText has setMaxWidth for wrapping (no hyphenation)
-            this.textObj.setMaxWidth(wrapW);
-            this.textObj.setCenterAlign(); // keep left-aligned
-        } else {
+        if (!(this.textObj instanceof Phaser.GameObjects.BitmapText)) {
             this.textObj.setWordWrapWidth(wrapW - 1, true);
         }
 
@@ -312,11 +319,6 @@ class DialogBox {
     private innerWidth(): number {
         const w = this.panel.width - this.cfg.margin * 2 - this.cfg.cursorPad; // ← subtract cursorPad
         return Math.floor(this.cfg.maxWidth > 0 ? Math.min(this.cfg.maxWidth, w) : w);
-    }
-
-    // Rough monospace glyph width guess for paging math (bitmap 8px font ~6px cell).
-    private charWidthGuess(): number {
-        return 6;
     }
 
     // Bottom-right "next" cursor position inside the panel.
@@ -340,7 +342,7 @@ class DialogBox {
         this.advanceCursor.setAlpha(0);
         this.skipping = false;
 
-        const maxCols = Math.max(1, Math.floor(wrapW / this.charWidthGuess()));
+        const maxCols = Math.max(1, Math.floor(wrapW / DIALOG_CHAR_WIDTH_GUESS));
         const maxRows = this.cfg.rows;
 
         // tokenize: words and spaces
@@ -402,6 +404,11 @@ class DialogBox {
 
                 append(chunk);
                 if (onChar) onChar(chunk);
+                // // stop when row limit reached
+                // const currentLines = (this.textObj.text.match(/\n/g)?.length ?? 0) + 1;
+                // if (currentLines >= this.cfg.rows) {
+                //     break;
+                // }
                 k += this.skipping ? chunk.length : 1;
 
                 // If we somehow reached a new row count limit exactly, also stop

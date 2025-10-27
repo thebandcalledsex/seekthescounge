@@ -22,5 +22,8 @@ export default class UiScene extends Phaser.Scene {
         // Safety: clear state on sleep/wake to avoid ghost presses
         this.events.on("sleep", () => this.uiInput.reset());
         this.events.on("wake", () => this.uiInput.reset());
+
+        // Emit event to signal that the UI is ready
+        this.events.emit("ui-ready", this.uiInput);
     }
 }

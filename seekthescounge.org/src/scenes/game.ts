@@ -6,6 +6,8 @@ import * as constants from "../constants";
 import DialogManager from "../ui/dialog";
 import OnScreenInput from "../input/on-screen-input";
 import TrainingDummy from "../entities/training-dummy";
+import Goomba from "../entities/goomba";
+import Enemy from "../entities/enemy";
 
 class Game extends Phaser.Scene {
     private player!: Rovert | Shuey;
@@ -13,7 +15,9 @@ class Game extends Phaser.Scene {
     private inputController!: InputController;
     private dialog!: DialogManager;
     private trainingDummies!: Phaser.Physics.Arcade.Group;
+    private enemies!: Phaser.Physics.Arcade.Group;
 
+    // One-time action flags
     private hasTouchedGround = false;
 
     constructor() {
@@ -94,6 +98,41 @@ class Game extends Phaser.Scene {
             groundLayer.setCollisionByProperty({ collides: true });
         } else {
             throw new Error("Ground layer not found");
+        }
+
+        // Initialize the input controller and hook it up to the UI scene
+
+        // Ensure UI scene is running
+        if (!this.scene.isActive("ui")) {
+            this.scene.launch("ui");
+        }
+
+        // Get reference to the live UI scene
+        const uiScene = this.scene.get("ui") as UiScene;
+
+        // Now bind input controller to that UI scene
+        this.inputController = new InputController(uiScene);
+
+        // Safeguard: in case multiple uiInputs get created (shouldn't happen), only attach once
+        const attachedUiInputs = new Set<OnScreenInput>();
+        const attachUiInput = (uiInput: OnScreenInput) => {
+            if (!uiInput || attachedUiInputs.has(uiInput)) {
+                return;
+            }
+            attachedUiInputs.add(uiInput);
+            this.inputController.addInputSource(uiInput);
+            this.scene.bringToTop("ui"); // Ensure UI is overlayed on top
+        };
+
+        // Once the UI is ready, attach it as an input source to the input controller
+        uiScene.events.on("ui-ready", attachUiInput);
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            uiScene.events.off("ui-ready", attachUiInput);
+            attachedUiInputs.clear();
+        });
+
+        if (uiScene?.uiInput) {
+            attachUiInput(uiScene.uiInput);
         }
 
         console.log("shuey-idle-left", this.textures.get("shuey-idle-left").getFrameNames());
@@ -226,8 +265,13 @@ class Game extends Phaser.Scene {
 
         // Create some training dummies
         this.trainingDummies = this.physics.add.group();
-        const dummy = new TrainingDummy(this, this.player.x + 80, this.player.y - 16);
+        const dummy = new TrainingDummy(this, this.player.x - 40, this.player.y - 16);
         this.trainingDummies.add(dummy);
+
+        // Create some enemies
+        this.enemies = this.physics.add.group();
+        const goomba = new Goomba(this, this.player.x + 150, this.player.y - 16);
+        this.enemies.add(goomba);
 
         // Set the world bounds
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels); // Adjust world bounds
@@ -247,30 +291,27 @@ class Game extends Phaser.Scene {
         // Add collision between entities and ground
         this.physics.add.collider(this.player, groundLayer);
         this.physics.add.collider(this.trainingDummies, groundLayer);
+        this.physics.add.collider(this.enemies, groundLayer);
 
         // Add collision between player and training dummies
         this.physics.add.collider(this.player, this.trainingDummies);
+        this.physics.add.collider(
+            this.player,
+            this.enemies,
+            (_playerObj, enemyObj) => {
+                const enemy = enemyObj as Enemy;
+                enemy.tryDamage(this.player);
+            },
+            undefined,
+            this,
+        );
+        this.physics.add.collider(this.enemies, this.trainingDummies);
+        this.physics.add.collider(this.enemies, this.enemies);
 
-        // Set training dummies as attack targets
-        this.player.setAttackTargets(this.trainingDummies);
+        // No overlap handler needed; collision callback handles damage.
 
-        // Setup input handling
-        this.inputController = new InputController(this);
-        if (!this.scene.isActive("ui")) {
-            this.scene.launch("ui"); // Start the UI scene
-        }
-
-        const ui = this.scene.get("ui") as UiScene;
-        if (ui?.uiInput) {
-            this.inputController.addInputSource(ui.uiInput);
-            this.scene.bringToTop("ui"); // Ensure UI is overlayed on top
-        } else {
-            // ensure hookup after UiScene.create runs
-            ui.events.once(Phaser.Scenes.Events.CREATE, () => {
-                this.inputController.addInputSource((ui as UiScene).uiInput);
-                this.scene.bringToTop("ui");
-            });
-        }
+        // Set training dummies and enemies as attack targets (non-friendly entities)
+        this.player.setAttackTargets([this.trainingDummies, this.enemies]);
 
         // Create a dialog box
         this.dialog = new DialogManager(this, {

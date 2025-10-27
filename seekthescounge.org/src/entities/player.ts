@@ -37,7 +37,9 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     private lastDirection: "left" | "right" = "right"; // Default to facing right
     private attackHitbox: Phaser.GameObjects.Zone;
     private attackHitboxBody: Phaser.Physics.Arcade.Body;
-    private attackTargets?: Phaser.Types.Physics.Arcade.ArcadeColliderType;
+    private attackTargets?:
+        | Phaser.Types.Physics.Arcade.ArcadeColliderType
+        | Phaser.Types.Physics.Arcade.ArcadeColliderType[];
     private attackHitsThisSwing = new Set<Phaser.GameObjects.GameObject>();
     private attackActiveUntil = 0;
     private attackCooldownUntil = 0;
@@ -139,8 +141,19 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    public setAttackTargets(targets?: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
+    public setAttackTargets(
+        targets?:
+            | Phaser.Types.Physics.Arcade.ArcadeColliderType
+            | Phaser.Types.Physics.Arcade.ArcadeColliderType[],
+    ) {
         this.attackTargets = targets;
+    }
+
+    public takeDamage(_amount: number, _source: Phaser.GameObjects.GameObject) {
+        if (!this.active) {
+            return;
+        }
+        this.handleDeath();
     }
 
     public isAttackInProgress(): boolean {
@@ -249,20 +262,31 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
-        this.scene.physics.overlap(
-            this.attackHitbox,
-            this.attackTargets,
-            (_hitbox, target) => {
-                const resolved = this.resolveCollisionTarget(target);
-                if (!resolved || this.attackHitsThisSwing.has(resolved)) {
-                    return;
-                }
-                this.attackHitsThisSwing.add(resolved);
-                this.onAttackHit(resolved);
-            },
-            undefined,
-            this,
-        );
+        // Normalize to array
+        const targets = Array.isArray(this.attackTargets)
+            ? this.attackTargets
+            : [this.attackTargets];
+
+        targets.forEach((targetGroup) => {
+            if (!targetGroup) {
+                return;
+            }
+
+            this.scene.physics.overlap(
+                this.attackHitbox,
+                targetGroup,
+                (_hitbox, target) => {
+                    const resolved = this.resolveCollisionTarget(target);
+                    if (!resolved || this.attackHitsThisSwing.has(resolved)) {
+                        return;
+                    }
+                    this.attackHitsThisSwing.add(resolved);
+                    this.onAttackHit(resolved);
+                },
+                undefined,
+                this,
+            );
+        });
     }
 
     private resolveCollisionTarget(
@@ -322,6 +346,37 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         return null;
+    }
+
+    private handleDeath() {
+        if (!this.active) {
+            return;
+        }
+
+        this.playerBody.setVelocity(0, 0);
+        this.playerBody.enable = false;
+        this.setActive(false);
+        this.setVisible(false);
+        this.scene.events.emit("player-dead", { player: this });
+
+        // Death zoom transition, then switch to PlayerSelect scene.
+        const camera = this.scene.cameras.main;
+        const originalZoom = camera.zoom;
+        camera.stopFollow();
+        camera.zoomTo(originalZoom * 2, 2000);
+
+        this.scene.time.delayedCall(3000, () => {
+            camera.setZoom(originalZoom);
+
+            const scenePlugin = this.scene.scene;
+            if (scenePlugin.isActive("ui")) {
+                scenePlugin.stop("ui");
+            }
+
+            scenePlugin.stop("Game");
+
+            scenePlugin.start("PlayerSelect");
+        });
     }
 
     private scheduleVelocityReset(
@@ -421,7 +476,7 @@ class Shuey extends Player {
     protected attackConfig: AttackConfig = {
         width: 18,
         height: 14,
-        reach: 4,
+        reach: 1,
         verticalOffset: -4,
         duration: 160,
         cooldown: 340,
