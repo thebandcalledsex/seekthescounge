@@ -55,11 +55,16 @@ deploy: $(SRC_DIR)/**/* index-prod.html
 	@echo FTP_SERVER: $(FTP_SERVER)
 	@echo FTP_USER: $(FTP_USER)
 
+	# Upload the index.html file
 	echo "put index.html $(FTP_REMOTE_DIR)/index.html" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
 
+	# Upload the dist and assets directories
 	echo "put -r $(DIST_DIR)/* $(FTP_REMOTE_DIR)/src/" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
-
 	echo "put -r $(ASSETS_DIR)/* $(FTP_REMOTE_DIR)/assets/" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
+
+	# Also upload the manifest and service worker
+	echo "put manifest.webmanifest $(FTP_REMOTE_DIR)/manifest.webmanifest" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
+	echo "put service-worker.js $(FTP_REMOTE_DIR)/service-worker.js" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
 
 reset-version:
 	sh utilities/reset_version.sh
