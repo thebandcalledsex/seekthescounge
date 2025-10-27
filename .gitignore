@@ -4,5 +4,6 @@ dist/
 .DS_Store
 .env*
 index.html
-seekthescounge.com/tsconfig.tsbuildinfo
-seekthescounge.com/bundle.js
+seekthescounge.org/tsconfig.tsbuildinfo
+seekthescounge.org/bundle.js
+
