@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION } from "../constants";
+import { GAME_HEIGHT, GAME_VERSION } from "../constants";
 
 class PlayerSelect extends Phaser.Scene {
     constructor() {
@@ -32,12 +32,17 @@ class PlayerSelect extends Phaser.Scene {
     }
 
     public create() {
+        const { width, height } = this.scale;
+
         // Add game version to the screen for development
-        this.add.text(195, 120, GAME_VERSION, { font: "16px Courier" });
+        this.add.text(width - 60, height - 20, GAME_VERSION, {
+            font: "16px Courier",
+            color: "#ffffff",
+        });
 
         // Create a title in the center of the screen
         this.add
-            .text(GAME_WIDTH / 2, (GAME_HEIGHT * 1) / 8, "choose your player", {
+            .text(width / 2, (GAME_HEIGHT * 1) / 8, "choose your player", {
                 font: "16px Courier",
                 color: "#ffffff",
             })
@@ -71,11 +76,11 @@ class PlayerSelect extends Phaser.Scene {
 
         // Create player sprites and play idle animations
         const playerScale = 2;
-        const rovert = this.add.sprite(GAME_WIDTH / 3, GAME_HEIGHT / 2, "rovert-idle-right");
+        const rovert = this.add.sprite(width / 3, GAME_HEIGHT / 2, "rovert-idle-right");
         rovert.setScale(playerScale);
         rovert.play("rovert-idle").setInteractive();
 
-        const shuey = this.add.sprite((2 * GAME_WIDTH) / 3, GAME_HEIGHT / 2, "shuey-idle-right");
+        const shuey = this.add.sprite((2 * width) / 3, GAME_HEIGHT / 2, "shuey-idle-right");
         shuey.setScale(playerScale);
         shuey.play("shuey-idle").setInteractive();
 

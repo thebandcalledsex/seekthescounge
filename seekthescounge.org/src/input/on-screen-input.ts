@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import InputSource from "./input-source";
-import { GAME_WIDTH, GAME_HEIGHT } from "../constants";
+import { GAME_HEIGHT } from "../constants";
 
 class OnScreenInput implements InputSource {
     private scene: Phaser.Scene;
@@ -19,7 +19,6 @@ class OnScreenInput implements InputSource {
 
     // button dimensions, location, and transparency
     private buttonWidth: number = 32;
-    private pad: number = (1 / 64) * GAME_WIDTH;
     private buttonTransparencyLevel: number = 0.85;
 
     // store buttons so we can re-layout
@@ -27,6 +26,10 @@ class OnScreenInput implements InputSource {
     private rightButton!: Phaser.GameObjects.Image;
     private jumpButton!: Phaser.GameObjects.Image;
     private attackButton!: Phaser.GameObjects.Image;
+
+    private getPad(): number {
+        return (1 / 64) * this.scene.scale.width;
+    }
 
     static preload(scene: Phaser.Scene) {
         // Load button assets
@@ -61,19 +64,20 @@ class OnScreenInput implements InputSource {
 
     // Re-anchor buttons on current viewport size
     public layout() {
-        const leftX = this.buttonWidth / 2 + this.pad;
-        const y = this.scene.scale.height - this.buttonWidth / 2 - this.pad;
-        const sep = this.pad;
+        const pad = this.getPad();
+        const leftX = this.buttonWidth / 2 + pad;
+        const y = this.scene.scale.height - this.buttonWidth / 2 - pad;
+        const sep = pad;
         const rightX = leftX + this.buttonWidth + sep;
 
-        const jumpX = this.scene.scale.width - this.buttonWidth / 2 - this.pad;
+        const jumpX = this.scene.scale.width - this.buttonWidth / 2 - pad;
 
         this.leftButton.setSize(this.buttonWidth, this.buttonWidth).setPosition(leftX, y);
         this.rightButton.setSize(this.buttonWidth, this.buttonWidth).setPosition(rightX, y);
         this.jumpButton.setSize(this.buttonWidth, this.buttonWidth).setPosition(jumpX, y);
         this.attackButton
             .setSize(this.buttonWidth, this.buttonWidth)
-            .setPosition(jumpX - this.buttonWidth - this.pad, y);
+            .setPosition(jumpX - this.buttonWidth - pad, y);
     }
 
     // Clear pressed button state
@@ -91,18 +95,19 @@ class OnScreenInput implements InputSource {
     }
 
     private createOnScreenButtons() {
+        const pad = this.getPad();
         // Define button dimensions and positions relative to screen size
         const w = this.scene.scale.width;
         const h = this.scene.scale.height;
         // const buttonWidth = (1 / 10) * w;
 
         //const pad = (1 / 64) * w;
-        const leftButtonX = this.buttonWidth / 2 + this.pad;
-        const leftButtonY = h - this.buttonWidth / 2 - this.pad;
-        const separation = this.pad;
+        const leftButtonX = this.buttonWidth / 2 + pad;
+        const leftButtonY = h - this.buttonWidth / 2 - pad;
+        const separation = pad;
         const rightButtonX = leftButtonX + this.buttonWidth + separation;
-        const jumpButtonX = w - this.buttonWidth / 2 - this.pad;
-        const attackButtonX = jumpButtonX - this.buttonWidth - this.pad;
+        const jumpButtonX = w - this.buttonWidth / 2 - pad;
+        const attackButtonX = jumpButtonX - this.buttonWidth - pad;
 
         // Left Button
         this.leftButton = this.scene.add

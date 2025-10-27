@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import Game from "./scenes/game";
 import PlayerSelect from "./scenes/player-select";
-import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION } from "./constants";
+import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION, calculateResponsiveWidth } from "./constants";
 import UiScene from "./scenes/ui";
 import { initOverlay } from "./ui/overlay";
 import { unregisterServiceWorkers, setupServiceWorker } from "./pwa/service-worker-client";
@@ -23,9 +23,16 @@ const isMobilePlatform =
     /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent) ||
     (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1);
 
+const getResponsiveGameWidth = () => {
+    if (typeof window === "undefined") {
+        return GAME_WIDTH;
+    }
+    return calculateResponsiveWidth(window.innerWidth, window.innerHeight);
+};
+
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    width: GAME_WIDTH,
+    width: getResponsiveGameWidth(),
     height: GAME_HEIGHT,
     disableContextMenu: true,
     scene: [PlayerSelect, Game, UiScene],
@@ -42,9 +49,21 @@ const config: Phaser.Types.Core.GameConfig = {
         parent: "phaser",
     },
     pixelArt: true, // Enable pixel-perfect rendering
+    resizeInterval: 100,
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+const handleViewportResize = () => {
+    if (typeof window === "undefined") {
+        return;
+    }
+    const newWidth = getResponsiveGameWidth();
+    game.scale.resize(newWidth, GAME_HEIGHT);
+};
+
+window.addEventListener("resize", handleViewportResize);
+window.addEventListener("orientationchange", handleViewportResize);
 
 const isLocalhost =
     window.location.hostname === "localhost" ||
