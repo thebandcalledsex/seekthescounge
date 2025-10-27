@@ -57,10 +57,10 @@ tsc -v
 
 ## Phaser.js
 
-Insrall Phaser.js using npm:
+Install Phaser.js using npm:
 
 ```shell
-npm install phaser  
+npm install phaser 
 ```
 
 # Extras
@@ -78,4 +78,4 @@ ssh-copy-id -i ~/.ssh/$(SSH_KEY_NAME).pub $(FTP_USER)@$(FTP_SERVER)
 ssh-copy-id -i ~/.ssh/tbcs.pub dh_hubz47@vps40077.dreamhostps.com
 ```
 
-This is necessary to do again if the server starts asking for a password again when deploying via `make deploy`.
+This is necessary to redo if the server starts asking for a password again when deploying via `make deploy`.
