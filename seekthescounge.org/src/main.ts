@@ -4,18 +4,14 @@ import PlayerSelect from "./scenes/player-select";
 import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION } from "./constants";
 import UiScene from "./scenes/ui";
 import { initOverlay } from "./ui/overlay";
-import {
-    unregisterServiceWorkers,
-    setupServiceWorker,
-} from "./pwa/service-worker-client";
+import { unregisterServiceWorkers, setupServiceWorker } from "./pwa/service-worker-client";
 
 const MIN_LOADING_OVERLAY_MS = 500;
 const MIN_UPDATE_OVERLAY_MS = 1500;
 const overlay = initOverlay({ minLoadingDuration: MIN_LOADING_OVERLAY_MS });
 
 const isDisplayMode = (mode: string) =>
-    typeof window.matchMedia === "function" &&
-    window.matchMedia(`(display-mode: ${mode})`).matches;
+    typeof window.matchMedia === "function" && window.matchMedia(`(display-mode: ${mode})`).matches;
 
 const isPwaExperience = () =>
     isDisplayMode("standalone") ||

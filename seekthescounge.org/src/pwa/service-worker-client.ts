@@ -85,10 +85,7 @@ export const setupServiceWorker = ({
                         showUpdateOverlay(overlay, minUpdateOverlayMs);
                     }
                     worker.addEventListener("statechange", () => {
-                        if (
-                            worker.state === "installed" &&
-                            navigator.serviceWorker.controller
-                        ) {
+                        if (worker.state === "installed" && navigator.serviceWorker.controller) {
                             showUpdateOverlay(overlay, minUpdateOverlayMs);
                         }
                     });
@@ -124,10 +121,7 @@ export const setupServiceWorker = ({
                             })
                             .catch(() => overlay.hide());
 
-                        if (
-                            registration.waiting &&
-                            navigator.serviceWorker.controller
-                        ) {
+                        if (registration.waiting && navigator.serviceWorker.controller) {
                             showUpdateOverlay(overlay, minUpdateOverlayMs);
                             registration.waiting.postMessage({
                                 type: "SKIP_WAITING",
