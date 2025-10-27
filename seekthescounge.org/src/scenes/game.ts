@@ -74,6 +74,11 @@ class Game extends Phaser.Scene {
             "../../assets/shuey/running/shuey-running-right.png",
             "../../assets/shuey/running/shuey-running-right.json",
         );
+        this.load.atlas(
+            "shuey-idle-attack-right",
+            "../../assets/shuey/attacking/shuey-idle-attack-right.png",
+            "../../assets/shuey/attacking/shuey-idle-attack-right.json",
+        );
 
         // Load the tilemap for level 1 and its tileset
         this.load.tilemapTiledJSON("level1", "../../assets/maps/level1.json");
@@ -150,7 +155,7 @@ class Game extends Phaser.Scene {
             this.anims.create({
                 key: "shuey-idle-right",
                 frames: this.anims.generateFrameNames("shuey-idle-right", {
-                    prefix: "shuey-animated #idle right ",
+                    prefix: "shuey-idle-right-",
                     start: 0,
                     end: 7,
                     suffix: ".aseprite",
@@ -163,7 +168,7 @@ class Game extends Phaser.Scene {
             this.anims.create({
                 key: "shuey-idle-left",
                 frames: this.anims.generateFrameNames("shuey-idle-left", {
-                    prefix: "shuey-animated #idle left ",
+                    prefix: "shuey-idle-left-",
                     start: 0,
                     end: 7,
                     suffix: ".aseprite",
@@ -176,7 +181,7 @@ class Game extends Phaser.Scene {
             this.anims.create({
                 key: "shuey-running-right",
                 frames: this.anims.generateFrameNames("shuey-running-right", {
-                    prefix: "shuey-animated #runner right ",
+                    prefix: "shuey-running-right-",
                     start: 0,
                     end: 7,
                     suffix: ".aseprite",
@@ -189,7 +194,7 @@ class Game extends Phaser.Scene {
             this.anims.create({
                 key: "shuey-running-left",
                 frames: this.anims.generateFrameNames("shuey-running-left", {
-                    prefix: "shuey-animated #runner left ",
+                    prefix: "shuey-running-left-",
                     start: 0,
                     end: 7,
                     suffix: ".aseprite",
@@ -198,12 +203,25 @@ class Game extends Phaser.Scene {
                 repeat: -1, // Loop the animation
             });
         }
+        if (!this.anims.exists("shuey-idle-attack-right")) {
+            this.anims.create({
+                key: "shuey-idle-attack-right",
+                frames: this.anims.generateFrameNames("shuey-idle-attack-right", {
+                    prefix: "shuey-idle-attack-right-",
+                    start: 0,
+                    end: 3,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 12,
+                repeat: 0, // Play once
+            });
+        }
 
         if (!this.anims.exists("rovert-idle-right")) {
             this.anims.create({
                 key: "rovert-idle-right",
                 frames: this.anims.generateFrameNames("rovert-idle-right", {
-                    prefix: "ROVERT-ANIMATED-STS #idle right no cape ",
+                    prefix: "rovert-idle-right-",
                     start: 0,
                     end: 7,
                     suffix: ".aseprite",
@@ -217,7 +235,7 @@ class Game extends Phaser.Scene {
             this.anims.create({
                 key: "rovert-idle-left",
                 frames: this.anims.generateFrameNames("rovert-idle-left", {
-                    prefix: "ROVERT-ANIMATED-STS #idle left no cape ",
+                    prefix: "rovert-idle-left-",
                     start: 0,
                     end: 7,
                     suffix: ".aseprite",
@@ -231,7 +249,7 @@ class Game extends Phaser.Scene {
             this.anims.create({
                 key: "rovert-running-right",
                 frames: this.anims.generateFrameNames("rovert-running-right", {
-                    prefix: "ROVERT-ANIMATED-STS #runner right ",
+                    prefix: "rovert-running-right-",
                     start: 0,
                     end: 7,
                     suffix: ".aseprite",
@@ -245,7 +263,7 @@ class Game extends Phaser.Scene {
             this.anims.create({
                 key: "rovert-running-left",
                 frames: this.anims.generateFrameNames("rovert-running-left", {
-                    prefix: "ROVERT-ANIMATED-STS #runner left skinny ",
+                    prefix: "rovert-running-left-",
                     start: 0,
                     end: 7,
                     suffix: ".aseprite",

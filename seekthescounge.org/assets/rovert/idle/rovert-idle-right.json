@@ -1,100 +1,253 @@
-{ "frames": [
-   {
-    "filename": "ROVERT-ANIMATED-STS #idle right no cape 0.aseprite",
-    "frame": { "x": 0, "y": 0, "w": 24, "h": 13 },
-    "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 1, "y": 11, "w": 24, "h": 13 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 100
-   },
-   {
-    "filename": "ROVERT-ANIMATED-STS #idle right no cape 1.aseprite",
-    "frame": { "x": 24, "y": 0, "w": 24, "h": 13 },
-    "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 1, "y": 11, "w": 24, "h": 13 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 100
-   },
-   {
-    "filename": "ROVERT-ANIMATED-STS #idle right no cape 2.aseprite",
-    "frame": { "x": 48, "y": 0, "w": 24, "h": 13 },
-    "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 1, "y": 11, "w": 24, "h": 13 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 100
-   },
-   {
-    "filename": "ROVERT-ANIMATED-STS #idle right no cape 3.aseprite",
-    "frame": { "x": 48, "y": 0, "w": 24, "h": 13 },
-    "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 1, "y": 11, "w": 24, "h": 13 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 100
-   },
-   {
-    "filename": "ROVERT-ANIMATED-STS #idle right no cape 4.aseprite",
-    "frame": { "x": 48, "y": 0, "w": 24, "h": 13 },
-    "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 1, "y": 11, "w": 24, "h": 13 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 100
-   },
-   {
-    "filename": "ROVERT-ANIMATED-STS #idle right no cape 5.aseprite",
-    "frame": { "x": 72, "y": 0, "w": 24, "h": 13 },
-    "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 1, "y": 11, "w": 24, "h": 13 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 100
-   },
-   {
-    "filename": "ROVERT-ANIMATED-STS #idle right no cape 6.aseprite",
-    "frame": { "x": 0, "y": 0, "w": 24, "h": 13 },
-    "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 1, "y": 11, "w": 24, "h": 13 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 100
-   },
-   {
-    "filename": "ROVERT-ANIMATED-STS #idle right no cape 7.aseprite",
-    "frame": { "x": 0, "y": 0, "w": 24, "h": 13 },
-    "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 1, "y": 11, "w": 24, "h": 13 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 100
-   }
- ],
- "meta": {
-  "app": "https://www.aseprite.org/",
-  "version": "1.3.12-x64",
-  "image": "ROVERT-ANIMATED-STS.png",
-  "format": "RGBA8888",
-  "size": { "w": 96, "h": 13 },
-  "scale": "1",
-  "frameTags": [
-   { "name": "idle right no cape", "from": 17, "to": 24, "direction": "forward", "color": "#000000ff" }
+{
+  "frames": [
+    {
+      "filename": "rovert-idle-right-0.aseprite",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 13
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 11,
+        "w": 24,
+        "h": 13
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "duration": 100
+    },
+    {
+      "filename": "rovert-idle-right-1.aseprite",
+      "frame": {
+        "x": 24,
+        "y": 0,
+        "w": 24,
+        "h": 13
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 11,
+        "w": 24,
+        "h": 13
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "duration": 100
+    },
+    {
+      "filename": "rovert-idle-right-2.aseprite",
+      "frame": {
+        "x": 48,
+        "y": 0,
+        "w": 24,
+        "h": 13
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 11,
+        "w": 24,
+        "h": 13
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "duration": 100
+    },
+    {
+      "filename": "rovert-idle-right-3.aseprite",
+      "frame": {
+        "x": 48,
+        "y": 0,
+        "w": 24,
+        "h": 13
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 11,
+        "w": 24,
+        "h": 13
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "duration": 100
+    },
+    {
+      "filename": "rovert-idle-right-4.aseprite",
+      "frame": {
+        "x": 48,
+        "y": 0,
+        "w": 24,
+        "h": 13
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 11,
+        "w": 24,
+        "h": 13
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "duration": 100
+    },
+    {
+      "filename": "rovert-idle-right-5.aseprite",
+      "frame": {
+        "x": 72,
+        "y": 0,
+        "w": 24,
+        "h": 13
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 11,
+        "w": 24,
+        "h": 13
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "duration": 100
+    },
+    {
+      "filename": "rovert-idle-right-6.aseprite",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 13
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 11,
+        "w": 24,
+        "h": 13
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "duration": 100
+    },
+    {
+      "filename": "rovert-idle-right-7.aseprite",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 13
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 11,
+        "w": 24,
+        "h": 13
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "duration": 100
+    }
   ],
-  "layers": [
-   { "name": "ROVERT chiquito", "opacity": 255, "blendMode": "normal" },
-   { "name": "back arm", "opacity": 255, "blendMode": "normal" },
-   { "name": "swordback", "opacity": 255, "blendMode": "normal" },
-   { "name": "back leg", "opacity": 255, "blendMode": "normal" },
-   { "name": "front leg", "opacity": 255, "blendMode": "normal" },
-   { "name": "cape4", "opacity": 255, "blendMode": "normal" },
-   { "name": "shadow hand", "opacity": 255, "blendMode": "normal" },
-   { "name": "front arm", "opacity": 255, "blendMode": "normal" },
-   { "name": "sword front", "opacity": 255, "blendMode": "normal" },
-   { "name": "headf", "opacity": 255, "blendMode": "normal" }
-  ],
-  "slices": [
-  ]
- }
+  "meta": {
+    "app": "https://www.aseprite.org/",
+    "version": "1.3.12-x64",
+    "image": "rovert-idle-right.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 96,
+      "h": 13
+    },
+    "scale": "1",
+    "frameTags": [
+      {
+        "name": "idle right no cape",
+        "from": 17,
+        "to": 24,
+        "direction": "forward",
+        "color": "#000000ff"
+      }
+    ],
+    "layers": [
+      {
+        "name": "ROVERT chiquito",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "back arm",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "swordback",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "back leg",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "front leg",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "cape4",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "shadow hand",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "front arm",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "sword front",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "headf",
+        "opacity": 255,
+        "blendMode": "normal"
+      }
+    ],
+    "slices": []
+  }
 }

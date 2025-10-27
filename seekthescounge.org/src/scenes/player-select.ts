@@ -52,7 +52,7 @@ class PlayerSelect extends Phaser.Scene {
         this.anims.create({
             key: "rovert-idle",
             frames: this.anims.generateFrameNames("rovert-idle", {
-                prefix: "ROVERT TGCS #idle ",
+                prefix: "rovert-idle-",
                 start: 0,
                 end: 15,
                 suffix: ".aseprite",
@@ -65,7 +65,7 @@ class PlayerSelect extends Phaser.Scene {
         this.anims.create({
             key: "shuey-idle",
             frames: this.anims.generateFrameNames("large-shuey-idle-right", {
-                prefix: "SHUEY TGCS #IDLE INSIDE ",
+                prefix: "large-shuey-idle-right-",
                 start: 0,
                 end: 7,
                 suffix: ".aseprite",

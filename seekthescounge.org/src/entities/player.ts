@@ -34,7 +34,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     };
 
     private playerBody: Phaser.Physics.Arcade.Body;
-    private lastDirection: "left" | "right" = "right"; // Default to facing right
+    protected lastDirection: "left" | "right" = "right"; // Default to facing right
     private attackHitbox: Phaser.GameObjects.Zone;
     private attackHitboxBody: Phaser.Physics.Arcade.Body;
     private attackTargets?:
@@ -123,22 +123,11 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.updateAttackState(now);
 
-        // Choose animation based on movement state
-        const movedHorizontally = Math.abs(this.playerBody.deltaX()) > 1;
-        const touchingHorizontally =
-            this.playerBody.blocked.left ||
-            this.playerBody.blocked.right ||
-            this.playerBody.touching.left ||
-            this.playerBody.touching.right;
-        const onGround = this.playerBody.onFloor();
-
-        if (movedHorizontally && !touchingHorizontally) {
-            // Running animation
-            this.playRunAnimation(this.lastDirection);
-        } else if (onGround) {
-            // Idle animation
-            this.playIdleAnimation(this.lastDirection);
+        if (this.attackActive) {
+            return;
         }
+
+        this.refreshMovementAnimation();
     }
 
     public setAttackTargets(
@@ -164,12 +153,28 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
     protected abstract playRunAnimation(direction: "left" | "right"): void;
 
+    protected refreshMovementAnimation(): void {
+        const movedHorizontally = Math.abs(this.playerBody.deltaX()) > 1;
+        const touchingHorizontally =
+            this.playerBody.blocked.left ||
+            this.playerBody.blocked.right ||
+            this.playerBody.touching.left ||
+            this.playerBody.touching.right;
+        const onGround = this.playerBody.onFloor();
+
+        if (movedHorizontally && !touchingHorizontally) {
+            this.playRunAnimation(this.lastDirection);
+        } else if (onGround) {
+            this.playIdleAnimation(this.lastDirection);
+        }
+    }
+
     protected onAttackStarted(): void {
         // Hook for subclasses to trigger attack-specific effects/animations.
     }
 
     protected onAttackEnded(): void {
-        // Hook for subclasses to clean up after an attack finishes.
+        this.refreshMovementAnimation();
     }
 
     protected onAttackHit(target: Phaser.GameObjects.GameObject): void {
@@ -478,7 +483,7 @@ class Shuey extends Player {
         height: 14,
         reach: 1,
         verticalOffset: -4,
-        duration: 160,
+        duration: 360,
         cooldown: 340,
         damage: 1,
         knockback: {
@@ -519,6 +524,18 @@ class Shuey extends Player {
                 this.anims.setCurrentFrame(this.anims.currentAnim.frames[frameIdx]);
             }
         }
+    }
+
+    protected override onAttackStarted(): void {
+        super.onAttackStarted();
+
+        if (this.lastDirection === "right") {
+            this.play("shuey-idle-attack-right", true);
+        }
+    }
+
+    protected override onAttackEnded(): void {
+        super.onAttackEnded();
     }
 }
 
