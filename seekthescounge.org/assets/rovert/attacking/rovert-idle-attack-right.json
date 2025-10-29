@@ -1,111 +1,133 @@
 {
   "frames": [
     {
-      "filename": "shuey-idle-attack-right-0.aseprite",
+      "filename": "rovert-idle-attack-right-0.aseprite",
       "frame": {
         "x": 0,
         "y": 0,
-        "w": 34,
-        "h": 19
+        "w": 41,
+        "h": 13
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 7,
-        "y": 7,
-        "w": 34,
-        "h": 19
+        "x": 17,
+        "y": 11,
+        "w": 41,
+        "h": 13
       },
       "sourceSize": {
-        "w": 48,
+        "w": 64,
         "h": 32
       },
       "duration": 100
     },
     {
-      "filename": "shuey-idle-attack-right-1.aseprite",
+      "filename": "rovert-idle-attack-right-1.aseprite",
       "frame": {
-        "x": 34,
+        "x": 41,
         "y": 0,
-        "w": 34,
-        "h": 19
+        "w": 41,
+        "h": 13
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 7,
-        "y": 7,
-        "w": 34,
-        "h": 19
+        "x": 17,
+        "y": 11,
+        "w": 41,
+        "h": 13
       },
       "sourceSize": {
-        "w": 48,
+        "w": 64,
         "h": 32
       },
       "duration": 100
     },
     {
-      "filename": "shuey-idle-attack-right-2.aseprite",
+      "filename": "rovert-idle-attack-right-2.aseprite",
       "frame": {
-        "x": 68,
+        "x": 82,
         "y": 0,
-        "w": 34,
-        "h": 19
+        "w": 41,
+        "h": 13
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 7,
-        "y": 7,
-        "w": 34,
-        "h": 19
+        "x": 17,
+        "y": 11,
+        "w": 41,
+        "h": 13
       },
       "sourceSize": {
-        "w": 48,
+        "w": 64,
         "h": 32
       },
       "duration": 100
     },
     {
-      "filename": "shuey-idle-attack-right-3.aseprite",
+      "filename": "rovert-idle-attack-right-3.aseprite",
       "frame": {
-        "x": 102,
+        "x": 123,
         "y": 0,
-        "w": 34,
-        "h": 19
+        "w": 41,
+        "h": 13
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 7,
-        "y": 7,
-        "w": 34,
-        "h": 19
+        "x": 17,
+        "y": 11,
+        "w": 41,
+        "h": 13
       },
       "sourceSize": {
-        "w": 48,
+        "w": 64,
         "h": 32
       },
       "duration": 100
     },
     {
-      "filename": "shuey-idle-attack-right-4.aseprite",
+      "filename": "rovert-idle-attack-right-4.aseprite",
       "frame": {
-        "x": 136,
+        "x": 164,
         "y": 0,
-        "w": 34,
-        "h": 19
+        "w": 41,
+        "h": 13
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 7,
-        "y": 7,
-        "w": 34,
-        "h": 19
+        "x": 17,
+        "y": 11,
+        "w": 41,
+        "h": 13
       },
       "sourceSize": {
-        "w": 48,
+        "w": 64,
+        "h": 32
+      },
+      "duration": 100
+    },
+    {
+      "filename": "rovert-idle-attack-right-5.aseprite",
+      "frame": {
+        "x": 205,
+        "y": 0,
+        "w": 41,
+        "h": 13
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 17,
+        "y": 11,
+        "w": 41,
+        "h": 13
+      },
+      "sourceSize": {
+        "w": 64,
         "h": 32
       },
       "duration": 100
@@ -114,93 +136,101 @@
   "meta": {
     "app": "https://www.aseprite.org/",
     "version": "1.3.12-x64",
-    "image": "shuey-idle-attack-right.png",
+    "image": "rovert-idle-attack-right.png",
     "format": "RGBA8888",
     "size": {
-      "w": 170,
-      "h": 19
+      "w": 246,
+      "h": 13
     },
     "scale": "1",
     "frameTags": [
       {
-        "name": "idle right",
+        "name": "idle left w cape",
         "from": 1,
         "to": 8,
         "direction": "forward",
         "color": "#000000ff"
       },
       {
-        "name": "ATK R IDLE",
+        "name": "idle right arm back",
         "from": 9,
-        "to": 13,
+        "to": 16,
         "direction": "forward",
         "color": "#000000ff"
       },
       {
-        "name": "ATK L IDLE",
-        "from": 14,
-        "to": 18,
+        "name": "idle right no cape",
+        "from": 17,
+        "to": 24,
         "direction": "forward",
         "color": "#000000ff"
       },
       {
-        "name": "swing r move",
-        "from": 19,
-        "to": 22,
-        "direction": "forward",
-        "color": "#000000ff"
-      },
-      {
-        "name": "idle left",
-        "from": 23,
+        "name": "ATK R IDLE",
+        "from": 25,
         "to": 30,
         "direction": "forward",
         "color": "#000000ff"
       },
       {
-        "name": "runner no turn",
+        "name": "idle left no cape",
         "from": 31,
         "to": 38,
         "direction": "forward",
         "color": "#000000ff"
       },
       {
-        "name": "runner turning",
+        "name": "runner swang",
         "from": 39,
         "to": 46,
         "direction": "forward",
         "color": "#000000ff"
       },
       {
-        "name": "runner right",
-        "from": 47,
-        "to": 53,
-        "direction": "forward",
-        "color": "#000000ff"
-      },
-      {
-        "name": "JUMP RIGHT",
-        "from": 55,
-        "to": 58,
-        "direction": "forward",
-        "color": "#000000ff"
-      },
-      {
-        "name": "FALL RIGHT",
-        "from": 60,
-        "to": 63,
-        "direction": "forward",
-        "color": "#000000ff"
-      },
-      {
         "name": "runner left",
-        "from": 64,
-        "to": 71,
+        "from": 47,
+        "to": 54,
+        "direction": "forward",
+        "color": "#000000ff"
+      },
+      {
+        "name": "runner left skinny",
+        "from": 55,
+        "to": 62,
+        "direction": "forward",
+        "color": "#000000ff"
+      },
+      {
+        "name": "runner right",
+        "from": 63,
+        "to": 70,
+        "direction": "forward",
+        "color": "#000000ff"
+      },
+      {
+        "name": "runner left wide body",
+        "from": 71,
+        "to": 78,
         "direction": "forward",
         "color": "#000000ff"
       }
     ],
     "layers": [
+      {
+        "name": "ROVERT chiquito",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "back arm",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "swordback",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
       {
         "name": "back leg",
         "opacity": 255,
@@ -212,32 +242,27 @@
         "blendMode": "normal"
       },
       {
-        "name": "amber back",
+        "name": "cape4",
         "opacity": 255,
         "blendMode": "normal"
       },
       {
-        "name": "shirt",
+        "name": "shadow hand",
         "opacity": 255,
         "blendMode": "normal"
       },
       {
-        "name": "head",
+        "name": "front arm",
         "opacity": 255,
         "blendMode": "normal"
       },
       {
-        "name": "knife",
+        "name": "sword front",
         "opacity": 255,
         "blendMode": "normal"
       },
       {
-        "name": "ambert",
-        "opacity": 255,
-        "blendMode": "normal"
-      },
-      {
-        "name": "SHUEY CHICA",
+        "name": "headf",
         "opacity": 255,
         "blendMode": "normal"
       }

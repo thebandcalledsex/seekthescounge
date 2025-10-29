@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { RISING_FALLING_ANIMATION_VELOCITY_THRESHOLD } from "../constants";
 
 interface AttackConfig {
     width: number;
@@ -33,7 +34,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         },
     };
 
-    private playerBody: Phaser.Physics.Arcade.Body;
+    protected playerBody: Phaser.Physics.Arcade.Body;
     protected lastDirection: "left" | "right" = "right"; // Default to facing right
     private attackHitbox: Phaser.GameObjects.Zone;
     private attackHitboxBody: Phaser.Physics.Arcade.Body;
@@ -122,11 +123,13 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         this.updateAttackState(now);
+        this.postUpdate();
 
         if (this.attackActive) {
             return;
         }
 
+        // Update movement animation
         this.refreshMovementAnimation();
     }
 
@@ -152,6 +155,10 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     protected abstract playIdleAnimation(direction: "left" | "right"): void;
 
     protected abstract playRunAnimation(direction: "left" | "right"): void;
+
+    protected postUpdate(): void {
+        // Extension point for subclasses that need extra per-frame work.
+    }
 
     protected refreshMovementAnimation(): void {
         const movedHorizontally = Math.abs(this.playerBody.deltaX()) > 1;
@@ -432,13 +439,13 @@ class Rovert extends Player {
         height: 16,
         reach: 6,
         verticalOffset: -2,
-        duration: 180,
-        cooldown: 320,
+        duration: 500,
+        cooldown: 620,
         damage: 1,
         knockback: {
             horizontal: 20,
             vertical: 10,
-            duration: 180,
+            duration: 200,
         },
     };
 
@@ -459,19 +466,43 @@ class Rovert extends Player {
 
         // Only switch animation if it’s different than the current one.
         if (this.anims.currentAnim?.key !== animationKey || !this.anims.isPlaying) {
-            // Optional polish: if we’re switching L<->R while staying in "running",
-            // keep the current frame index so the gait doesn’t “snap”.
             const switchingDirectionWhileRunning =
                 this.anims.currentAnim?.key?.includes("running") ?? false;
             const frameIdx = switchingDirectionWhileRunning
                 ? (this.anims.currentFrame?.index ?? 0)
                 : 0;
-
             this.play(animationKey, true);
-            if (switchingDirectionWhileRunning && this.anims.currentAnim?.frames[frameIdx]) {
-                this.anims.setCurrentFrame(this.anims.currentAnim.frames[frameIdx]);
+            if (switchingDirectionWhileRunning && this.anims.currentAnim) {
+                const frames = this.anims.currentAnim.frames;
+                if (frames.length > 0) {
+                    const clampedIndex = Math.min(frameIdx, frames.length - 1);
+                    const frame = frames[clampedIndex];
+                    if (frame) {
+                        this.anims.setCurrentFrame(frame);
+                    }
+                }
             }
         }
+    }
+    protected override onAttackStarted(): void {
+        super.onAttackStarted();
+
+        const facing = this.lastDirection;
+        const sceneAnims = this.scene.anims;
+        const preferredKey = `rovert-idle-attack-${facing}`;
+        if (sceneAnims?.exists(preferredKey)) {
+            this.setFlipX(false);
+            this.play(preferredKey, true);
+            return;
+        }
+
+        this.setFlipX(facing === "left");
+        this.play("rovert-idle-attack-right", true);
+    }
+
+    protected override onAttackEnded(): void {
+        this.setFlipX(false);
+        super.onAttackEnded();
     }
 }
 
@@ -483,8 +514,8 @@ class Shuey extends Player {
         height: 14,
         reach: 1,
         verticalOffset: -4,
-        duration: 360,
-        cooldown: 340,
+        duration: 420,
+        cooldown: 520,
         damage: 1,
         knockback: {
             horizontal: 3,
@@ -509,29 +540,73 @@ class Shuey extends Player {
     protected playRunAnimation(direction: "left" | "right"): void {
         const animationKey = direction === "left" ? "shuey-running-left" : "shuey-running-right";
 
-        // Only switch animation if it’s different than the current one.
         if (this.anims.currentAnim?.key !== animationKey || !this.anims.isPlaying) {
-            // Optional polish: if we’re switching L<->R while staying in "running",
-            // keep the current frame index so the gait doesn’t “snap”.
             const switchingDirectionWhileRunning =
                 this.anims.currentAnim?.key?.includes("running") ?? false;
             const frameIdx = switchingDirectionWhileRunning
                 ? (this.anims.currentFrame?.index ?? 0)
                 : 0;
-
             this.play(animationKey, true);
-            if (switchingDirectionWhileRunning && this.anims.currentAnim?.frames[frameIdx]) {
-                this.anims.setCurrentFrame(this.anims.currentAnim.frames[frameIdx]);
+            if (switchingDirectionWhileRunning && this.anims.currentAnim) {
+                const frames = this.anims.currentAnim.frames;
+                if (frames.length > 0) {
+                    const clampedIndex = Math.min(frameIdx, frames.length - 1);
+                    const frame = frames[clampedIndex];
+                    if (frame) {
+                        this.anims.setCurrentFrame(frame);
+                    }
+                }
             }
         }
     }
 
+    protected override refreshMovementAnimation(): void {
+        const body = this.playerBody;
+        if (
+            !body.onFloor() &&
+            Math.abs(body.velocity.y) > RISING_FALLING_ANIMATION_VELOCITY_THRESHOLD
+        ) {
+            const rising = body.velocity.y < 0;
+            if (rising) {
+                const animationKey =
+                    this.lastDirection === "left"
+                        ? "shuey-jump-rise-left"
+                        : "shuey-jump-rise-right";
+                if (this.anims.currentAnim?.key !== animationKey || !this.anims.isPlaying) {
+                    this.play(animationKey, true);
+                }
+                return;
+            } else {
+                const animationKey =
+                    this.lastDirection === "left"
+                        ? "shuey-jump-fall-left"
+                        : "shuey-jump-fall-right";
+                if (this.anims.currentAnim?.key !== animationKey || !this.anims.isPlaying) {
+                    this.play(animationKey, true);
+                }
+                return;
+            }
+        }
+
+        super.refreshMovementAnimation();
+    }
+
+    protected override postUpdate(): void {}
+
     protected override onAttackStarted(): void {
         super.onAttackStarted();
 
-        if (this.lastDirection === "right") {
-            this.play("shuey-idle-attack-right", true);
-        }
+        const movingHorizontally = Math.abs(this.playerBody.velocity.x) > 10;
+        const animationKey =
+            this.lastDirection === "left"
+                ? movingHorizontally
+                    ? "shuey-moving-attack-left"
+                    : "shuey-idle-attack-left"
+                : movingHorizontally
+                  ? "shuey-moving-attack-right"
+                  : "shuey-idle-attack-right";
+
+        this.play(animationKey, true);
     }
 
     protected override onAttackEnded(): void {

@@ -1,7 +1,7 @@
 {
   "frames": [
     {
-      "filename": "shuey-idle-attack-right-0.aseprite",
+      "filename": "shuey-idle-attack-left-0.aseprite",
       "frame": {
         "x": 0,
         "y": 0,
@@ -23,7 +23,7 @@
       "duration": 100
     },
     {
-      "filename": "shuey-idle-attack-right-1.aseprite",
+      "filename": "shuey-idle-attack-left-1.aseprite",
       "frame": {
         "x": 34,
         "y": 0,
@@ -45,7 +45,7 @@
       "duration": 100
     },
     {
-      "filename": "shuey-idle-attack-right-2.aseprite",
+      "filename": "shuey-idle-attack-left-2.aseprite",
       "frame": {
         "x": 68,
         "y": 0,
@@ -67,7 +67,7 @@
       "duration": 100
     },
     {
-      "filename": "shuey-idle-attack-right-3.aseprite",
+      "filename": "shuey-idle-attack-left-3.aseprite",
       "frame": {
         "x": 102,
         "y": 0,
@@ -89,7 +89,7 @@
       "duration": 100
     },
     {
-      "filename": "shuey-idle-attack-right-4.aseprite",
+      "filename": "shuey-idle-attack-left-4.aseprite",
       "frame": {
         "x": 136,
         "y": 0,
@@ -114,7 +114,7 @@
   "meta": {
     "app": "https://www.aseprite.org/",
     "version": "1.3.12-x64",
-    "image": "shuey-idle-attack-right.png",
+    "image": "shuey-idle-attack-left.png",
     "format": "RGBA8888",
     "size": {
       "w": 170,

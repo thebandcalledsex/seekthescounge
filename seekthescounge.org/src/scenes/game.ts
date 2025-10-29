@@ -53,6 +53,11 @@ class Game extends Phaser.Scene {
             "../../assets/rovert/running/rovert-running-right.png",
             "../../assets/rovert/running/rovert-running-right.json",
         );
+        this.load.atlas(
+            "rovert-idle-attack-right",
+            "../../assets/rovert/attacking/rovert-idle-attack-right.png",
+            "../../assets/rovert/attacking/rovert-idle-attack-right.json",
+        );
 
         this.load.atlas(
             "shuey-idle-right",
@@ -78,6 +83,41 @@ class Game extends Phaser.Scene {
             "shuey-idle-attack-right",
             "../../assets/shuey/attacking/shuey-idle-attack-right.png",
             "../../assets/shuey/attacking/shuey-idle-attack-right.json",
+        );
+        this.load.atlas(
+            "shuey-idle-attack-left",
+            "../../assets/shuey/attacking/shuey-idle-attack-left.png",
+            "../../assets/shuey/attacking/shuey-idle-attack-left.json",
+        );
+        this.load.atlas(
+            "shuey-moving-attack-right",
+            "../../assets/shuey/attacking/shuey-moving-attack-right.png",
+            "../../assets/shuey/attacking/shuey-moving-attack-right.json",
+        );
+        this.load.atlas(
+            "shuey-moving-attack-left",
+            "../../assets/shuey/attacking/shuey-moving-attack-left.png",
+            "../../assets/shuey/attacking/shuey-moving-attack-left.json",
+        );
+        this.load.atlas(
+            "shuey-jump-rise-right",
+            "../../assets/shuey/jumping/rise/shuey-jump-rise-right.png",
+            "../../assets/shuey/jumping/rise/shuey-jump-rise-right.json",
+        );
+        this.load.atlas(
+            "shuey-jump-rise-left",
+            "../../assets/shuey/jumping/rise/shuey-jump-rise-left.png",
+            "../../assets/shuey/jumping/rise/shuey-jump-rise-left.json",
+        );
+        this.load.atlas(
+            "shuey-jump-fall-right",
+            "../../assets/shuey/jumping/fall/shuey-jump-fall-right.png",
+            "../../assets/shuey/jumping/fall/shuey-jump-fall-right.json",
+        );
+        this.load.atlas(
+            "shuey-jump-fall-left",
+            "../../assets/shuey/jumping/fall/shuey-jump-fall-left.png",
+            "../../assets/shuey/jumping/fall/shuey-jump-fall-left.json",
         );
 
         // Load the tilemap for level 1 and its tileset
@@ -146,6 +186,14 @@ class Game extends Phaser.Scene {
             "shuey-idle-right",
             "shuey-running-left",
             "shuey-running-right",
+            "shuey-idle-attack-left",
+            "shuey-idle-attack-right",
+            "shuey-moving-attack-left",
+            "shuey-moving-attack-right",
+            "shuey-jump-rise-left",
+            "shuey-jump-rise-right",
+            "shuey-jump-fall-left",
+            "shuey-jump-fall-right",
         ].forEach((k) => {
             if (this.anims.exists(k)) this.anims.remove(k);
         });
@@ -209,11 +257,102 @@ class Game extends Phaser.Scene {
                 frames: this.anims.generateFrameNames("shuey-idle-attack-right", {
                     prefix: "shuey-idle-attack-right-",
                     start: 0,
-                    end: 3,
+                    end: 4,
                     suffix: ".aseprite",
                 }),
                 frameRate: 12,
                 repeat: 0, // Play once
+            });
+        }
+        if (!this.anims.exists("shuey-idle-attack-left")) {
+            this.anims.create({
+                key: "shuey-idle-attack-left",
+                frames: this.anims.generateFrameNames("shuey-idle-attack-left", {
+                    prefix: "shuey-idle-attack-left-",
+                    start: 0,
+                    end: 4,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 12,
+                repeat: 0,
+            });
+        }
+        if (!this.anims.exists("shuey-moving-attack-right")) {
+            this.anims.create({
+                key: "shuey-moving-attack-right",
+                frames: this.anims.generateFrameNames("shuey-moving-attack-right", {
+                    prefix: "shuey-moving-attack-right-",
+                    start: 0,
+                    end: 4,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 12,
+                repeat: 0,
+            });
+        }
+        if (!this.anims.exists("shuey-moving-attack-left")) {
+            this.anims.create({
+                key: "shuey-moving-attack-left",
+                frames: this.anims.generateFrameNames("shuey-moving-attack-left", {
+                    prefix: "shuey-moving-attack-left-",
+                    start: 0,
+                    end: 4,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 12,
+                repeat: 0,
+            });
+        }
+        if (!this.anims.exists("shuey-jump-rise-right")) {
+            this.anims.create({
+                key: "shuey-jump-rise-right",
+                frames: this.anims.generateFrameNames("shuey-jump-rise-right", {
+                    prefix: "shuey-jump-rise-right-",
+                    start: 0,
+                    end: 3,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 10,
+                repeat: 0,
+            });
+        }
+        if (!this.anims.exists("shuey-jump-rise-left")) {
+            this.anims.create({
+                key: "shuey-jump-rise-left",
+                frames: this.anims.generateFrameNames("shuey-jump-rise-left", {
+                    prefix: "shuey-jump-rise-left-",
+                    start: 0,
+                    end: 3,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 10,
+                repeat: 0,
+            });
+        }
+        if (!this.anims.exists("shuey-jump-fall-right")) {
+            this.anims.create({
+                key: "shuey-jump-fall-right",
+                frames: this.anims.generateFrameNames("shuey-jump-fall-right", {
+                    prefix: "shuey-jump-fall-right-",
+                    start: 0,
+                    end: 3,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 10,
+                repeat: -1,
+            });
+        }
+        if (!this.anims.exists("shuey-jump-fall-left")) {
+            this.anims.create({
+                key: "shuey-jump-fall-left",
+                frames: this.anims.generateFrameNames("shuey-jump-fall-left", {
+                    prefix: "shuey-jump-fall-left-",
+                    start: 0,
+                    end: 3,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 10,
+                repeat: -1,
             });
         }
 
@@ -270,6 +409,19 @@ class Game extends Phaser.Scene {
                 }),
                 frameRate: 8,
                 repeat: -1, // Loop the animation
+            });
+        }
+        if (!this.anims.exists("rovert-idle-attack-right")) {
+            this.anims.create({
+                key: "rovert-idle-attack-right",
+                frames: this.anims.generateFrameNames("rovert-idle-attack-right", {
+                    prefix: "rovert-idle-attack-right-",
+                    start: 0,
+                    end: 5,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 12,
+                repeat: 0,
             });
         }
 
