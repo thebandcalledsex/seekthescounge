@@ -4,25 +4,25 @@ export const GAME_HEIGHT = 132;
 // 240, 135 for 16:9 screens
 // 286, 132 for 19.5:9 screens
 
-export const MIN_GAME_WIDTH = GAME_WIDTH;
-
-export const calculateResponsiveWidth = (viewportWidth: number, viewportHeight: number): number => {
+export const calculateIntegerZoom = (viewportWidth: number, viewportHeight: number): number => {
     if (
         !Number.isFinite(viewportWidth) ||
         !Number.isFinite(viewportHeight) ||
+        viewportWidth <= 0 ||
         viewportHeight <= 0
     ) {
-        return MIN_GAME_WIDTH;
+        return 1;
     }
 
-    const aspectRatio = viewportWidth / viewportHeight;
-    const responsiveWidth = Math.round(GAME_HEIGHT * aspectRatio);
+    const maxWidthZoom = Math.floor(viewportWidth / GAME_WIDTH);
+    const maxHeightZoom = Math.floor(viewportHeight / GAME_HEIGHT);
+    const zoom = Math.max(1, Math.min(maxWidthZoom, maxHeightZoom));
 
     console.log(
-        `Viewport: ${viewportWidth}x${viewportHeight}, Aspect Ratio: ${aspectRatio.toFixed(3)}, Responsive Width: ${responsiveWidth}, Min Width: ${MIN_GAME_WIDTH}`,
+        `Viewport: ${viewportWidth}x${viewportHeight}, Calculated zoom: ${zoom}, Base: ${GAME_WIDTH}x${GAME_HEIGHT}`,
     );
 
-    return Math.max(responsiveWidth, MIN_GAME_WIDTH);
+    return zoom;
 };
 
 // camera follow snappiness
@@ -31,7 +31,7 @@ export const CAMERA_FOLLOW_LERP_Y = 0.1;
 export const CAMERA_FOLLOW_OFFSET_X = -10; // Zero is centered, negative is left of center. This sorta controls where the play get's centered on screen.
 export const CAMERA_FOLLOW_OFFSET_Y = 0;
 
-export const GAME_VERSION = "1.32";
+export const GAME_VERSION = "1.34";
 
 // dialog box snap shut/snap open snappiness
 export const DIALOG_SNAP_OPEN_DURATION = 600; // ms

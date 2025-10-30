@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import Game from "./scenes/game";
 import PlayerSelect from "./scenes/player-select";
-import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION, calculateResponsiveWidth } from "./constants";
+import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION, calculateIntegerZoom } from "./constants";
 import UiScene from "./scenes/ui";
 import { initOverlay } from "./ui/overlay";
 import { unregisterServiceWorkers, setupServiceWorker } from "./pwa/service-worker-client";
@@ -23,16 +23,18 @@ const isMobilePlatform =
     /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent) ||
     (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1);
 
-const getResponsiveGameWidth = () => {
+const getResponsiveZoom = () => {
     if (typeof window === "undefined") {
-        return GAME_WIDTH;
+        return 1;
     }
-    return calculateResponsiveWidth(window.innerWidth, window.innerHeight);
+    return calculateIntegerZoom(window.innerWidth, window.innerHeight);
 };
+
+const initialZoom = getResponsiveZoom();
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    width: getResponsiveGameWidth(),
+    width: GAME_WIDTH,
     height: GAME_HEIGHT,
     disableContextMenu: true,
     scene: [PlayerSelect, Game, UiScene],
@@ -44,22 +46,27 @@ const config: Phaser.Types.Core.GameConfig = {
         },
     },
     scale: {
-        mode: Phaser.Scale.FIT, // Scale the game to fit the screen
+        mode: Phaser.Scale.NONE, // Keep the base resolution; zoom handles sizing
         autoCenter: Phaser.Scale.CENTER_BOTH, // Center the game horizontally and vertically
         parent: "phaser",
+        zoom: initialZoom,
     },
     pixelArt: true, // Enable pixel-perfect rendering
     resizeInterval: 100,
 };
 
 const game = new Phaser.Game(config);
+let currentZoom = initialZoom;
 
 const handleViewportResize = () => {
     if (typeof window === "undefined") {
         return;
     }
-    const newWidth = getResponsiveGameWidth();
-    game.scale.resize(newWidth, GAME_HEIGHT);
+    const newZoom = getResponsiveZoom();
+    if (currentZoom !== newZoom) {
+        game.scale.setZoom(newZoom);
+        currentZoom = newZoom;
+    }
 };
 
 window.addEventListener("resize", handleViewportResize);
