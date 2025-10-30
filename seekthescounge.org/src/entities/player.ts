@@ -130,7 +130,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         // Update movement animation
-        this.refreshMovementAnimation();
+        this.refreshPlayerAnimation();
     }
 
     public setAttackTargets(
@@ -160,7 +160,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         // Extension point for subclasses that need extra per-frame work.
     }
 
-    protected refreshMovementAnimation(): void {
+    protected refreshPlayerAnimation(): void {
         const movedHorizontally = Math.abs(this.playerBody.deltaX()) > 1;
         const touchingHorizontally =
             this.playerBody.blocked.left ||
@@ -174,15 +174,18 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         } else if (onGround) {
             this.playIdleAnimation(this.lastDirection);
         }
+
+        // Jumping.falling animations are handled in subclasses rn.
     }
 
     protected onAttackStarted(): void {
-        // Hook for subclasses to trigger attack-specific effects/animations.
+        // Extension point for subclasses to react to attack start.
     }
 
     protected onAttackEnded(): void {
-        this.refreshMovementAnimation();
+        this.refreshPlayerAnimation();
     }
+
 
     protected onAttackHit(target: Phaser.GameObjects.GameObject): void {
         const damageable = target as unknown as {
@@ -523,6 +526,17 @@ class Shuey extends Player {
             duration: 160,
         },
     };
+    private movingAttackSprite: Phaser.GameObjects.Sprite;
+    private static readonly movingAttackSpriteYOffset = 0;
+
+    constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
+        super(scene, x, y, texture);
+
+        this.movingAttackSprite = scene.add.sprite(x, y, texture);
+        this.movingAttackSprite.setOrigin(this.originX, this.originY);
+        this.movingAttackSprite.setScale(this.scaleX, this.scaleY);
+        this.movingAttackSprite.setVisible(false).setActive(false);
+    }
 
     protected playIdleAnimation(direction: "left" | "right"): void {
         const animationKey = direction === "left" ? "shuey-idle-left" : "shuey-idle-right";
@@ -560,7 +574,7 @@ class Shuey extends Player {
         }
     }
 
-    protected override refreshMovementAnimation(): void {
+    protected override refreshPlayerAnimation(): void {
         const body = this.playerBody;
         if (
             !body.onFloor() &&
@@ -588,29 +602,80 @@ class Shuey extends Player {
             }
         }
 
-        super.refreshMovementAnimation();
+        super.refreshPlayerAnimation();
     }
 
-    protected override postUpdate(): void {}
+    protected override postUpdate(): void {
+        super.postUpdate();
+
+        // Sync moving attack sprite position with base sprite
+        const offsetY = Shuey.movingAttackSpriteYOffset;
+        const snapX = Math.round(this.x);
+        const snapY = Math.round(this.y - offsetY);
+        this.movingAttackSprite.setPosition(snapX, snapY);
+        this.movingAttackSprite.setDepth(this.depth + 1);
+        this.movingAttackSprite.setScale(this.scaleX, this.scaleY);
+    }
+
+    private cropSprite(): void {
+        // Crop to show only the lower body of the sprite
+        this.setCrop(0, 21, 1000, 20); // (x, y, w, h)
+
+    }
 
     protected override onAttackStarted(): void {
         super.onAttackStarted();
 
         const movingHorizontally = Math.abs(this.playerBody.velocity.x) > 10;
+        const direction = this.lastDirection;
+
+        this.resetMovingAttackSprite();
+
+        if (movingHorizontally) {
+
+            this.cropSprite();
+
+            this.playMovingAttackAnimation(direction);
+            return;
+        }
+
+        this.playIdleAttackAnimation(direction);
+
+    }
+
+    protected override onAttackEnded(): void {
+
+        // Reset any cropping applied during attack
+        this.setCrop();
+
+        this.resetMovingAttackSprite();
+        super.onAttackEnded();
+    }
+
+    private playMovingAttackAnimation(direction: "left" | "right"): void {
         const animationKey =
-            this.lastDirection === "left"
-                ? movingHorizontally
-                    ? "shuey-moving-attack-left"
-                    : "shuey-idle-attack-left"
-                : movingHorizontally
-                  ? "shuey-moving-attack-right"
-                  : "shuey-idle-attack-right";
+            direction === "left" ? "shuey-moving-attack-left" : "shuey-moving-attack-right";
+
+        this.movingAttackSprite.setActive(true).setVisible(true);
+        this.movingAttackSprite.play(animationKey);
+
+    }
+
+    private playIdleAttackAnimation(direction: "left" | "right"): void {
+        const animationKey =
+            direction === "left" ? "shuey-idle-attack-left" : "shuey-idle-attack-right";
 
         this.play(animationKey, true);
     }
 
-    protected override onAttackEnded(): void {
-        super.onAttackEnded();
+    private resetMovingAttackSprite(): void {
+        this.movingAttackSprite.setVisible(false).setActive(false);
+        this.movingAttackSprite.anims.stop();
+    }
+
+    public override destroy(fromScene?: boolean): void {
+        this.movingAttackSprite.destroy();
+        super.destroy(fromScene);
     }
 }
 
