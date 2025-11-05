@@ -48,7 +48,7 @@
 ├── vite.config.ts
 └── webpack.config.js
 
-## Git Shenanigans    
+## Git Shenanigans
 
 git remote set-url origin git@github.com:thebandcalledsex/thegamecalledsex.git
 
@@ -79,6 +79,17 @@ git remote set-url origin git@github.com:thebandcalledsex/thegamecalledsex.git
 - **Hazards** → spikes, lava, kill zones
 
 ---
+
+## Parallax in Phaser
+
+Phaser display objects use `scrollFactor` to scale how much they react to camera movement. The value is not clamped, so you can experiment with any non-negative (or even negative) number.
+
+- `0`: layer stays fixed relative to the camera (skybox).
+- `0 < factor < 1`: moves slower than the camera, so it reads as distant.
+- `1`: matches the camera and the main gameplay layer.
+- `> 1`: moves faster than the camera, useful for close foreground elements.
+
+Phaser just multiplies the camera scroll by the factor, so mix and tweak values per layer to get the depth you want. `TileSprite` layers can still adjust `tilePosition` if you need an endless loop.
 
 ## Tips
 - **Collision flagging**: in Tiled, set a tile property `collides = true` for ground/platform tiles.
