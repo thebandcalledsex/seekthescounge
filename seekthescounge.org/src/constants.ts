@@ -4,27 +4,6 @@ export const GAME_HEIGHT = 132;
 // 240, 135 for 16:9 screens
 // 286, 132 for 19.5:9 screens
 
-export const calculateIntegerZoom = (viewportWidth: number, viewportHeight: number): number => {
-    if (
-        !Number.isFinite(viewportWidth) ||
-        !Number.isFinite(viewportHeight) ||
-        viewportWidth <= 0 ||
-        viewportHeight <= 0
-    ) {
-        return 1;
-    }
-
-    const maxWidthZoom = Math.floor(viewportWidth / GAME_WIDTH);
-    const maxHeightZoom = Math.floor(viewportHeight / GAME_HEIGHT);
-    const zoom = Math.max(1, Math.min(maxWidthZoom, maxHeightZoom));
-
-    console.log(
-        `Viewport: ${viewportWidth}x${viewportHeight}, Calculated zoom: ${zoom}, Base: ${GAME_WIDTH}x${GAME_HEIGHT}`,
-    );
-
-    return zoom;
-};
-
 // camera follow snappiness
 export const CAMERA_FOLLOW_LERP_X = 0.1;
 export const CAMERA_FOLLOW_LERP_Y = 0.1;

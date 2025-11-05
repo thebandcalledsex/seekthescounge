@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import Game from "./scenes/game";
 import PlayerSelect from "./scenes/player-select";
-import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION, calculateIntegerZoom } from "./constants";
+import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION } from "./constants";
 import UiScene from "./scenes/ui";
 import { initOverlay } from "./ui/overlay";
 import { unregisterServiceWorkers, setupServiceWorker } from "./pwa/service-worker-client";
@@ -23,15 +23,6 @@ const isMobilePlatform =
     /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent) ||
     (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1);
 
-const getResponsiveZoom = () => {
-    if (typeof window === "undefined") {
-        return 1;
-    }
-    return calculateIntegerZoom(window.innerWidth, window.innerHeight);
-};
-
-const initialZoom = getResponsiveZoom();
-
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: GAME_WIDTH,
@@ -46,31 +37,15 @@ const config: Phaser.Types.Core.GameConfig = {
         },
     },
     scale: {
-        mode: Phaser.Scale.NONE, // Keep the base resolution; zoom handles sizing
+        mode: Phaser.Scale.FIT, // Scale the game to fit the available space
         autoCenter: Phaser.Scale.CENTER_BOTH, // Center the game horizontally and vertically
         parent: "phaser",
-        zoom: initialZoom,
     },
     pixelArt: true, // Enable pixel-perfect rendering
     resizeInterval: 100,
 };
 
 const game = new Phaser.Game(config);
-let currentZoom = initialZoom;
-
-const handleViewportResize = () => {
-    if (typeof window === "undefined") {
-        return;
-    }
-    const newZoom = getResponsiveZoom();
-    if (currentZoom !== newZoom) {
-        game.scale.setZoom(newZoom);
-        currentZoom = newZoom;
-    }
-};
-
-window.addEventListener("resize", handleViewportResize);
-window.addEventListener("orientationchange", handleViewportResize);
 
 const isLocalhost =
     window.location.hostname === "localhost" ||
