@@ -9,6 +9,8 @@ import TrainingDummy from "../entities/training-dummy";
 import Goomba from "../entities/goomba";
 import Enemy from "../entities/enemy";
 
+const IMAGE_LAYER_BASE_DEPTH = -50;
+
 class Game extends Phaser.Scene {
     private player!: Rovert | Shuey;
     private selectedPlayer: string = "Rovert";
@@ -32,6 +34,12 @@ class Game extends Phaser.Scene {
     public preload() {
         // Load assets here
         console.log("Preloading assets....");
+
+        // load background layers
+        this.load.image("close-hills", "../../assets/backgrounds/close-hills.png");
+        this.load.image("far-hills", "../../assets/backgrounds/far-hills.png");
+        this.load.image("mountains", "../../assets/backgrounds/mountains.png");
+        this.load.image("sky", "../../assets/backgrounds/sky.png");
 
         this.load.atlas(
             "rovert-idle-right",
@@ -124,6 +132,9 @@ class Game extends Phaser.Scene {
         this.load.tilemapTiledJSON("level1", "../../assets/maps/level1.json");
         this.load.image("desert-tiles", "../../assets/tilesets/desert.png");
 
+        // Load level1's complete JSON data (for image layers)
+        this.load.json("level1-data", "../../assets/maps/level1.json");
+
         // Load on-screen input button assets
         OnScreenInput.preload(this);
     }
@@ -132,8 +143,8 @@ class Game extends Phaser.Scene {
         // Create game objects here
         console.log("Creating game objects...");
 
-        // Create the ground
         const map = this.make.tilemap({ key: "level1" });
+        // Create the ground layer
         const tileset = map.addTilesetImage("desert-tiles", "desert-tiles");
         if (!tileset) {
             throw new Error("Tileset 'desert-tiles' not found");
@@ -144,6 +155,9 @@ class Game extends Phaser.Scene {
         } else {
             throw new Error("Ground layer not found");
         }
+
+        // Render background image layers
+        this.renderBackgroundImageLayers(map);
 
         // Initialize the input controller and hook it up to the UI scene
 
@@ -435,13 +449,15 @@ class Game extends Phaser.Scene {
 
         // Create some training dummies
         this.trainingDummies = this.physics.add.group();
-        const dummy = new TrainingDummy(this, this.player.x - 40, this.player.y - 16);
-        this.trainingDummies.add(dummy);
+        const dummy1 = new TrainingDummy(this, this.player.x - 40, this.player.y - 16);
+        const dummy2 = new TrainingDummy(this, this.player.x + 220, this.player.y - 16);
+        this.trainingDummies.add(dummy1);
+        this.trainingDummies.add(dummy2);
 
         // Create some enemies
         this.enemies = this.physics.add.group();
-        const goomba = new Goomba(this, this.player.x + 150, this.player.y - 16);
-        this.enemies.add(goomba);
+        //const goomba = new Goomba(this, this.player.x + 150, this.player.y - 16);
+        //this.enemies.add(goomba);
 
         // Set the world bounds
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels); // Adjust world bounds
@@ -512,6 +528,96 @@ class Game extends Phaser.Scene {
             //     text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
             // });
         }
+    }
+
+    private renderBackgroundImageLayers(map: Phaser.Tilemaps.Tilemap) {
+        const mapData = this.cache.json.get("level1-data");
+        if (!mapData?.layers) {
+            return;
+        }
+
+        let imageLayerIndex = 0;
+        mapData.layers.forEach((layer: any) => {
+            if (layer.type !== "imagelayer") {
+                return;
+            }
+            this.renderImageLayer(map, layer, imageLayerIndex);
+            imageLayerIndex += 1;
+        });
+    }
+
+    private renderImageLayer(map: Phaser.Tilemaps.Tilemap, layer: any, depthIndex: number) {
+        const textureKey = this.resolveImageLayerTextureKey(layer);
+        if (!textureKey) {
+            console.warn(`Missing texture for image layer '${layer?.name ?? "unknown"}'.`);
+            return;
+        }
+
+        const texture = this.textures.get(textureKey);
+        const sourceDimensions = texture.getSourceImage() as { width: number };
+        const imageWidth = layer.imagewidth ?? sourceDimensions?.width ?? 0;
+        if (!imageWidth) {
+            console.warn(
+                `Unable to determine width for image layer '${layer?.name ?? "unknown"}'.`,
+            );
+            return;
+        }
+
+        const offsetX = layer.offsetx ?? 0;
+        const offsetY = layer.offsety ?? 0;
+        const x = (layer.x ?? 0) + offsetX;
+        const y = (layer.y ?? 0) + offsetY;
+        const depth = this.getLayerDepth(layer, depthIndex);
+        const shouldRepeatX = Boolean(layer.repeatx);
+        const scrollFactorX = this.getLayerScrollFactor(layer, "x");
+        const scrollFactorY = this.getLayerScrollFactor(layer, "y");
+
+        const drawAt = (drawX: number) => {
+            this.add
+                .image(drawX, y, textureKey)
+                .setOrigin(0, 0)
+                .setDepth(depth)
+                .setScrollFactor(scrollFactorX, scrollFactorY);
+        };
+
+        if (shouldRepeatX) {
+            const coverageWidth = Math.max(map.widthInPixels, this.cameras.main.width);
+            for (let drawX = x; drawX < x + coverageWidth + imageWidth; drawX += imageWidth) {
+                drawAt(drawX);
+            }
+        } else {
+            drawAt(x);
+        }
+    }
+
+    private resolveImageLayerTextureKey(layer: any): string | null {
+        if (!layer) {
+            return null;
+        }
+        const normalizedPath = (layer.image ?? "").replace(/\\/g, "/");
+        const fileName = normalizedPath.split("/").pop();
+        const imageKey = fileName ? fileName.replace(/\.[^/.]+$/, "") : null;
+        const candidates = [imageKey, layer.name, layer.name?.toLowerCase()].filter(
+            (key): key is string => Boolean(key),
+        );
+        return candidates.find((key) => this.textures.exists(key)) ?? null;
+    }
+
+    private getLayerDepth(layer: any, depthIndex: number) {
+        return this.getNumericLayerProperty(layer, "depth") ?? IMAGE_LAYER_BASE_DEPTH + depthIndex;
+    }
+
+    private getLayerScrollFactor(layer: any, axis: "x" | "y") {
+        const parallaxValue = axis === "x" ? layer.parallaxx : layer.parallaxy;
+        return typeof parallaxValue === "number" ? parallaxValue : 1;
+    }
+
+    private getNumericLayerProperty(layer: any, propertyName: string): number | undefined {
+        const property = layer?.properties?.find?.((prop: any) => prop?.name === propertyName);
+        if (property && typeof property.value === "number") {
+            return property.value;
+        }
+        return undefined;
     }
 }
 
