@@ -186,7 +186,6 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.refreshPlayerAnimation();
     }
 
-
     protected onAttackHit(target: Phaser.GameObjects.GameObject): void {
         const damageable = target as unknown as {
             takeDamage?: (amount: number, source: Player) => void;
@@ -368,17 +367,16 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
-        this.playerBody.setVelocity(0, 0);
         this.playerBody.enable = false;
-        this.setActive(false);
-        this.setVisible(false);
-        this.scene.events.emit("player-dead", { player: this });
 
         // Death zoom transition, then switch to PlayerSelect scene.
+        const { x: focusX, y: focusY } = this.playerBody.center;
         const camera = this.scene.cameras.main;
         const originalZoom = camera.zoom;
+        const zoomDuration = 2000;
         camera.stopFollow();
-        camera.zoomTo(originalZoom * 2, 2000);
+        camera.pan(focusX, focusY, zoomDuration, "Sine.easeInOut", true);
+        camera.zoomTo(originalZoom * 2, zoomDuration, "Sine.easeInOut");
 
         this.scene.time.delayedCall(3000, () => {
             camera.setZoom(originalZoom);
@@ -387,6 +385,10 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             if (scenePlugin.isActive("ui")) {
                 scenePlugin.stop("ui");
             }
+
+            this.setActive(false);
+            this.setVisible(false);
+            this.scene.events.emit("player-dead", { player: this });
 
             scenePlugin.stop("Game");
 
@@ -620,7 +622,6 @@ class Shuey extends Player {
     private cropSprite(): void {
         // Crop to show only the lower body of the sprite
         this.setCrop(0, 21, 1000, 20); // (x, y, w, h)
-
     }
 
     protected override onAttackStarted(): void {
@@ -632,7 +633,6 @@ class Shuey extends Player {
         this.resetMovingAttackSprite();
 
         if (movingHorizontally) {
-
             this.cropSprite();
 
             this.playMovingAttackAnimation(direction);
@@ -640,11 +640,9 @@ class Shuey extends Player {
         }
 
         this.playIdleAttackAnimation(direction);
-
     }
 
     protected override onAttackEnded(): void {
-
         // Reset any cropping applied during attack
         this.setCrop();
 
@@ -658,7 +656,6 @@ class Shuey extends Player {
 
         this.movingAttackSprite.setActive(true).setVisible(true);
         this.movingAttackSprite.play(animationKey);
-
     }
 
     private playIdleAttackAnimation(direction: "left" | "right"): void {
