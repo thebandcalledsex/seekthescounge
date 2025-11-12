@@ -8,6 +8,7 @@ import OnScreenInput from "../input/on-screen-input";
 import TrainingDummy from "../entities/training-dummy";
 import Goomba from "../entities/goomba";
 import Enemy from "../entities/enemy";
+import Pozzum from "../entities/pozzum";
 
 const IMAGE_LAYER_BASE_DEPTH = -50;
 
@@ -126,6 +127,16 @@ class Game extends Phaser.Scene {
             "shuey-jump-fall-left",
             "../../assets/shuey/jumping/fall/shuey-jump-fall-left.png",
             "../../assets/shuey/jumping/fall/shuey-jump-fall-left.json",
+        );
+        this.load.atlas(
+            "pozzum-cruzing-left",
+            "../../assets/pozzum/pozzum-cruzing-left.png",
+            "../../assets/pozzum/pozzum-cruzing-left.json",
+        );
+        this.load.atlas(
+            "pozzum-cruzing-right",
+            "../../assets/pozzum/pozzum-cruzing-right.png",
+            "../../assets/pozzum/pozzum-cruzing-right.json",
         );
 
         // Load the tilemap for level 1 and its tileset
@@ -439,6 +450,35 @@ class Game extends Phaser.Scene {
             });
         }
 
+        // Register pozzum animations
+        if (!this.anims.exists("pozzum-cruzing-right")) {
+            this.anims.create({
+                key: "pozzum-cruzing-right",
+                frames: this.anims.generateFrameNames("pozzum-cruzing-right", {
+                    prefix: "pozzum-cruzing-right-",
+                    start: 0,
+                    end: 7,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 10,
+                repeat: -1,
+            });
+        }
+
+        if (!this.anims.exists("pozzum-cruzing-left")) {
+            this.anims.create({
+                key: "pozzum-cruzing-left",
+                frames: this.anims.generateFrameNames("pozzum-cruzing-left", {
+                    prefix: "pozzum-cruzing-left-",
+                    start: 0,
+                    end: 7,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 10,
+                repeat: -1,
+            });
+        }
+
         // Establish the player based on the input from the player selection scene
         if (this.selectedPlayer === "Rovert") {
             this.player = new Rovert(this, 100, 100, "rovert-idle-right"); // Create rovert at (100,100)
@@ -456,8 +496,12 @@ class Game extends Phaser.Scene {
 
         // Create some enemies
         this.enemies = this.physics.add.group();
-        //const goomba = new Goomba(this, this.player.x + 150, this.player.y - 16);
-        //this.enemies.add(goomba);
+        const pozzum = new Pozzum(this, this.player.x + 150, this.player.y);
+        const pozzum2 = new Pozzum(this, this.player.x + 300, this.player.y);
+        const pozzum3 = new Pozzum(this, this.player.x + 450, this.player.y);
+        this.enemies.add(pozzum);
+        this.enemies.add(pozzum2);
+        this.enemies.add(pozzum3);
 
         // Set the world bounds
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels); // Adjust world bounds

@@ -1,0 +1,243 @@
+{
+  "frames": [
+    {
+      "filename": "pozzum-cruzing-right-0.aseprite",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 17
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 31,
+        "w": 32,
+        "h": 17
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 100
+    },
+    {
+      "filename": "pozzum-cruzing-right-1.aseprite",
+      "frame": {
+        "x": 32,
+        "y": 0,
+        "w": 32,
+        "h": 17
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 31,
+        "w": 32,
+        "h": 17
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 100
+    },
+    {
+      "filename": "pozzum-cruzing-right-2.aseprite",
+      "frame": {
+        "x": 64,
+        "y": 0,
+        "w": 32,
+        "h": 17
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 31,
+        "w": 32,
+        "h": 17
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 100
+    },
+    {
+      "filename": "pozzum-cruzing-right-3.aseprite",
+      "frame": {
+        "x": 96,
+        "y": 0,
+        "w": 32,
+        "h": 17
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 31,
+        "w": 32,
+        "h": 17
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 100
+    },
+    {
+      "filename": "pozzum-cruzing-right-4.aseprite",
+      "frame": {
+        "x": 128,
+        "y": 0,
+        "w": 32,
+        "h": 17
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 31,
+        "w": 32,
+        "h": 17
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 100
+    },
+    {
+      "filename": "pozzum-cruzing-right-5.aseprite",
+      "frame": {
+        "x": 160,
+        "y": 0,
+        "w": 32,
+        "h": 17
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 31,
+        "w": 32,
+        "h": 17
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 100
+    },
+    {
+      "filename": "pozzum-cruzing-right-6.aseprite",
+      "frame": {
+        "x": 192,
+        "y": 0,
+        "w": 32,
+        "h": 17
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 31,
+        "w": 32,
+        "h": 17
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 100
+    },
+    {
+      "filename": "pozzum-cruzing-right-7.aseprite",
+      "frame": {
+        "x": 224,
+        "y": 0,
+        "w": 32,
+        "h": 17
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 31,
+        "w": 32,
+        "h": 17
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 100
+    }
+  ],
+  "meta": {
+    "app": "https://www.aseprite.org/",
+    "version": "1.3.12-x64",
+    "image": "pozzum-cruzing-right.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 256,
+      "h": 17
+    },
+    "scale": "1",
+    "frameTags": [
+      {
+        "name": "possum trot",
+        "from": 1,
+        "to": 8,
+        "direction": "forward",
+        "color": "#000000ff"
+      }
+    ],
+    "layers": [
+      {
+        "name": "back leg",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "back arm",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "body ",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "tail",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "front leg",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "front arm",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "head",
+        "opacity": 255,
+        "blendMode": "normal"
+      },
+      {
+        "name": "scounge",
+        "opacity": 255,
+        "blendMode": "normal"
+      }
+    ],
+    "slices": []
+  }
+}
