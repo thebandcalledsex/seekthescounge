@@ -11,6 +11,7 @@ import Enemy from "../entities/enemy";
 import Pozzum from "../entities/pozzum";
 
 const IMAGE_LAYER_BASE_DEPTH = -50;
+const { ENTITY_ASSETS_PATH } = constants;
 
 class Game extends Phaser.Scene {
     private player!: Rovert | Shuey;
@@ -44,99 +45,99 @@ class Game extends Phaser.Scene {
 
         this.load.atlas(
             "rovert-idle-right",
-            "../../assets/rovert/idle/rovert-idle-right.png",
-            "../../assets/rovert/idle/rovert-idle-right.json",
+            `${ENTITY_ASSETS_PATH}/rovert/idle/rovert-idle-right.png`,
+            `${ENTITY_ASSETS_PATH}/rovert/idle/rovert-idle-right.json`,
         );
         this.load.atlas(
             "rovert-idle-left",
-            "../../assets/rovert/idle/rovert-idle-left.png",
-            "../../assets/rovert/idle/rovert-idle-left.json",
+            `${ENTITY_ASSETS_PATH}/rovert/idle/rovert-idle-left.png`,
+            `${ENTITY_ASSETS_PATH}/rovert/idle/rovert-idle-left.json`,
         );
         this.load.atlas(
             "rovert-running-left",
-            "../../assets/rovert/running/rovert-running-left.png",
-            "../../assets/rovert/running/rovert-running-left.json",
+            `${ENTITY_ASSETS_PATH}/rovert/running/rovert-running-left.png`,
+            `${ENTITY_ASSETS_PATH}/rovert/running/rovert-running-left.json`,
         );
         this.load.atlas(
             "rovert-running-right",
-            "../../assets/rovert/running/rovert-running-right.png",
-            "../../assets/rovert/running/rovert-running-right.json",
+            `${ENTITY_ASSETS_PATH}/rovert/running/rovert-running-right.png`,
+            `${ENTITY_ASSETS_PATH}/rovert/running/rovert-running-right.json`,
         );
         this.load.atlas(
             "rovert-idle-attack-right",
-            "../../assets/rovert/attacking/rovert-idle-attack-right.png",
-            "../../assets/rovert/attacking/rovert-idle-attack-right.json",
+            `${ENTITY_ASSETS_PATH}/rovert/attacking/rovert-idle-attack-right.png`,
+            `${ENTITY_ASSETS_PATH}/rovert/attacking/rovert-idle-attack-right.json`,
         );
 
         this.load.atlas(
             "shuey-idle-right",
-            "../../assets/shuey/idle/shuey-idle-right.png",
-            "../../assets/shuey/idle/shuey-idle-right.json",
+            `${ENTITY_ASSETS_PATH}/shuey/idle/shuey-idle-right.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/idle/shuey-idle-right.json`,
         );
         this.load.atlas(
             "shuey-idle-left",
-            "../../assets/shuey/idle/shuey-idle-left.png?v=2",
-            "../../assets/shuey/idle/shuey-idle-left.json?v=2",
+            `${ENTITY_ASSETS_PATH}/shuey/idle/shuey-idle-left.png?v=2`,
+            `${ENTITY_ASSETS_PATH}/shuey/idle/shuey-idle-left.json?v=2`,
         );
         this.load.atlas(
             "shuey-running-left",
-            "../../assets/shuey/running/shuey-running-left.png",
-            "../../assets/shuey/running/shuey-running-left.json",
+            `${ENTITY_ASSETS_PATH}/shuey/running/shuey-running-left.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/running/shuey-running-left.json`,
         );
         this.load.atlas(
             "shuey-running-right",
-            "../../assets/shuey/running/shuey-running-right.png",
-            "../../assets/shuey/running/shuey-running-right.json",
+            `${ENTITY_ASSETS_PATH}/shuey/running/shuey-running-right.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/running/shuey-running-right.json`,
         );
         this.load.atlas(
             "shuey-idle-attack-right",
-            "../../assets/shuey/attacking/shuey-idle-attack-right.png",
-            "../../assets/shuey/attacking/shuey-idle-attack-right.json",
+            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-idle-attack-right.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-idle-attack-right.json`,
         );
         this.load.atlas(
             "shuey-idle-attack-left",
-            "../../assets/shuey/attacking/shuey-idle-attack-left.png",
-            "../../assets/shuey/attacking/shuey-idle-attack-left.json",
+            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-idle-attack-left.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-idle-attack-left.json`,
         );
         this.load.atlas(
             "shuey-moving-attack-right",
-            "../../assets/shuey/attacking/shuey-moving-attack-right.png",
-            "../../assets/shuey/attacking/shuey-moving-attack-right.json",
+            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-moving-attack-right.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-moving-attack-right.json`,
         );
         this.load.atlas(
             "shuey-moving-attack-left",
-            "../../assets/shuey/attacking/shuey-moving-attack-left.png",
-            "../../assets/shuey/attacking/shuey-moving-attack-left.json",
+            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-moving-attack-left.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-moving-attack-left.json`,
         );
         this.load.atlas(
             "shuey-jump-rise-right",
-            "../../assets/shuey/jumping/rise/shuey-jump-rise-right.png",
-            "../../assets/shuey/jumping/rise/shuey-jump-rise-right.json",
+            `${ENTITY_ASSETS_PATH}/shuey/jumping/rise/shuey-jump-rise-right.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/jumping/rise/shuey-jump-rise-right.json`,
         );
         this.load.atlas(
             "shuey-jump-rise-left",
-            "../../assets/shuey/jumping/rise/shuey-jump-rise-left.png",
-            "../../assets/shuey/jumping/rise/shuey-jump-rise-left.json",
+            `${ENTITY_ASSETS_PATH}/shuey/jumping/rise/shuey-jump-rise-left.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/jumping/rise/shuey-jump-rise-left.json`,
         );
         this.load.atlas(
             "shuey-jump-fall-right",
-            "../../assets/shuey/jumping/fall/shuey-jump-fall-right.png",
-            "../../assets/shuey/jumping/fall/shuey-jump-fall-right.json",
+            `${ENTITY_ASSETS_PATH}/shuey/jumping/fall/shuey-jump-fall-right.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/jumping/fall/shuey-jump-fall-right.json`,
         );
         this.load.atlas(
             "shuey-jump-fall-left",
-            "../../assets/shuey/jumping/fall/shuey-jump-fall-left.png",
-            "../../assets/shuey/jumping/fall/shuey-jump-fall-left.json",
+            `${ENTITY_ASSETS_PATH}/shuey/jumping/fall/shuey-jump-fall-left.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/jumping/fall/shuey-jump-fall-left.json`,
         );
         this.load.atlas(
             "pozzum-cruzing-left",
-            "../../assets/pozzum/pozzum-cruzing-left.png",
-            "../../assets/pozzum/pozzum-cruzing-left.json",
+            `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-left.png`,
+            `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-left.json`,
         );
         this.load.atlas(
             "pozzum-cruzing-right",
-            "../../assets/pozzum/pozzum-cruzing-right.png",
-            "../../assets/pozzum/pozzum-cruzing-right.json",
+            `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-right.png`,
+            `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-right.json`,
         );
 
         // Load the tilemap for level 1 and its tileset

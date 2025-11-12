@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { GAME_HEIGHT, GAME_VERSION } from "../constants";
+import { GAME_HEIGHT, GAME_VERSION, ENTITY_ASSETS_PATH } from "../constants";
 
 class PlayerSelect extends Phaser.Scene {
     constructor() {
@@ -12,22 +12,22 @@ class PlayerSelect extends Phaser.Scene {
         // Load rovert idle assets
         this.load.atlas(
             "rovert-idle",
-            "../../assets/large-rovert/idle.png",
-            "../../assets/large-rovert/idle.json",
+            `${ENTITY_ASSETS_PATH}/large-rovert/idle.png`,
+            `${ENTITY_ASSETS_PATH}/large-rovert/idle.json`,
         );
 
         // Load rovert idle-right assets
         this.load.atlas(
             "large-rovert-idle-right",
-            "../../assets/large-rovert/idle-right.png",
-            "../../assets/large-rovert/idle-right.json",
+            `${ENTITY_ASSETS_PATH}/large-rovert/idle-right.png`,
+            `${ENTITY_ASSETS_PATH}/large-rovert/idle-right.json`,
         );
 
         // Load shuey idle-right assets
         this.load.atlas(
             "large-shuey-idle-right",
-            "../../assets/large-shuey/idle-right.png",
-            "../../assets/large-shuey/idle-right.json",
+            `${ENTITY_ASSETS_PATH}/large-shuey/idle-right.png`,
+            `${ENTITY_ASSETS_PATH}/large-shuey/idle-right.json`,
         );
     }
 

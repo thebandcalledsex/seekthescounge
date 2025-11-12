@@ -1,6 +1,9 @@
 export const GAME_WIDTH = 286;
 export const GAME_HEIGHT = 132;
 
+// asset paths
+export const ENTITY_ASSETS_PATH = "../../assets/entities";
+
 // 240, 135 for 16:9 screens
 // 286, 132 for 19.5:9 screens
 
@@ -10,7 +13,7 @@ export const CAMERA_FOLLOW_LERP_Y = 0.1;
 export const CAMERA_FOLLOW_OFFSET_X = -10; // Zero is centered, negative is left of center. This sorta controls where the play get's centered on screen.
 export const CAMERA_FOLLOW_OFFSET_Y = 0;
 
-export const GAME_VERSION = "1.34";
+export const GAME_VERSION = "1.36";
 
 // dialog box snap shut/snap open snappiness
 export const DIALOG_SNAP_OPEN_DURATION = 600; // ms
