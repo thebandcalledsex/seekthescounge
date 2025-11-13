@@ -4,8 +4,12 @@ const path = require("path");
 
 const repoRoot = path.resolve(__dirname, "..");
 const srcDir = path.join(repoRoot, "src");
+const assetsDir = path.join(repoRoot, "assets");
+const entitiesAssetsDir = path.join(assetsDir, "entities");
+const constantsFilePath = path.join(srcDir, "constants.ts");
 const args = process.argv.slice(2);
 const checkOnly = args.includes("--check");
+const literalConstants = loadLiteralConstants(constantsFilePath);
 
 function collectFiles(dir, predicate, acc = []) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -29,13 +33,70 @@ function escapeRegExp(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function loadLiteralConstants(filePath) {
+    const map = new Map();
+    if (!fs.existsSync(filePath)) {
+        return map;
+    }
+    const content = fs.readFileSync(filePath, "utf8");
+    const regex = /export const (\w+)\s*=\s*(["'`])([^"'`]+)\2\s*;/g;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+        const [, name, , value] = match;
+        map.set(name, value);
+    }
+    return map;
+}
+
+function resolveExpression(expr, tsFilePath) {
+    if (!expr) {
+        return null;
+    }
+    const trimmed = expr.trim();
+    if (!trimmed) {
+        return null;
+    }
+
+    const firstChar = trimmed[0];
+    const lastChar = trimmed[trimmed.length - 1];
+
+    if ((firstChar === '"' || firstChar === "'") && firstChar === lastChar) {
+        return trimmed.slice(1, -1);
+    }
+
+    if (firstChar === "`" && lastChar === "`") {
+        const inner = trimmed.slice(1, -1);
+        let unresolved = false;
+        const replaced = inner.replace(/\$\{([^}]+)\}/g, (_, expression) => {
+            const key = expression.trim();
+            if (!literalConstants.has(key)) {
+                unresolved = true;
+                return _;
+            }
+            return literalConstants.get(key);
+        });
+        if (unresolved || replaced.includes("${")) {
+            console.warn(`Warning: Could not fully resolve template literal ${trimmed} in ${tsFilePath}`);
+            return null;
+        }
+        return replaced;
+    }
+
+    return null;
+}
+
 function loadAtlasMap(tsFilePath, atlasMap) {
     const content = fs.readFileSync(tsFilePath, "utf8");
-    const loadRegex = /load\.atlas\s*\(\s*["']([^"']+)["']\s*,\s*["']([^"']+)["']\s*,\s*["']([^"']+)["']/gms;
+    const loadRegex = /load\.atlas\s*\(\s*["']([^"']+)["']\s*,\s*([^,]+?)\s*,\s*([^,\)]+?)\s*,?\s*\)/gms;
     let match;
     while ((match = loadRegex.exec(content)) !== null) {
-        const [, key, , jsonRelative] = match;
-        const normalizedRelative = stripQuery(jsonRelative);
+        const [, key, , jsonExpression] = match;
+        const resolvedJson = resolveExpression(jsonExpression, tsFilePath);
+        if (!resolvedJson) {
+            console.warn(`Warning: Could not resolve atlas JSON path for key "${key}" in ${path.relative(repoRoot, tsFilePath)}`);
+            continue;
+        }
+        const normalizedRelative = stripQuery(resolvedJson);
         const jsonAbsolute = path.resolve(path.dirname(tsFilePath), normalizedRelative);
         const relativeFromRoot = path.relative(repoRoot, jsonAbsolute);
         atlasMap.set(key, {
@@ -45,6 +106,35 @@ function loadAtlasMap(tsFilePath, atlasMap) {
             sourceFile: tsFilePath,
         });
     }
+}
+
+function includeUnreferencedAtlases(atlasMap) {
+    if (!fs.existsSync(entitiesAssetsDir)) {
+        return;
+    }
+    const knownJsonPaths = new Set();
+    atlasMap.forEach((info) => {
+        if (info && info.jsonAbsolute) {
+            knownJsonPaths.add(info.jsonAbsolute);
+        }
+    });
+
+    const jsonFiles = collectFiles(entitiesAssetsDir, (file) => file.endsWith(".json"));
+    jsonFiles.forEach((jsonPath) => {
+        if (knownJsonPaths.has(jsonPath)) {
+            return;
+        }
+        const key = path.basename(jsonPath, ".json");
+        if (!key || atlasMap.has(key)) {
+            return;
+        }
+        atlasMap.set(key, {
+            key,
+            jsonAbsolute: jsonPath,
+            jsonRelative: path.relative(repoRoot, jsonPath),
+            sourceFile: null,
+        });
+    });
 }
 
 function normalizeAtlasJson(atlasInfo) {
@@ -147,6 +237,7 @@ function main() {
     const atlasMap = new Map();
     const tsFiles = collectFiles(srcDir, (file) => file.endsWith(".ts"));
     tsFiles.forEach((file) => loadAtlasMap(file, atlasMap));
+    includeUnreferencedAtlases(atlasMap);
 
     if (atlasMap.size === 0) {
         console.log("No atlases found; nothing to do.");
@@ -200,4 +291,3 @@ function main() {
 }
 
 main();
-
