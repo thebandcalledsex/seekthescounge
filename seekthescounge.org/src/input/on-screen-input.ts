@@ -26,6 +26,9 @@ class OnScreenInput implements InputSource {
     private rightButton!: Phaser.GameObjects.Image;
     private jumpButton!: Phaser.GameObjects.Image;
     private attackButton!: Phaser.GameObjects.Image;
+    private controlsVisible = true;
+    private toggleControlsKey?: Phaser.Input.Keyboard.Key;
+    private handleToggleControlsKeyDown = () => this.toggleControlsVisibility();
 
     private getPad(): number {
         return (1 / 64) * this.scene.scale.width;
@@ -47,6 +50,7 @@ class OnScreenInput implements InputSource {
         this.scene = scene;
         this.scene.input.addPointer(3);
         this.createOnScreenButtons();
+        this.registerKeyboardToggle();
     }
 
     public isLeftPressed(): boolean {
@@ -221,6 +225,65 @@ class OnScreenInput implements InputSource {
 
         // initial anchor
         this.layout();
+        this.updateControlsVisibility();
+    }
+
+    public setControlsVisible(visible: boolean) {
+        if (this.controlsVisible === visible) {
+            return;
+        }
+        if (!visible) {
+            this.reset();
+        }
+        this.controlsVisible = visible;
+        this.updateControlsVisibility();
+    }
+
+    public toggleControlsVisibility() {
+        this.setControlsVisible(!this.controlsVisible);
+    }
+
+    public areControlsVisible() {
+        return this.controlsVisible;
+    }
+
+    private updateControlsVisibility() {
+        const buttons = [this.leftButton, this.rightButton, this.jumpButton, this.attackButton];
+        for (const button of buttons) {
+            if (!button) {
+                continue;
+            }
+            if (this.controlsVisible) {
+                button.setVisible(true).setAlpha(this.buttonTransparencyLevel);
+                if (!button.input?.enabled) {
+                    button.setInteractive({ useHandCursor: true });
+                }
+            } else {
+                button.setVisible(false);
+                if (button.input?.enabled) {
+                    button.disableInteractive();
+                }
+            }
+        }
+    }
+
+    private registerKeyboardToggle() {
+        const keyboard = this.scene.input.keyboard;
+        if (!keyboard) {
+            return;
+        }
+
+        this.toggleControlsKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+        this.toggleControlsKey.on("down", this.handleToggleControlsKeyDown);
+
+        this.scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            if (!this.toggleControlsKey) {
+                return;
+            }
+            this.toggleControlsKey.off("down", this.handleToggleControlsKeyDown);
+            this.toggleControlsKey.destroy();
+            this.toggleControlsKey = undefined;
+        });
     }
 }
 
