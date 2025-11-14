@@ -20,6 +20,8 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     protected speed: number = 200; // Horizontal speed for movement
     protected jumpSpeed: number = 200; // Vertical speed for jumping
     protected wallSlideFallSpeedFactor: number = 1; // Multiplier applied while wall sliding; subclasses override
+    protected groundDragX: number = 1200; // Ground friction (px/s^2)
+    protected airDragX: number = 80; // Air resistance (px/s^2)
     protected attackConfig: AttackConfig = {
         width: 18,
         height: 14,
@@ -60,6 +62,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.playerBody.setSize(16, 16); // Set the player body size
 
         this.playerBody.setCollideWorldBounds(true);
+        this.playerBody.setDragX(this.groundDragX);
 
         this.setScale(1);
         this.updateBodyOffsetFromFrame();
@@ -92,29 +95,40 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             this.playerBody.blocked.right ||
             this.playerBody.touching.right ||
             this.playerBody.wasTouching.right;
+        const currentlyTouchingLeft = this.playerBody.blocked.left || this.playerBody.touching.left;
+        const currentlyTouchingRight =
+            this.playerBody.blocked.right || this.playerBody.touching.right;
 
-        // Reset horizontal velocity each frame
-        let targetVelocityX = 0;
+        const onGround = this.playerBody.onFloor();
+        // Apply friction/air resistance
+        this.playerBody.setDragX(onGround ? this.groundDragX : this.airDragX);
+
+        // Preserve horizontal momentum in air; stop on ground when no input
+        let targetVelocityX = onGround ? 0 : this.playerBody.velocity.x;
 
         // Handle horizontal movement input
         if (wantsLeft) {
-            if (blockedLeft) {
-            } else {
+            if (!blockedLeft) {
                 targetVelocityX = -this.speed;
                 this.lastDirection = "left";
             }
         } else if (wantsRight) {
-            if (blockedRight) {
-            } else {
+            if (!blockedRight) {
                 targetVelocityX = this.speed;
                 this.lastDirection = "right";
             }
         }
 
+        // If no input and the body is pressed into a wall, don't keep pushing
+        if (!wantsLeft && !wantsRight) {
+            if (currentlyTouchingLeft && targetVelocityX < 0) targetVelocityX = 0;
+            if (currentlyTouchingRight && targetVelocityX > 0) targetVelocityX = 0;
+        }
+
         this.playerBody.setVelocityX(targetVelocityX);
 
         // Jumping is fun
-        if (jump && this.playerBody.onFloor()) {
+        if (jump && onGround) {
             this.jump();
         }
 
