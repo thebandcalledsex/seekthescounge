@@ -19,6 +19,7 @@ interface AttackConfig {
 abstract class Player extends Phaser.Physics.Arcade.Sprite {
     protected speed: number = 200; // Horizontal speed for movement
     protected jumpSpeed: number = 200; // Vertical speed for jumping
+    protected wallSlideFallSpeedFactor: number = 1; // Multiplier applied while wall sliding; subclasses override
     protected attackConfig: AttackConfig = {
         width: 18,
         height: 14,
@@ -36,6 +37,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
     protected playerBody: Phaser.Physics.Arcade.Body;
     protected lastDirection: "left" | "right" = "right"; // Default to facing right
+    private lastBodyFrame?: Phaser.Textures.Frame;
     private attackHitbox: Phaser.GameObjects.Zone;
     private attackHitboxBody: Phaser.Physics.Arcade.Body;
     private attackTargets?:
@@ -60,6 +62,8 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.playerBody.setCollideWorldBounds(true);
 
         this.setScale(1);
+        this.updateBodyOffsetFromFrame();
+        this.lastBodyFrame = this.frame;
 
         this.attackHitbox = scene.add.zone(
             this.x,
@@ -131,6 +135,14 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Update movement animation
         this.refreshPlayerAnimation();
+    }
+
+    public override preUpdate(time: number, delta: number): void {
+        super.preUpdate(time, delta);
+        if (this.frame !== this.lastBodyFrame) {
+            this.updateBodyOffsetFromFrame();
+            this.lastBodyFrame = this.frame;
+        }
     }
 
     public setAttackTargets(
@@ -434,6 +446,26 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.attackHitbox.destroy();
         super.destroy(fromScene);
     }
+
+    // Update the body offset based on the current frame to keep the body centered on the sprite
+    private updateBodyOffsetFromFrame(): void {
+        const body = this.playerBody;
+        if (!body) {
+            return;
+        }
+
+        const frame = this.frame;
+        if (frame) {
+            const offsetX = frame.x + frame.width / 2 - body.width / 2;
+            const offsetY = frame.y + frame.height - body.height;
+            body.setOffset(Math.round(offsetX), Math.round(offsetY));
+            return;
+        }
+
+        const fallbackOffsetX = this.displayOriginX - body.width / 2;
+        const fallbackOffsetY = this.displayOriginY - body.height;
+        body.setOffset(Math.round(fallbackOffsetX), Math.round(fallbackOffsetY));
+    }
 }
 
 class Rovert extends Player {
@@ -514,6 +546,10 @@ class Rovert extends Player {
 class Shuey extends Player {
     protected speed: number = 90; // Horizontal speed for movement
     protected jumpSpeed: number = 215; // Vertical speed for jumping
+    protected wallSlideFallSpeedFactor: number = 0.6;
+    private suppressLeftInputUntilRelease = false;
+    private suppressRightInputUntilRelease = false;
+    private wasWallSlidingLastFrame = false;
     protected attackConfig: AttackConfig = {
         width: 18,
         height: 14,
@@ -537,7 +573,46 @@ class Shuey extends Player {
         this.movingAttackSprite = scene.add.sprite(x, y, texture);
         this.movingAttackSprite.setOrigin(this.originX, this.originY);
         this.movingAttackSprite.setScale(this.scaleX, this.scaleY);
+        ``;
         this.movingAttackSprite.setVisible(false).setActive(false);
+
+        this.playerBody.setSize(8, 13); // Set the player body size
+    }
+
+    public override update(
+        moveLeft: boolean,
+        moveRight: boolean,
+        jump: boolean,
+        attack: boolean,
+    ): void {
+        const landedFromWallSlide = this.wasWallSlidingLastFrame && this.playerBody.onFloor();
+        if (landedFromWallSlide) {
+            if (moveLeft) {
+                this.suppressLeftInputUntilRelease = true;
+            }
+            if (moveRight) {
+                this.suppressRightInputUntilRelease = true;
+            }
+        }
+
+        if (this.suppressLeftInputUntilRelease) {
+            if (moveLeft) {
+                moveLeft = false;
+            } else {
+                this.suppressLeftInputUntilRelease = false;
+            }
+        }
+        if (this.suppressRightInputUntilRelease) {
+            if (moveRight) {
+                moveRight = false;
+            } else {
+                this.suppressRightInputUntilRelease = false;
+            }
+        }
+
+        super.update(moveLeft, moveRight, jump, attack);
+
+        this.wasWallSlidingLastFrame = this.getWallSlideDirection() !== null;
     }
 
     protected playIdleAnimation(direction: "left" | "right"): void {
@@ -578,10 +653,21 @@ class Shuey extends Player {
 
     protected override refreshPlayerAnimation(): void {
         const body = this.playerBody;
-        if (
-            !body.onFloor() &&
-            Math.abs(body.velocity.y) > RISING_FALLING_ANIMATION_VELOCITY_THRESHOLD
-        ) {
+        const wallSlideDirection = this.getWallSlideDirection();
+        const isAirborne = !body.onFloor();
+
+        if (wallSlideDirection) {
+            const animationKey =
+                wallSlideDirection === "left" ? "shuey-wall-slide-left" : "shuey-wall-slide-right";
+            if (this.anims.currentAnim?.key !== animationKey || !this.anims.isPlaying) {
+                this.play(animationKey, true);
+            }
+            const facingAwayFromWall = wallSlideDirection === "left" ? "right" : "left";
+            this.lastDirection = facingAwayFromWall;
+            return;
+        }
+
+        if (isAirborne && Math.abs(body.velocity.y) > RISING_FALLING_ANIMATION_VELOCITY_THRESHOLD) {
             const rising = body.velocity.y < 0;
             if (rising) {
                 const animationKey =
@@ -608,6 +694,7 @@ class Shuey extends Player {
     }
 
     protected override postUpdate(): void {
+        this.applyWallSlideFallRate();
         super.postUpdate();
 
         // Sync moving attack sprite position with base sprite
@@ -617,6 +704,40 @@ class Shuey extends Player {
         this.movingAttackSprite.setPosition(snapX, snapY);
         this.movingAttackSprite.setDepth(this.depth + 1);
         this.movingAttackSprite.setScale(this.scaleX, this.scaleY);
+    }
+
+    private getWallSlideDirection(): "left" | "right" | null {
+        const body = this.playerBody;
+        if (!body || body.onFloor() || body.velocity.y <= 0) {
+            return null;
+        }
+
+        const touchingLeft = body.blocked.left || body.touching.left || body.wasTouching.left;
+        const touchingRight = body.blocked.right || body.touching.right || body.wasTouching.right;
+
+        if (touchingLeft) {
+            return "left";
+        }
+        if (touchingRight) {
+            return "right";
+        }
+        return null;
+    }
+
+    private applyWallSlideFallRate(): void {
+        const direction = this.getWallSlideDirection();
+        if (!direction) {
+            return;
+        }
+        const body = this.playerBody;
+        if (body.velocity.y <= 0) {
+            return;
+        }
+        const multiplier = this.wallSlideFallSpeedFactor ?? 1;
+        if (multiplier === 1) {
+            return;
+        }
+        body.setVelocityY(body.velocity.y * multiplier);
     }
 
     private cropSprite(): void {

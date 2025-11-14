@@ -130,6 +130,16 @@ class Game extends Phaser.Scene {
             `${ENTITY_ASSETS_PATH}/shuey/jumping/fall/shuey-jump-fall-left.json`,
         );
         this.load.atlas(
+            "shuey-wall-slide-left",
+            `${ENTITY_ASSETS_PATH}/shuey/wall-slide/shuey-wall-slide-left.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/wall-slide/shuey-wall-slide-left.json`,
+        );
+        this.load.atlas(
+            "shuey-wall-slide-right",
+            `${ENTITY_ASSETS_PATH}/shuey/wall-slide/shuey-wall-slide-right.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/wall-slide/shuey-wall-slide-right.json`,
+        );
+        this.load.atlas(
             "pozzum-cruzing-left",
             `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-left.png`,
             `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-left.json`,
@@ -220,6 +230,8 @@ class Game extends Phaser.Scene {
             "shuey-jump-rise-right",
             "shuey-jump-fall-left",
             "shuey-jump-fall-right",
+            "shuey-wall-slide-left",
+            "shuey-wall-slide-right",
         ].forEach((k) => {
             if (this.anims.exists(k)) this.anims.remove(k);
         });
@@ -381,6 +393,32 @@ class Game extends Phaser.Scene {
                 repeat: -1,
             });
         }
+        if (!this.anims.exists("shuey-wall-slide-right")) {
+            this.anims.create({
+                key: "shuey-wall-slide-right",
+                frames: this.anims.generateFrameNames("shuey-wall-slide-right", {
+                    prefix: "shuey-wall-slide-right-",
+                    start: 0,
+                    end: 3,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 10,
+                repeat: -1,
+            });
+        }
+        if (!this.anims.exists("shuey-wall-slide-left")) {
+            this.anims.create({
+                key: "shuey-wall-slide-left",
+                frames: this.anims.generateFrameNames("shuey-wall-slide-left", {
+                    prefix: "shuey-wall-slide-left-",
+                    start: 0,
+                    end: 3,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 10,
+                repeat: -1,
+            });
+        }
 
         if (!this.anims.exists("rovert-idle-right")) {
             this.anims.create({
@@ -491,18 +529,18 @@ class Game extends Phaser.Scene {
         // Create some training dummies
         this.trainingDummies = this.physics.add.group();
         const dummy1 = new TrainingDummy(this, this.player.x - 40, this.player.y - 16);
-        const dummy2 = new TrainingDummy(this, this.player.x + 220, this.player.y - 16);
+        //const dummy2 = new TrainingDummy(this, this.player.x + 220, this.player.y - 16);
         this.trainingDummies.add(dummy1);
-        this.trainingDummies.add(dummy2);
+        //this.trainingDummies.add(dummy2);
 
         // Create some enemies
         this.enemies = this.physics.add.group();
-        const pozzum = new Pozzum(this, this.player.x + 150, this.player.y);
-        const pozzum2 = new Pozzum(this, this.player.x + 300, this.player.y);
-        const pozzum3 = new Pozzum(this, this.player.x + 450, this.player.y);
-        this.enemies.add(pozzum);
-        this.enemies.add(pozzum2);
-        this.enemies.add(pozzum3);
+        //const pozzum = new Pozzum(this, this.player.x + 150, this.player.y);
+        //const pozzum2 = new Pozzum(this, this.player.x + 300, this.player.y);
+        //const pozzum3 = new Pozzum(this, this.player.x + 450, this.player.y);
+        //this.enemies.add(pozzum);
+        //this.enemies.add(pozzum2);
+        //this.enemies.add(pozzum3);
 
         // Set the world bounds
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels); // Adjust world bounds
