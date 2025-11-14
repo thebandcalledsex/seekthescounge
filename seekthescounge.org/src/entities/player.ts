@@ -233,6 +233,10 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.playerBody.setVelocityY(-this.jumpSpeed);
     }
 
+    protected canStartAttack(): boolean {
+        return true;
+    }
+
     private handleAttackInput(now: number) {
         // Ignore if pressed last frame to prevent multiple attacks from a single press
         if (this.attackPressedLastFrame) {
@@ -242,6 +246,10 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Ignore if already attacking or in cooldown
         if (this.attackActive || now < this.attackCooldownUntil) {
+            return;
+        }
+
+        if (!this.canStartAttack()) {
             return;
         }
 
@@ -560,10 +568,15 @@ class Rovert extends Player {
 class Shuey extends Player {
     protected speed: number = 90; // Horizontal speed for movement
     protected jumpSpeed: number = 215; // Vertical speed for jumping
-    protected wallSlideFallSpeedFactor: number = 0.6;
+    protected wallSlideFallSpeedFactor: number = 0.64;
+    protected wallJumpHorizontalSpeed: number = 144; // Horizontal speed away from wall
+    protected wallJumpUpwardSpeed: number = 255; // Upward speed when jumping off wall
     private suppressLeftInputUntilRelease = false;
     private suppressRightInputUntilRelease = false;
     private wasWallSlidingLastFrame = false;
+    // Track last wall slide direction plus a small hold window to smooth animation flicker.
+    private lastWallSlideAnimationDirection: "left" | "right" | null = null;
+    private wallSlideAnimationHoldUntil = 0;
     protected attackConfig: AttackConfig = {
         width: 18,
         height: 14,
@@ -580,6 +593,7 @@ class Shuey extends Player {
     };
     private movingAttackSprite: Phaser.GameObjects.Sprite;
     private static readonly movingAttackSpriteYOffset = 0;
+    private static readonly wallSlideAnimationHoldDurationMs = 125;
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
         super(scene, x, y, texture);
@@ -626,7 +640,42 @@ class Shuey extends Player {
 
         super.update(moveLeft, moveRight, jump, attack);
 
+        // Wall jump: if wall sliding and jump is pressed, launch away from wall
+        const wallSlideDirection = this.getWallSlideDirection();
+        if (jump && wallSlideDirection) {
+            const awaySign = wallSlideDirection === "left" ? 1 : -1; // +1 means jump right, -1 left
+            // Apply outward horizontal and upward velocities
+            this.playerBody.setVelocityX(awaySign * this.wallJumpHorizontalSpeed);
+            this.playerBody.setVelocityY(-this.wallJumpUpwardSpeed);
+            // Face away from the wall
+            this.lastDirection = awaySign > 0 ? "right" : "left";
+            // Suppress re-input toward the wall until the player releases
+            if (wallSlideDirection === "left") {
+                this.suppressLeftInputUntilRelease = true;
+            } else {
+                this.suppressRightInputUntilRelease = true;
+            }
+            // Refresh animation to reflect jump state
+            this.refreshPlayerAnimation();
+        }
+
         this.wasWallSlidingLastFrame = this.getWallSlideDirection() !== null;
+    }
+
+    protected override canStartAttack(): boolean {
+        if (!super.canStartAttack()) {
+            return false;
+        }
+        const key = this.anims.currentAnim?.key ?? "";
+        // Disallow starting an attack while the wall-slide animation is active
+        if (
+            key === "shuey-wall-slide-left" ||
+            key === "shuey-wall-slide-right" ||
+            key.includes("wall-slide")
+        ) {
+            return false;
+        }
+        return true;
     }
 
     protected playIdleAnimation(direction: "left" | "right"): void {
@@ -667,9 +716,25 @@ class Shuey extends Player {
 
     protected override refreshPlayerAnimation(): void {
         const body = this.playerBody;
-        const wallSlideDirection = this.getWallSlideDirection();
+        let wallSlideDirection = this.getWallSlideDirection();
         const isAirborne = !body.onFloor();
+        const now = this.scene.time.now;
 
+        // Handle wall slide animation with hold duration to smooth flicker
+        if (body.onFloor() || body.velocity.y <= 0) {
+            this.lastWallSlideAnimationDirection = null;
+            this.wallSlideAnimationHoldUntil = 0;
+        } else if (wallSlideDirection) {
+            this.lastWallSlideAnimationDirection = wallSlideDirection;
+            this.wallSlideAnimationHoldUntil = now + Shuey.wallSlideAnimationHoldDurationMs;
+        } else if (this.lastWallSlideAnimationDirection && now < this.wallSlideAnimationHoldUntil) {
+            // Keep playing the wall slide animation briefly when contact flickers or detaches for a frame.
+            wallSlideDirection = this.lastWallSlideAnimationDirection;
+        } else {
+            this.lastWallSlideAnimationDirection = null;
+        }
+
+        // Play wall slide animation if applicable
         if (wallSlideDirection) {
             const animationKey =
                 wallSlideDirection === "left" ? "shuey-wall-slide-left" : "shuey-wall-slide-right";
@@ -681,6 +746,7 @@ class Shuey extends Player {
             return;
         }
 
+        // Handle rising/falling animations
         if (isAirborne && Math.abs(body.velocity.y) > RISING_FALLING_ANIMATION_VELOCITY_THRESHOLD) {
             const rising = body.velocity.y < 0;
             if (rising) {
