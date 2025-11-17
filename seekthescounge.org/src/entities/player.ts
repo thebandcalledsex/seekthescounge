@@ -20,8 +20,8 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     protected speed: number = 200; // Horizontal speed for movement
     protected jumpSpeed: number = 200; // Vertical speed for jumping
     protected wallSlideFallSpeedFactor: number = 1; // Multiplier applied while wall sliding; subclasses override
-    protected groundDragX: number = 1200; // Ground friction (px/s^2)
-    protected airDragX: number = 80; // Air resistance (px/s^2)
+    protected groundDragX: number = 0; // Ground friction
+    protected airDragX: number = 80; // Air resistance
     protected attackConfig: AttackConfig = {
         width: 18,
         height: 14,
@@ -568,7 +568,7 @@ class Rovert extends Player {
 class Shuey extends Player {
     protected speed: number = 90; // Horizontal speed for movement
     protected jumpSpeed: number = 215; // Vertical speed for jumping
-    protected wallSlideFallSpeedFactor: number = 0.64;
+    protected wallSlideFallSpeedFactor: number = 0.6; // 60% fall speed when wall sliding
     protected wallJumpHorizontalSpeed: number = 144; // Horizontal speed away from wall
     protected wallJumpUpwardSpeed: number = 255; // Upward speed when jumping off wall
     private suppressLeftInputUntilRelease = false;
