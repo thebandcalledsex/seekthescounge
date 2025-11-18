@@ -597,10 +597,10 @@ class Shuey extends Player {
     private lastWallSlideAnimationDirection: "left" | "right" | null = null;
     private wallSlideAnimationHoldUntil = 0;
     protected attackConfig: AttackConfig = {
-        width: 18,
-        height: 14,
+        width: 13,
+        height: 7,
         reach: 1,
-        verticalOffset: -4,
+        verticalOffset: -6,
         duration: 420,
         cooldown: 520,
         damage: 1,
