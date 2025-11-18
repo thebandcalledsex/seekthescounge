@@ -11,7 +11,7 @@ export const ENTITY_ASSETS_PATH = "../../assets/entities";
 export const CAMERA_FOLLOW_LERP_X = 0.1;
 export const CAMERA_FOLLOW_LERP_Y = 0.1;
 export const CAMERA_FOLLOW_OFFSET_X = -10; // Zero is centered, negative is left of center. This sorta controls where the play get's centered on screen.
-export const CAMERA_FOLLOW_OFFSET_Y = 0;
+export const CAMERA_FOLLOW_OFFSET_Y = 20; // Lift the camera upward so jumps reveal more of the horizon.
 
 export const GAME_VERSION = "1.36";
 
