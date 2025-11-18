@@ -38,6 +38,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     };
 
     protected playerBody: Phaser.Physics.Arcade.Body;
+    protected isDead: boolean = false;
     protected lastDirection: "left" | "right" = "right"; // Default to facing right
     private lastBodyFrame?: Phaser.Textures.Frame;
     private attackHitbox: Phaser.GameObjects.Zone;
@@ -148,7 +149,9 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         // Update movement animation
-        this.refreshPlayerAnimation();
+        if (!this.isDead) {
+            this.refreshPlayerAnimation();
+        }
     }
 
     public override preUpdate(time: number, delta: number): void {
@@ -171,6 +174,8 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         if (!this.active) {
             return;
         }
+
+        // The player dies immediately upon taking any damage.
         this.handleDeath();
     }
 
@@ -181,6 +186,8 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     protected abstract playIdleAnimation(direction: "left" | "right"): void;
 
     protected abstract playRunAnimation(direction: "left" | "right"): void;
+
+    protected abstract playDeathAnimation(): void;
 
     protected postUpdate(): void {
         // Extension point for subclasses that need extra per-frame work.
@@ -396,12 +403,16 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         return null;
     }
 
-    private handleDeath() {
+    protected handleDeath() {
         if (!this.active) {
             return;
         }
 
-        this.playerBody.enable = false;
+        // Mark as dead to prevent further animation updates
+        this.isDead = true;
+
+        // Play death animation
+        this.playDeathAnimation();
 
         // Death zoom transition, then switch to PlayerSelect scene.
         const { x: focusX, y: focusY } = this.playerBody.center;
@@ -543,6 +554,11 @@ class Rovert extends Player {
             }
         }
     }
+
+    protected playDeathAnimation(): void {
+        this.play("rovert-idle", true);
+    }
+
     protected override onAttackStarted(): void {
         super.onAttackStarted();
 
@@ -712,6 +728,10 @@ class Shuey extends Player {
                 }
             }
         }
+    }
+
+    protected playDeathAnimation(): void {
+        this.play("shuey-death", true);
     }
 
     protected override refreshPlayerAnimation(): void {

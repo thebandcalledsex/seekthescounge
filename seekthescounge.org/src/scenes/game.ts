@@ -140,6 +140,12 @@ class Game extends Phaser.Scene {
             `${ENTITY_ASSETS_PATH}/shuey/wall-slide/shuey-wall-slide-right.json`,
         );
         this.load.atlas(
+            "shuey-death",
+            `${ENTITY_ASSETS_PATH}/shuey/death/shuey-death.png`,
+            `${ENTITY_ASSETS_PATH}/shuey/death/shuey-death.json`,
+        );
+
+        this.load.atlas(
             "pozzum-cruzing-left",
             `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-left.png`,
             `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-left.json`,
@@ -419,6 +425,19 @@ class Game extends Phaser.Scene {
                 repeat: -1,
             });
         }
+        if (!this.anims.exists("shuey-death")) {
+            this.anims.create({
+                key: "shuey-death",
+                frames: this.anims.generateFrameNames("shuey-death", {
+                    prefix: "shuey-death-",
+                    start: 0,
+                    end: 15,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 10,
+                repeat: 0, // Play once
+            });
+        }
 
         if (!this.anims.exists("rovert-idle-right")) {
             this.anims.create({
@@ -518,27 +537,30 @@ class Game extends Phaser.Scene {
             });
         }
 
+        const spawnX = 100;
+        const spawnY = 180;
+
         // Establish the player based on the input from the player selection scene
         if (this.selectedPlayer === "Rovert") {
-            this.player = new Rovert(this, 100, 100, "rovert-idle-right"); // Create rovert at (100,100)
+            this.player = new Rovert(this, spawnX, spawnY, "rovert-idle-right"); // Create rovert at (100,100)
         } else {
-            this.player = new Shuey(this, 100, 100, "shuey-idle-right"); // Create shuey at (100,100)
+            this.player = new Shuey(this, spawnX, spawnY, "shuey-idle-right"); // Create shuey at (100,100)
             this.player.play("shuey-idle-right");
         }
 
         // Create some training dummies
         this.trainingDummies = this.physics.add.group();
-        const dummy1 = new TrainingDummy(this, this.player.x - 40, this.player.y - 16);
+        //const dummy1 = new TrainingDummy(this, this.player.x - 40, this.player.y - 16);
         //const dummy2 = new TrainingDummy(this, this.player.x + 220, this.player.y - 16);
-        this.trainingDummies.add(dummy1);
+        //this.trainingDummies.add(dummy1);
         //this.trainingDummies.add(dummy2);
 
         // Create some enemies
         this.enemies = this.physics.add.group();
-        //const pozzum = new Pozzum(this, this.player.x + 150, this.player.y);
+        const pozzum = new Pozzum(this, this.player.x + 200, this.player.y);
         //const pozzum2 = new Pozzum(this, this.player.x + 300, this.player.y);
         //const pozzum3 = new Pozzum(this, this.player.x + 450, this.player.y);
-        //this.enemies.add(pozzum);
+        this.enemies.add(pozzum);
         //this.enemies.add(pozzum2);
         //this.enemies.add(pozzum3);
 
