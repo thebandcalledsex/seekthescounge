@@ -589,6 +589,9 @@ class Shuey extends Player {
     protected wallJumpUpwardSpeed: number = 255; // Upward speed when jumping off wall
     private suppressLeftInputUntilRelease = false;
     private suppressRightInputUntilRelease = false;
+    // Track when each direction can start honoring input again after a wall jump.
+    private leftInputResumeTime = 0;
+    private rightInputResumeTime = 0;
     private wasWallSlidingLastFrame = false;
     // Track last wall slide direction plus a small hold window to smooth animation flicker.
     private lastWallSlideAnimationDirection: "left" | "right" | null = null;
@@ -610,6 +613,7 @@ class Shuey extends Player {
     private movingAttackSprite: Phaser.GameObjects.Sprite;
     private static readonly movingAttackSpriteYOffset = 0;
     private static readonly wallSlideAnimationHoldDurationMs = 125;
+    private static readonly wallJumpDirectionalResumeDelayMs = 500; // Delay before honoring input back toward the wall
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
         super(scene, x, y, texture);
@@ -629,32 +633,53 @@ class Shuey extends Player {
         jump: boolean,
         attack: boolean,
     ): void {
+        const now = this.scene.time.now;
+        let leftHeld = moveLeft;
+        let rightHeld = moveRight;
         const landedFromWallSlide = this.wasWallSlidingLastFrame && this.playerBody.onFloor();
         if (landedFromWallSlide) {
-            if (moveLeft) {
+            if (leftHeld) {
                 this.suppressLeftInputUntilRelease = true;
             }
-            if (moveRight) {
+            if (rightHeld) {
                 this.suppressRightInputUntilRelease = true;
             }
         }
 
         if (this.suppressLeftInputUntilRelease) {
+            // Landing from a wall slide still requires releasing input once.
             if (moveLeft) {
-                moveLeft = false;
+                leftHeld = false;
             } else {
                 this.suppressLeftInputUntilRelease = false;
             }
         }
         if (this.suppressRightInputUntilRelease) {
             if (moveRight) {
-                moveRight = false;
+                rightHeld = false;
             } else {
                 this.suppressRightInputUntilRelease = false;
             }
         }
 
-        super.update(moveLeft, moveRight, jump, attack);
+        // Short-circuit any held direction until its resume time elapses; releasing clears it instantly.
+        if (leftHeld) {
+            if (now < this.leftInputResumeTime) {
+                leftHeld = false;
+            }
+        } else if (this.leftInputResumeTime !== 0) {
+            this.leftInputResumeTime = 0;
+        }
+
+        if (rightHeld) {
+            if (now < this.rightInputResumeTime) {
+                rightHeld = false;
+            }
+        } else if (this.rightInputResumeTime !== 0) {
+            this.rightInputResumeTime = 0;
+        }
+
+        super.update(leftHeld, rightHeld, jump, attack);
 
         // Wall jump: if wall sliding and jump is pressed, launch away from wall
         const wallSlideDirection = this.getWallSlideDirection();
@@ -665,12 +690,15 @@ class Shuey extends Player {
             this.playerBody.setVelocityY(-this.wallJumpUpwardSpeed);
             // Face away from the wall
             this.lastDirection = awaySign > 0 ? "right" : "left";
-            // Suppress re-input toward the wall until the player releases
+            // Suppress input toward the wall briefly so you can't instantly re-stick after jumping.
+            const resumeAt = this.scene.time.now + Shuey.wallJumpDirectionalResumeDelayMs;
             if (wallSlideDirection === "left") {
-                this.suppressLeftInputUntilRelease = true;
+                this.leftInputResumeTime = resumeAt;
             } else {
-                this.suppressRightInputUntilRelease = true;
+                this.rightInputResumeTime = resumeAt;
             }
+            this.suppressLeftInputUntilRelease = false;
+            this.suppressRightInputUntilRelease = false;
             // Refresh animation to reflect jump state
             this.refreshPlayerAnimation();
         }
