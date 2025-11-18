@@ -620,7 +620,7 @@ class Shuey extends Player {
         ``;
         this.movingAttackSprite.setVisible(false).setActive(false);
 
-        this.playerBody.setSize(8, 13); // Set the player body size
+        this.playerBody.setSize(5, 13); // Set the player body size
     }
 
     public override update(
