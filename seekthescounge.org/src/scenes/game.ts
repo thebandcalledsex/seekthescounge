@@ -20,6 +20,8 @@ class Game extends Phaser.Scene {
     private dialog!: DialogManager;
     private trainingDummies!: Phaser.Physics.Arcade.Group;
     private enemies!: Phaser.Physics.Arcade.Group;
+    public map!: Phaser.Tilemaps.Tilemap;
+    public groundLayer!: Phaser.Tilemaps.TilemapLayer;
 
     // One-time action flags
     private hasTouchedGround = false;
@@ -172,6 +174,7 @@ class Game extends Phaser.Scene {
         console.log("Creating game objects...");
 
         const map = this.make.tilemap({ key: "level1" });
+        this.map = map;
         // Create the ground layer
         const tileset = map.addTilesetImage("desert-tiles", "desert-tiles");
         if (!tileset) {
@@ -183,6 +186,9 @@ class Game extends Phaser.Scene {
         } else {
             throw new Error("Ground layer not found");
         }
+        this.groundLayer = groundLayer;
+        this.data.set("map", map);
+        this.data.set("groundLayer", groundLayer);
 
         // Render background image layers
         this.renderBackgroundImageLayers(map);
@@ -537,7 +543,7 @@ class Game extends Phaser.Scene {
             });
         }
 
-        const spawnX = 100;
+        const spawnX = 500;
         const spawnY = 180;
 
         // Establish the player based on the input from the player selection scene
@@ -557,10 +563,10 @@ class Game extends Phaser.Scene {
 
         // Create some enemies
         this.enemies = this.physics.add.group();
-        const pozzum = new Pozzum(this, this.player.x + 200, this.player.y);
+        //const pozzum = new Pozzum(this, this.player.x + 200, this.player.y);
         //const pozzum2 = new Pozzum(this, this.player.x + 300, this.player.y);
         //const pozzum3 = new Pozzum(this, this.player.x + 450, this.player.y);
-        this.enemies.add(pozzum);
+        //this.enemies.add(pozzum);
         //this.enemies.add(pozzum2);
         //this.enemies.add(pozzum3);
 

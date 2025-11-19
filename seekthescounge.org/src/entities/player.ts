@@ -499,6 +499,81 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         const fallbackOffsetY = this.displayOriginY - body.height;
         body.setOffset(Math.round(fallbackOffsetX), Math.round(fallbackOffsetY));
     }
+
+    protected isTouchingStackedWall(direction: "left" | "right"): boolean {
+        const body = this.playerBody;
+        const touching =
+            direction === "left"
+                ? body.blocked.left || body.touching.left || body.wasTouching.left
+                : body.blocked.right || body.touching.right || body.wasTouching.right;
+        if (!touching) {
+            return false;
+        }
+
+        const tilemapContext = this.getTilemapCollisionContext();
+        if (!tilemapContext) {
+            return touching;
+        }
+
+        const sideTile = this.getSideTileFacing(direction, tilemapContext);
+        if (!sideTile || !sideTile.collides) {
+            return false;
+        }
+
+        const aboveTile = tilemapContext.map.getTileAt(
+            sideTile.x,
+            sideTile.y - 1,
+            false,
+            tilemapContext.layer,
+        );
+        return Boolean(aboveTile && aboveTile.collides);
+    }
+
+    protected getTilemapCollisionContext(): {
+        map: Phaser.Tilemaps.Tilemap;
+        layer: Phaser.Tilemaps.TilemapLayer;
+    } | null {
+        const scene = this.scene as Phaser.Scene & {
+            map?: Phaser.Tilemaps.Tilemap;
+            groundLayer?: Phaser.Tilemaps.TilemapLayer;
+            layer?: Phaser.Tilemaps.TilemapLayer;
+        };
+        const mapValue =
+            scene.map ?? (scene.data?.get("map") as Phaser.Tilemaps.Tilemap | undefined);
+        const layerValue =
+            scene.groundLayer ??
+            scene.layer ??
+            (scene.data?.get("groundLayer") as Phaser.Tilemaps.TilemapLayer | undefined) ??
+            (scene.data?.get("layer") as Phaser.Tilemaps.TilemapLayer | undefined);
+        if (mapValue && layerValue) {
+            return { map: mapValue, layer: layerValue };
+        }
+        return null;
+    }
+
+    protected getSideTileFacing(
+        direction: "left" | "right",
+        context: { map: Phaser.Tilemaps.Tilemap; layer: Phaser.Tilemaps.TilemapLayer },
+    ): Phaser.Tilemaps.Tile | null {
+        const body = this.playerBody;
+        const sampleX = direction === "left" ? body.left - 1 : body.right + 1;
+        const sampleYs = [body.bottom - 1, body.center.y, body.top + 1];
+        const camera = this.scene.cameras?.main;
+
+        for (const sampleY of sampleYs) {
+            const tile = context.map.getTileAtWorldXY(
+                sampleX,
+                sampleY,
+                false,
+                camera,
+                context.layer,
+            );
+            if (tile) {
+                return tile;
+            }
+        }
+        return null;
+    }
 }
 
 class Rovert extends Player {
@@ -840,13 +915,10 @@ class Shuey extends Player {
             return null;
         }
 
-        const touchingLeft = body.blocked.left || body.touching.left || body.wasTouching.left;
-        const touchingRight = body.blocked.right || body.touching.right || body.wasTouching.right;
-
-        if (touchingLeft) {
+        if (this.isTouchingStackedWall("left")) {
             return "left";
         }
-        if (touchingRight) {
+        if (this.isTouchingStackedWall("right")) {
             return "right";
         }
         return null;
