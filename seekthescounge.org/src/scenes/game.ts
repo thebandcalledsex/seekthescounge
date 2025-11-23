@@ -6,9 +6,9 @@ import * as constants from "../constants";
 import DialogManager from "../ui/dialog";
 import OnScreenInput from "../input/on-screen-input";
 import TrainingDummy from "../entities/training-dummy";
-import Goomba from "../entities/goomba";
 import Enemy from "../entities/enemy";
 import Pozzum from "../entities/pozzum";
+import Chaser from "../entities/chaser";
 
 const IMAGE_LAYER_BASE_DEPTH = -50;
 const { ENTITY_ASSETS_PATH } = constants;
@@ -159,11 +159,15 @@ class Game extends Phaser.Scene {
         );
 
         // Load the tilemap for level 1 and its tileset
-        this.load.tilemapTiledJSON("level1", "../../assets/maps/level1.json");
+        //this.load.tilemapTiledJSON("level1", "../../assets/maps/level1.json");
         this.load.image("desert-tiles", "../../assets/tilesets/desert.png");
 
+        // Load the tilemap for 1-1
+        this.load.tilemapTiledJSON("level1", "../../assets/maps/1-1.json");
+
         // Load level1's complete JSON data (for image layers)
-        this.load.json("level1-data", "../../assets/maps/level1.json");
+        //this.load.json("level1-data", "../../assets/maps/level1.json");
+        this.load.json("level1-data", "../../assets/maps/1-1.json");
 
         // Load on-screen input button assets
         OnScreenInput.preload(this);
@@ -544,7 +548,7 @@ class Game extends Phaser.Scene {
             });
         }
 
-        const spawnX = 500;
+        const spawnX = 10;
         const spawnY = 180;
 
         // Establish the player based on the input from the player selection scene
@@ -564,12 +568,14 @@ class Game extends Phaser.Scene {
 
         // Create some enemies
         this.enemies = this.physics.add.group();
-        //const pozzum = new Pozzum(this, this.player.x + 200, this.player.y);
-        //const pozzum2 = new Pozzum(this, this.player.x + 300, this.player.y);
-        //const pozzum3 = new Pozzum(this, this.player.x + 450, this.player.y);
-        //this.enemies.add(pozzum);
-        //this.enemies.add(pozzum2);
-        //this.enemies.add(pozzum3);
+        const chaser = new Chaser(this, this.player.x + 140, this.player.y, this.player);
+        const pozzum = new Pozzum(this, this.player.x + 250, this.player.y);
+        const pozzum2 = new Pozzum(this, this.player.x - 100, this.player.y);
+        const pozzum3 = new Pozzum(this, this.player.x - 250, this.player.y);
+        this.enemies.add(chaser);
+        this.enemies.add(pozzum);
+        this.enemies.add(pozzum2);
+        this.enemies.add(pozzum3);
 
         // Set the world bounds
         this.cameras.main.setBounds(

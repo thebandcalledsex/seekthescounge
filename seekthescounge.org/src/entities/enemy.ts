@@ -116,12 +116,12 @@ abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         const trim = adjustments?.trim;
         const trimAll = typeof trim === "number" ? trim : 0;
-        const trimX = typeof trim === "object" ? trim.x ?? trimAll : trimAll;
-        const trimY = typeof trim === "object" ? trim.y ?? trimAll : trimAll;
-        const trimLeft = typeof trim === "object" ? trim.left ?? trimX : trimX;
-        const trimRight = typeof trim === "object" ? trim.right ?? trimX : trimX;
-        const trimTop = typeof trim === "object" ? trim.top ?? trimY : trimY;
-        const trimBottom = typeof trim === "object" ? trim.bottom ?? trimY : trimY;
+        const trimX = typeof trim === "object" ? (trim.x ?? trimAll) : trimAll;
+        const trimY = typeof trim === "object" ? (trim.y ?? trimAll) : trimAll;
+        const trimLeft = typeof trim === "object" ? (trim.left ?? trimX) : trimX;
+        const trimRight = typeof trim === "object" ? (trim.right ?? trimX) : trimX;
+        const trimTop = typeof trim === "object" ? (trim.top ?? trimY) : trimY;
+        const trimBottom = typeof trim === "object" ? (trim.bottom ?? trimY) : trimY;
 
         minX += trimLeft;
         maxX -= trimRight;
@@ -129,9 +129,7 @@ abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
         maxY -= trimBottom;
 
         if (minX >= maxX || minY >= maxY) {
-            console.warn(
-                `[Enemy] Body size collapsed after trim for textures: ${keys.join(", ")}`,
-            );
+            console.warn(`[Enemy] Body size collapsed after trim for textures: ${keys.join(", ")}`);
             return;
         }
 
