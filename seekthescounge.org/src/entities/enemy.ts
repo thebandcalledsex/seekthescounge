@@ -10,6 +10,21 @@ export interface Damageable {
     takeDamage(amount: number, source: Phaser.GameObjects.GameObject): void;
 }
 
+export interface BodySizeAdjustments {
+    inset?: number | { x?: number; y?: number };
+    offset?: { x?: number; y?: number };
+    trim?:
+        | number
+        | {
+              x?: number;
+              y?: number;
+              left?: number;
+              right?: number;
+              top?: number;
+              bottom?: number;
+          };
+}
+
 abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
     protected config: EnemyConfig;
     protected direction: 1 | -1 = -1;
@@ -71,7 +86,10 @@ abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.destroy();
     }
 
-    protected setBodySizeFromTextures(textureKeys: string | string[]) {
+    protected setBodySizeFromTextures(
+        textureKeys: string | string[],
+        adjustments?: BodySizeAdjustments,
+    ) {
         const keys = Array.isArray(textureKeys) ? textureKeys : [textureKeys];
 
         let minX = Number.POSITIVE_INFINITY;
@@ -96,11 +114,51 @@ abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
-        const width = maxX - minX;
-        const height = maxY - minY;
+        const trim = adjustments?.trim;
+        const trimAll = typeof trim === "number" ? trim : 0;
+        const trimX = typeof trim === "object" ? trim.x ?? trimAll : trimAll;
+        const trimY = typeof trim === "object" ? trim.y ?? trimAll : trimAll;
+        const trimLeft = typeof trim === "object" ? trim.left ?? trimX : trimX;
+        const trimRight = typeof trim === "object" ? trim.right ?? trimX : trimX;
+        const trimTop = typeof trim === "object" ? trim.top ?? trimY : trimY;
+        const trimBottom = typeof trim === "object" ? trim.bottom ?? trimY : trimY;
+
+        minX += trimLeft;
+        maxX -= trimRight;
+        minY += trimTop;
+        maxY -= trimBottom;
+
+        if (minX >= maxX || minY >= maxY) {
+            console.warn(
+                `[Enemy] Body size collapsed after trim for textures: ${keys.join(", ")}`,
+            );
+            return;
+        }
+
+        const insetX =
+            typeof adjustments?.inset === "number"
+                ? adjustments.inset
+                : (adjustments?.inset?.x ?? 0);
+        const insetY =
+            typeof adjustments?.inset === "number"
+                ? adjustments.inset
+                : (adjustments?.inset?.y ?? 0);
+
+        const width = maxX - minX - insetX * 2;
+        const height = maxY - minY - insetY * 2;
+
+        if (width <= 0 || height <= 0) {
+            console.warn(
+                `[Enemy] Body size collapsed after adjustments for textures: ${keys.join(", ")}`,
+            );
+            return;
+        }
+
+        const offsetX = minX + insetX + (adjustments?.offset?.x ?? 0);
+        const offsetY = minY + insetY + (adjustments?.offset?.y ?? 0);
 
         this.enemyBody.setSize(width, height, false);
-        this.enemyBody.setOffset(minX, minY);
+        this.enemyBody.setOffset(offsetX, offsetY);
     }
 
     private getTextureFrameBounds(textureKey: string) {

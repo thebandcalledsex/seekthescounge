@@ -11,7 +11,13 @@ class Pozzum extends Enemy {
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, "pozzum-cruzing-left", POZZUM_CONFIG);
 
-        this.setBodySizeFromTextures(["pozzum-cruzing-left", "pozzum-cruzing-right"]);
+        this.setBodySizeFromTextures(
+            ["pozzum-cruzing-left", "pozzum-cruzing-right"],
+            {
+                trim: { left: 6, right: 10, top: 6, bottom: 0 },
+                offset: { x: 0, y: 0 },
+            },
+        );
 
         this.play("pozzum-cruzing-left");
     }
