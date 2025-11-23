@@ -6,6 +6,11 @@
    <property name="collides" type="bool" value="true"/>
   </properties>
  </tile>
+ <tile id="2">
+  <properties>
+   <property name="kills" type="bool" value="true"/>
+  </properties>
+ </tile>
  <tile id="5">
   <properties>
    <property name="collides" type="bool" value="true"/>

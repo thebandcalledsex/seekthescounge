@@ -1,3 +1,6 @@
+export const GAME_VERSION = "1.38";
+
+// game dimensions
 export const GAME_WIDTH = 286;
 export const GAME_HEIGHT = 132;
 
@@ -13,7 +16,8 @@ export const CAMERA_FOLLOW_LERP_Y = 0.1;
 export const CAMERA_FOLLOW_OFFSET_X = -10; // Zero is centered, negative is left of center. This sorta controls where the play get's centered on screen.
 export const CAMERA_FOLLOW_OFFSET_Y = 20; // Lift the camera upward so jumps reveal more of the horizon.
 
-export const GAME_VERSION = "1.36";
+// camera bounds
+export const CAMERA_STOP_Y = 64; // how far down the camera can go, measured as a pixel offset above the bottom of the map
 
 // dialog box snap shut/snap open snappiness
 export const DIALOG_SNAP_OPEN_DURATION = 600; // ms

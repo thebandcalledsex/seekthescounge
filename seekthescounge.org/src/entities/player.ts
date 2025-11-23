@@ -171,7 +171,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     public takeDamage(_amount: number, _source: Phaser.GameObjects.GameObject) {
-        if (!this.active) {
+        if (!this.active || this.isDead) {
             return;
         }
 

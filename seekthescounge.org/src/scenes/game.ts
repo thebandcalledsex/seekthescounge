@@ -183,6 +183,7 @@ class Game extends Phaser.Scene {
         const groundLayer = map.createLayer("Ground", tileset, 0, 0);
         if (groundLayer) {
             groundLayer.setCollisionByProperty({ collides: true });
+            groundLayer.setCollisionByProperty({ kills: true });
         } else {
             throw new Error("Ground layer not found");
         }
@@ -571,7 +572,12 @@ class Game extends Phaser.Scene {
         //this.enemies.add(pozzum3);
 
         // Set the world bounds
-        this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels); // Adjust world bounds
+        this.cameras.main.setBounds(
+            0,
+            0,
+            map.widthInPixels,
+            map.heightInPixels - constants.CAMERA_STOP_Y,
+        );
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
         // Create a camera to follow the player
@@ -586,7 +592,9 @@ class Game extends Phaser.Scene {
         //this.cameras.main.setZoom(2); // Zoom in the camera
 
         // Add collision between entities and ground
-        this.physics.add.collider(this.player, groundLayer);
+        this.physics.add.collider(this.player, groundLayer, (_playerObj, tileObj) => {
+            this.handlePlayerGroundCollision(tileObj as unknown as Phaser.Tilemaps.Tile);
+        });
         this.physics.add.collider(this.trainingDummies, groundLayer);
         this.physics.add.collider(this.enemies, groundLayer);
 
@@ -639,6 +647,24 @@ class Game extends Phaser.Scene {
             //     text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
             // });
         }
+    }
+
+    private handlePlayerGroundCollision(tile: Phaser.Tilemaps.Tile) {
+        if (!tile) {
+            return;
+        }
+        const tileProps = tile.properties as Record<string, unknown> | undefined;
+        if (tileProps?.kills === true) {
+            this.killPlayerFromTile(tile);
+        }
+    }
+
+    private killPlayerFromTile(tile: Phaser.Tilemaps.Tile) {
+        if (!this.player?.active) {
+            return;
+        }
+        const source = tile.tilemapLayer ?? this.groundLayer;
+        this.player.takeDamage(1, source);
     }
 
     private renderBackgroundImageLayers(map: Phaser.Tilemaps.Tilemap) {
