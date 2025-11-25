@@ -4,6 +4,7 @@ export interface EnemyConfig {
     speed: number;
     damage: number;
     damageCooldown: number;
+    deathDespawnDelay?: number;
 }
 
 export interface Damageable {
@@ -30,6 +31,9 @@ abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
     protected direction: 1 | -1 = -1;
     protected lastDamageTime = 0;
     protected enemyBody: Phaser.Physics.Arcade.Body;
+    protected deathDespawnDelay: number;
+    protected isDying = false;
+    protected deathTimer?: Phaser.Time.TimerEvent;
 
     constructor(
         scene: Phaser.Scene,
@@ -42,6 +46,7 @@ abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y, texture, frame);
 
         this.config = config;
+        this.deathDespawnDelay = Math.max(config.deathDespawnDelay ?? 0, 0);
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -66,6 +71,10 @@ abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     // Attempt to damage the target if cooldown has passed
     public tryDamage(target: Phaser.GameObjects.GameObject) {
+        if (!this.active || this.isDying) {
+            return;
+        }
+
         const now = this.scene.time.now;
         if (now - this.lastDamageTime < this.config.damageCooldown) {
             return;
@@ -79,11 +88,40 @@ abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     public takeDamage(_amount: number, _source: Phaser.GameObjects.GameObject) {
+        if (!this.active || this.isDying) {
+            return;
+        }
+
         this.die();
     }
 
     protected die() {
-        this.destroy();
+        if (this.isDying) {
+            return;
+        }
+
+        this.isDying = true;
+
+        // Freeze in place and stop interacting with the world.
+        this.enemyBody.setVelocity(0, 0);
+        this.enemyBody.setAcceleration(0, 0);
+        this.setActive(false);
+
+        if (this.anims.isPlaying) {
+            this.anims.pause();
+        }
+
+        if (this.deathDespawnDelay <= 0) {
+            this.destroy();
+            return;
+        }
+
+        this.deathTimer = this.scene.time.delayedCall(this.deathDespawnDelay, () => {
+            // Only destroy if the sprite is still around (scene may have shut down).
+            if (this.scene && this.scene.sys.isActive()) {
+                this.destroy();
+            }
+        });
     }
 
     protected setBodySizeFromTextures(

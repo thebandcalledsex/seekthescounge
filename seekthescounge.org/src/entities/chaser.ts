@@ -11,6 +11,7 @@ const CHASER_CONFIG: ChaserConfig = {
     damage: 1,
     damageCooldown: 1000,
     snapiness: 0.25,
+    deathDespawnDelay: 600,
 };
 
 function ensureChaserTexture(scene: Phaser.Scene) {
