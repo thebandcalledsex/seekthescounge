@@ -5,6 +5,7 @@ import type Player from "./player";
 const CHASER_TEXTURE_KEY = "chaser-enemy";
 interface ChaserConfig extends EnemyConfig {
     snapiness: number;
+    turnaroundDelay: number;
 }
 const CHASER_CONFIG: ChaserConfig = {
     speed: 40,
@@ -12,6 +13,7 @@ const CHASER_CONFIG: ChaserConfig = {
     damageCooldown: 1000,
     snapiness: 0.25,
     deathDespawnDelay: 600,
+    turnaroundDelay: 200,
 };
 
 function ensureChaserTexture(scene: Phaser.Scene) {
@@ -29,29 +31,65 @@ function ensureChaserTexture(scene: Phaser.Scene) {
 class Chaser extends Enemy {
     private target: Player;
     private snapiness: number;
+    private turnaroundDelay: number;
+    private turningToDirection: 1 | -1 | null = null;
+    private turnResumeTime = 0;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, target: Player) {
+    constructor(
+        scene: Phaser.Scene,
+        x: number,
+        y: number,
+        target: Player,
+        configOverrides: Partial<ChaserConfig> = {},
+    ) {
         ensureChaserTexture(scene);
-        super(scene, x, y, CHASER_TEXTURE_KEY, CHASER_CONFIG);
+        const mergedConfig: ChaserConfig = { ...CHASER_CONFIG, ...configOverrides };
+        super(scene, x, y, CHASER_TEXTURE_KEY, mergedConfig);
         this.target = target;
-        this.snapiness = Phaser.Math.Clamp(CHASER_CONFIG.snapiness, 0, 1);
+        this.snapiness = Phaser.Math.Clamp(mergedConfig.snapiness, 0, 1);
+        this.turnaroundDelay = Math.max(mergedConfig.turnaroundDelay, 0);
     }
 
     public preUpdate(time: number, delta: number) {
-        this.updateDirectionTowardTarget();
+        this.updateDirectionTowardTarget(time);
+        const directionBeforeSuper = this.direction;
         super.preUpdate(time, delta);
+
+        if (this.isTurningAround(time)) {
+            this.direction = directionBeforeSuper;
+            this.enemyBody.setVelocityX(0);
+        }
     }
 
-    private updateDirectionTowardTarget() {
-        if (!this.target?.active) {
-            return;
-        }
+    private isTurningAround(now: number) {
+        const turningAround: boolean =
+            this.turningToDirection !== null && now < this.turnResumeTime;
 
-        if (this.snapiness <= 0) {
+        return turningAround;
+    }
+
+    private updateDirectionTowardTarget(now: number) {
+        if (!this.target?.active || this.snapiness <= 0) {
+            this.turningToDirection = null;
             return;
         }
 
         const desiredDirection: 1 | -1 = this.target.x >= this.x ? 1 : -1;
+
+        if (this.turningToDirection !== null) {
+            if (desiredDirection === this.direction) {
+                this.turningToDirection = null;
+                return;
+            }
+
+            if (now >= this.turnResumeTime) {
+                this.direction = this.turningToDirection;
+                this.turningToDirection = null;
+            }
+
+            return;
+        }
+
         if (desiredDirection === this.direction) {
             return;
         }
@@ -62,7 +100,13 @@ class Chaser extends Enemy {
         const deltaX = Math.abs(this.target.x - this.x);
 
         if (deltaX > flipThreshold) {
-            this.direction = desiredDirection;
+            if (this.turnaroundDelay <= 0) {
+                this.direction = desiredDirection;
+                return;
+            }
+
+            this.turningToDirection = desiredDirection;
+            this.turnResumeTime = now + this.turnaroundDelay;
         }
     }
 }
