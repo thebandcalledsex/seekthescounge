@@ -159,15 +159,15 @@ class Game extends Phaser.Scene {
         );
 
         // Load the tilemap for level 1 and its tileset
-        //this.load.tilemapTiledJSON("level1", "../../assets/maps/level1.json");
+        this.load.tilemapTiledJSON("level1", "../../assets/maps/level1.json");
         this.load.image("desert-tiles", "../../assets/tilesets/desert.png");
 
         // Load the tilemap for 1-1
-        this.load.tilemapTiledJSON("level1", "../../assets/maps/1-1.json");
+        //this.load.tilemapTiledJSON("level1", "../../assets/maps/1-1.json");
 
         // Load level1's complete JSON data (for image layers)
-        //this.load.json("level1-data", "../../assets/maps/level1.json");
-        this.load.json("level1-data", "../../assets/maps/1-1.json");
+        this.load.json("level1-data", "../../assets/maps/level1.json");
+        //this.load.json("level1-data", "../../assets/maps/1-1.json");
 
         // Load on-screen input button assets
         OnScreenInput.preload(this);
@@ -219,6 +219,7 @@ class Game extends Phaser.Scene {
             }
             attachedUiInputs.add(uiInput);
             this.inputController.addInputSource(uiInput);
+            uiInput.setPhysicsDebugToggle(() => this.togglePhysicsDebug());
             this.scene.bringToTop("ui"); // Ensure UI is overlayed on top
         };
 
@@ -653,6 +654,24 @@ class Game extends Phaser.Scene {
             //     text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
             // });
         }
+    }
+
+    private togglePhysicsDebug() {
+        const world = this.physics.world;
+        const enableDebug = !world.drawDebug;
+
+        world.drawDebug = enableDebug;
+
+        if (!world.debugGraphic) {
+            world.createDebugGraphic();
+        }
+
+        if (!world.debugGraphic) {
+            return;
+        }
+
+        world.debugGraphic.clear();
+        world.debugGraphic.setVisible(enableDebug);
     }
 
     private handlePlayerGroundCollision(tile: Phaser.Tilemaps.Tile) {
