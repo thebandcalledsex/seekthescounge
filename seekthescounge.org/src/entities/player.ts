@@ -6,6 +6,7 @@ interface AttackConfig {
     height: number;
     reach: number;
     verticalOffset: number;
+    startDelay: number; // ms offset before the hitbox becomes active
     duration: number;
     cooldown: number;
     damage: number;
@@ -14,6 +15,10 @@ interface AttackConfig {
         vertical: number; // pixels to lift (positive = up)
         duration: number; // milliseconds to complete knockback
     };
+}
+
+interface AttackContext {
+    isMovingAttack: boolean;
 }
 
 abstract class Player extends Phaser.Physics.Arcade.Sprite {
@@ -27,6 +32,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         height: 14,
         reach: 4,
         verticalOffset: 0,
+        startDelay: 0,
         duration: 150,
         cooldown: 300,
         damage: 1,
@@ -50,7 +56,11 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     private attackActiveUntil = 0;
     private attackCooldownUntil = 0;
     private attackActive = false;
+    private attackHitboxActive = false;
+    private attackHitboxActivatesAt = 0;
     private attackPressedLastFrame = false;
+    private activeAttackConfig!: AttackConfig;
+    private activeAttackContext: AttackContext = { isMovingAttack: false };
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
         super(scene, x, y, texture); // Use "player" as a placeholder texture key
@@ -82,6 +92,8 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.attackHitboxBody.pushable = false;
         this.attackHitbox.setActive(false).setVisible(false);
         this.attackHitboxBody.enable = false;
+
+        this.activeAttackConfig = this.attackConfig;
     }
 
     public update(moveLeft: boolean, moveRight: boolean, jump: boolean, attack: boolean): void {
@@ -224,7 +236,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             takeDamage?: (amount: number, source: Player) => void;
         };
         if (typeof damageable.takeDamage === "function") {
-            damageable.takeDamage(this.attackConfig.damage, this);
+            damageable.takeDamage(this.getActiveAttackConfig().damage, this);
         }
 
         this.applyKnockback(target);
@@ -232,7 +244,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         this.scene.events.emit("player-attack-hit", {
             player: this,
             target,
-            damage: this.attackConfig.damage,
+            damage: this.getActiveAttackConfig().damage,
         });
     }
 
@@ -264,21 +276,38 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     private beginAttack(now: number) {
+        this.activeAttackContext = this.resolveAttackContext();
+        this.activeAttackConfig = this.resolveAttackConfig(this.activeAttackContext);
+        const config = this.getActiveAttackConfig();
+        const startDelay = Math.max(0, config.startDelay);
+
         this.attackActive = true;
-        this.attackActiveUntil = now + this.attackConfig.duration;
-        this.attackCooldownUntil = now + this.attackConfig.cooldown;
+        this.attackHitboxActive = false;
+        this.attackHitboxActivatesAt = now + startDelay;
+        this.attackActiveUntil = this.attackHitboxActivatesAt + config.duration;
+        this.attackCooldownUntil = now + config.cooldown;
         this.attackHitsThisSwing.clear();
-        this.attackHitbox
-            .setActive(true)
-            .setVisible(false)
-            .setSize(this.attackConfig.width, this.attackConfig.height);
-        this.attackHitboxBody.enable = true;
-        this.attackHitboxBody.setSize(this.attackConfig.width, this.attackConfig.height);
+        this.attackHitbox.setActive(false).setVisible(false).setSize(config.width, config.height);
+        this.attackHitboxBody.enable = false;
+        this.attackHitboxBody.setSize(config.width, config.height);
         this.attackHitboxBody.setAllowGravity(false);
         this.attackHitboxBody.setImmovable(true);
-
-        this.refreshAttackHitboxPosition();
+        this.attackHitbox.setPosition(-9999, -9999);
+        this.attackHitboxBody.reset(-9999, -9999);
+        if (startDelay === 0) {
+            this.activateAttackHitbox();
+        }
         this.onAttackStarted();
+    }
+
+    private activateAttackHitbox() {
+        if (this.attackHitboxActive) {
+            return;
+        }
+        this.attackHitboxActive = true;
+        this.attackHitbox.setActive(true).setVisible(false);
+        this.attackHitboxBody.enable = true;
+        this.refreshAttackHitboxPosition();
     }
 
     private updateAttackState(now: number) {
@@ -286,11 +315,18 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
-        this.refreshAttackHitboxPosition();
-        this.checkAttackCollisions();
+        if (!this.attackHitboxActive && now >= this.attackHitboxActivatesAt) {
+            this.activateAttackHitbox();
+        }
+
+        if (this.attackHitboxActive) {
+            this.refreshAttackHitboxPosition();
+            this.checkAttackCollisions();
+        }
 
         if (now >= this.attackActiveUntil) {
             this.attackActive = false;
+            this.attackHitboxActive = false;
             this.attackHitboxBody.enable = false;
             this.attackHitbox.setActive(false);
             this.attackHitbox.setPosition(-9999, -9999);
@@ -300,13 +336,12 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     private refreshAttackHitboxPosition() {
+        const config = this.getActiveAttackConfig();
         const halfBodyWidth = this.playerBody.width / 2;
         const facingMultiplier = this.lastDirection === "right" ? 1 : -1;
-        const offsetX =
-            facingMultiplier *
-            (halfBodyWidth + this.attackConfig.reach + this.attackConfig.width / 2);
+        const offsetX = facingMultiplier * (halfBodyWidth + config.reach + config.width / 2);
         const centerX = this.x + offsetX;
-        const centerY = this.y - this.playerBody.height / 2 + this.attackConfig.verticalOffset;
+        const centerY = this.y - this.playerBody.height / 2 + config.verticalOffset;
 
         this.attackHitbox.setPosition(centerX, centerY);
         this.attackHitboxBody.reset(centerX, centerY);
@@ -374,7 +409,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
-        const { horizontal, vertical, duration } = this.attackConfig.knockback;
+        const { horizontal, vertical, duration } = this.getActiveAttackConfig().knockback;
         const ms = Math.max(duration, 1);
         const seconds = ms / 1000;
         const direction = this.lastDirection === "right" ? 1 : -1;
@@ -390,6 +425,22 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             body.setVelocityY(vy);
             this.scheduleVelocityReset(target, "y", vy, ms);
         }
+    }
+
+    protected resolveAttackContext(): AttackContext {
+        return { isMovingAttack: false };
+    }
+
+    protected resolveAttackConfig(_context: AttackContext): AttackConfig {
+        return this.attackConfig;
+    }
+
+    protected getActiveAttackConfig(): AttackConfig {
+        return this.activeAttackConfig ?? this.attackConfig;
+    }
+
+    protected getActiveAttackContext(): AttackContext {
+        return this.activeAttackContext;
     }
 
     private resolvePhysicsBody(
@@ -584,6 +635,7 @@ class Rovert extends Player {
         height: 16,
         reach: 6,
         verticalOffset: -2,
+        startDelay: 120,
         duration: 500,
         cooldown: 620,
         damage: 1,
@@ -676,17 +728,34 @@ class Shuey extends Player {
         height: 7,
         reach: 1,
         verticalOffset: -6,
-        duration: 420,
+        startDelay: 120,
+        duration: 250,
         cooldown: 520,
         damage: 1,
         knockback: {
-            horizontal: 3,
+            horizontal: 4,
             vertical: 10,
+            duration: 160,
+        },
+    };
+    private movingAttackConfig: AttackConfig = {
+        width: 10,
+        height: 9,
+        reach: 2,
+        verticalOffset: -8,
+        startDelay: 80,
+        duration: 150,
+        cooldown: 450,
+        damage: 1,
+        knockback: {
+            horizontal: 3,
+            vertical: 12,
             duration: 160,
         },
     };
     private movingAttackSprite: Phaser.GameObjects.Sprite;
     private static readonly movingAttackSpriteYOffset = 0;
+    private static readonly movingAttackSpeedThreshold = 10;
     private static readonly wallSlideAnimationHoldDurationMs = 125;
     private static readonly wallJumpDirectionalResumeDelayMs = 500; // Delay before honoring input back toward the wall
 
@@ -795,6 +864,16 @@ class Shuey extends Player {
             return false;
         }
         return true;
+    }
+
+    protected override resolveAttackContext(): AttackContext {
+        const movingHorizontally =
+            Math.abs(this.playerBody.velocity.x) > Shuey.movingAttackSpeedThreshold;
+        return { isMovingAttack: movingHorizontally };
+    }
+
+    protected override resolveAttackConfig(context: AttackContext): AttackConfig {
+        return context.isMovingAttack ? this.movingAttackConfig : this.attackConfig;
     }
 
     protected playIdleAnimation(direction: "left" | "right"): void {
@@ -948,12 +1027,12 @@ class Shuey extends Player {
     protected override onAttackStarted(): void {
         super.onAttackStarted();
 
-        const movingHorizontally = Math.abs(this.playerBody.velocity.x) > 10;
+        const { isMovingAttack } = this.getActiveAttackContext();
         const direction = this.lastDirection;
 
         this.resetMovingAttackSprite();
 
-        if (movingHorizontally) {
+        if (isMovingAttack) {
             this.cropSprite();
 
             this.playMovingAttackAnimation(direction);
