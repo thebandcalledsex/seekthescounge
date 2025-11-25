@@ -97,6 +97,16 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     public update(moveLeft: boolean, moveRight: boolean, jump: boolean, attack: boolean): void {
+        const now = this.scene.time.now;
+
+        if (this.isDead || !this.active) {
+            this.attackPressedLastFrame = false;
+            this.playerBody.setVelocityX(0);
+            this.updateAttackState(now);
+            this.postUpdate();
+            return;
+        }
+
         const wantsLeft = moveLeft && !moveRight;
         const wantsRight = moveRight && !moveLeft;
 
@@ -146,7 +156,6 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         // Attacking is cool too if you're into that sort of thing.
-        const now = this.scene.time.now;
         if (attack) {
             this.handleAttackInput(now);
         } else {
@@ -228,6 +237,9 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     protected onAttackEnded(): void {
+        if (this.isDead) {
+            return;
+        }
         this.refreshPlayerAnimation();
     }
 
