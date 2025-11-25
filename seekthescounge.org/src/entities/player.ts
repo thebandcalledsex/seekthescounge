@@ -729,7 +729,7 @@ class Shuey extends Player {
         reach: 1,
         verticalOffset: -6,
         startDelay: 120,
-        duration: 250,
+        duration: 220,
         cooldown: 520,
         damage: 1,
         knockback: {
@@ -739,7 +739,7 @@ class Shuey extends Player {
         },
     };
     private movingAttackConfig: AttackConfig = {
-        width: 10,
+        width: 11,
         height: 9,
         reach: 2,
         verticalOffset: -8,
