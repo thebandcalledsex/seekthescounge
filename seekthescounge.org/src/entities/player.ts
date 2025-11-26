@@ -770,6 +770,12 @@ class Shuey extends Player {
     private static readonly movingAttackSpeedThreshold = 10;
     private static readonly wallSlideAnimationHoldDurationMs = 125;
     private static readonly wallJumpDirectionalResumeDelayMs = 500; // Delay before honoring input back toward the wall
+    private wallSlideEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+    private nextWallSlideParticleAt = 0;
+    private static readonly wallSlideParticleTextureKey = "wall-slide-particle";
+    private static readonly wallSlideParticleIntervalMs = 80;
+    private static readonly wallSlideParticleBaseSpeedX = { min: 10, max: 50 };
+    private static readonly wallSlideParticleBaseSpeedY = { min: -20, max: 20 };
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
         super(scene, x, y, texture);
@@ -777,8 +783,21 @@ class Shuey extends Player {
         this.movingAttackSprite = scene.add.sprite(x, y, texture);
         this.movingAttackSprite.setOrigin(this.originX, this.originY);
         this.movingAttackSprite.setScale(this.scaleX, this.scaleY);
-        ``;
         this.movingAttackSprite.setVisible(false).setActive(false);
+
+        const wallSlideParticleTextureKey = Shuey.initWallSlideParticleTexture(scene);
+        this.wallSlideEmitter = scene.add.particles(0, 0, wallSlideParticleTextureKey, {
+            lifespan: { min: 200, max: 900 },
+            speedX: { ...Shuey.wallSlideParticleBaseSpeedX },
+            speedY: { ...Shuey.wallSlideParticleBaseSpeedY },
+            gravityY: 400,
+            alpha: { start: 1, end: 0 },
+            scale: { start: 1, end: 0 },
+            quantity: 1,
+            tint: 0x000000,
+            emitting: false,
+        });
+        this.wallSlideEmitter.setDepth(this.depth - 1);
 
         this.playerBody.setSize(5, 13); // Set the player body size
     }
@@ -989,6 +1008,7 @@ class Shuey extends Player {
 
     protected override postUpdate(): void {
         this.applyWallSlideFallRate();
+        this.emitWallSlideParticles();
         super.postUpdate();
 
         // Sync moving attack sprite position with base sprite
@@ -1029,6 +1049,94 @@ class Shuey extends Player {
             return;
         }
         body.setVelocityY(body.velocity.y * multiplier);
+    }
+
+    private emitWallSlideParticles(): void {
+        const direction = this.getWallSlideDirection();
+
+        // Reset particle emission timer if not wall sliding
+        if (!direction) {
+            return;
+        }
+
+        // Return early if it's not time to emit the next particle yet.
+        const now = this.scene.time.now;
+        if (now < this.nextWallSlideParticleAt) {
+            return;
+        }
+        this.nextWallSlideParticleAt = now + Shuey.wallSlideParticleIntervalMs;
+
+        // Emit just outside the wall-facing side so dust pops off the wall face.
+        const body = this.playerBody;
+        const emitX = direction === "left" ? body.left + 2 : body.right - 2;
+        const minY = Math.floor(body.top + 1);
+        const maxY = Math.floor(body.center.y - 2);
+        const emitY = maxY >= minY ? Phaser.Math.Between(minY, maxY) : body.center.y;
+
+        // Push particles away from the wall (mirror directions).
+        const awayFromWall = direction === "left" ? 1 : -1;
+
+        const baseMin = Math.abs(Shuey.wallSlideParticleBaseSpeedX.min);
+        const baseMax = Math.abs(Shuey.wallSlideParticleBaseSpeedX.max);
+        const minSpeedX = baseMin * awayFromWall;
+        const maxSpeedX = baseMax * awayFromWall;
+        const tint = this.getWallTileTint(direction) ?? 0x000000;
+        this.wallSlideEmitter.updateConfig({
+            speedX: {
+                min: Math.min(minSpeedX, maxSpeedX),
+                max: Math.max(minSpeedX, maxSpeedX),
+            },
+            speedY: { ...Shuey.wallSlideParticleBaseSpeedY },
+            tint,
+        });
+        this.wallSlideEmitter.explode(3, emitX, emitY);
+    }
+
+    private getWallTileTint(direction: "left" | "right"): number | null {
+        const context = this.getTilemapCollisionContext();
+        if (!context) {
+            return null;
+        }
+        const tile = this.getSideTileFacing(direction, context);
+        if (!tile) {
+            return null;
+        }
+
+        // Resolve the tileset and texture coordinates for this tile.
+        const tileset = (tile as any).tileset ?? context.map.tilesets?.[0];
+        if (!tileset) {
+            return null;
+        }
+
+        const texCoords = tileset.getTileTextureCoordinates(tile.index);
+        const coordX = (texCoords as { x?: number })?.x ?? null;
+        const coordY = (texCoords as { y?: number })?.y ?? null;
+        if (coordX === null || coordY === null) {
+            return null;
+        }
+
+        const sampleX = Math.floor(coordX + tileset.tileWidth / 2);
+        const sampleY = Math.floor(coordY + tileset.tileHeight / 2);
+        const textureKey = (tileset.image?.key as string | undefined) ?? tileset.name;
+        const pixel = textureKey
+            ? this.scene.textures.getPixel(sampleX, sampleY, textureKey)
+            : null;
+        if (!pixel) {
+            return null;
+        }
+        return pixel.color ?? Phaser.Display.Color.GetColor(pixel.red, pixel.green, pixel.blue);
+    }
+
+    private static initWallSlideParticleTexture(scene: Phaser.Scene): string {
+        const key = Shuey.wallSlideParticleTextureKey;
+        if (!scene.textures.exists(key)) {
+            const graphics = scene.make.graphics({ x: 0, y: 0 });
+            graphics.fillStyle(0xffffff, 1);
+            graphics.fillRect(0, 0, 1, 1);
+            graphics.generateTexture(key, 1, 1);
+            graphics.destroy();
+        }
+        return key;
     }
 
     private cropSprite(): void {
@@ -1083,7 +1191,9 @@ class Shuey extends Player {
     }
 
     public override destroy(fromScene?: boolean): void {
-        this.movingAttackSprite.destroy();
+        if (this.movingAttackSprite.scene) {
+            this.movingAttackSprite.destroy();
+        }
         super.destroy(fromScene);
     }
 }
