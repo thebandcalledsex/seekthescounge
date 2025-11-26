@@ -732,6 +732,7 @@ class Shuey extends Player {
     private leftInputResumeTime = 0;
     private rightInputResumeTime = 0;
     private wasWallSlidingLastFrame = false;
+    private wasOnGroundLastFrame = false;
     // Track last wall slide direction plus a small hold window to smooth animation flicker.
     private lastWallSlideAnimationDirection: "left" | "right" | null = null;
     private wallSlideAnimationHoldUntil = 0;
@@ -776,6 +777,9 @@ class Shuey extends Player {
     private static readonly wallSlideParticleIntervalMs = 80;
     private static readonly wallSlideParticleBaseSpeedX = { min: 10, max: 50 };
     private static readonly wallSlideParticleBaseSpeedY = { min: -20, max: 20 };
+    private static readonly groundParticleSpeedX = { min: -40, max: 40 };
+    private static readonly jumpParticleSpeedY = { min: -120, max: -70 };
+    private static readonly landingParticleSpeedY = { min: -90, max: -40 };
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
         super(scene, x, y, texture);
@@ -800,6 +804,7 @@ class Shuey extends Player {
         this.wallSlideEmitter.setDepth(this.depth - 1);
 
         this.playerBody.setSize(5, 13); // Set the player body size
+        this.wasOnGroundLastFrame = this.playerBody.onFloor();
     }
 
     public override update(
@@ -809,6 +814,7 @@ class Shuey extends Player {
         attack: boolean,
     ): void {
         const now = this.scene.time.now;
+        const wasOnGround = this.wasOnGroundLastFrame;
         let leftHeld = moveLeft;
         let rightHeld = moveRight;
         const landedFromWallSlide = this.wasWallSlidingLastFrame && this.playerBody.onFloor();
@@ -856,6 +862,11 @@ class Shuey extends Player {
 
         super.update(leftHeld, rightHeld, jump, attack);
 
+        const onGroundNow = this.playerBody.onFloor();
+        if (onGroundNow && !wasOnGround && this.playerBody.velocity.y >= 0) {
+            this.emitLandingParticles();
+        }
+
         // Wall jump: if wall sliding and jump is pressed, launch away from wall
         const wallSlideDirection = this.getWallSlideDirection();
         if (jump && wallSlideDirection) {
@@ -879,6 +890,7 @@ class Shuey extends Player {
         }
 
         this.wasWallSlidingLastFrame = this.getWallSlideDirection() !== null;
+        this.wasOnGroundLastFrame = onGroundNow;
     }
 
     protected override canStartAttack(): boolean {
@@ -1092,17 +1104,55 @@ class Shuey extends Player {
         this.wallSlideEmitter.explode(3, emitX, emitY);
     }
 
+    private emitJumpParticles(): void {
+        this.emitGroundParticles(4, Shuey.jumpParticleSpeedY);
+    }
+
+    private emitLandingParticles(): void {
+        this.emitGroundParticles(6, Shuey.landingParticleSpeedY);
+    }
+
+    private emitGroundParticles(particleCount: number, speedY: { min: number; max: number }): void {
+        const body = this.playerBody;
+        const emitX = Phaser.Math.Between(Math.floor(body.left), Math.floor(body.right));
+        const emitY = Math.floor(body.bottom - 1);
+        const tint = this.getGroundTileTint() ?? 0x000000;
+
+        this.wallSlideEmitter.updateConfig({
+            speedX: { ...Shuey.groundParticleSpeedX },
+            speedY: { ...speedY },
+            tint,
+        });
+        this.wallSlideEmitter.explode(particleCount, emitX, emitY);
+    }
+
     private getWallTileTint(direction: "left" | "right"): number | null {
         const context = this.getTilemapCollisionContext();
         if (!context) {
             return null;
         }
         const tile = this.getSideTileFacing(direction, context);
-        if (!tile) {
+        return tile ? this.getTileTint(tile, context) : null;
+    }
+
+    private getGroundTileTint(): number | null {
+        const context = this.getTilemapCollisionContext();
+        if (!context) {
             return null;
         }
 
-        // Resolve the tileset and texture coordinates for this tile.
+        const body = this.playerBody;
+        const sampleX = Math.floor(body.center.x);
+        const sampleY = Math.floor(body.bottom + 1);
+        const camera = this.scene.cameras?.main;
+        const tile = context.map.getTileAtWorldXY(sampleX, sampleY, false, camera, context.layer);
+        return tile ? this.getTileTint(tile, context) : null;
+    }
+
+    private getTileTint(
+        tile: Phaser.Tilemaps.Tile,
+        context: { map: Phaser.Tilemaps.Tilemap; layer: Phaser.Tilemaps.TilemapLayer },
+    ): number | null {
         const tileset = (tile as any).tileset ?? context.map.tilesets?.[0];
         if (!tileset) {
             return null;
@@ -1195,6 +1245,11 @@ class Shuey extends Player {
             this.movingAttackSprite.destroy();
         }
         super.destroy(fromScene);
+    }
+
+    protected override jump(): void {
+        super.jump();
+        this.emitJumpParticles();
     }
 }
 
