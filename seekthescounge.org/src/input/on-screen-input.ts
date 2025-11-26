@@ -1,6 +1,5 @@
 import Phaser from "phaser";
 import InputSource from "./input-source";
-import { GAME_HEIGHT } from "../constants";
 
 class OnScreenInput implements InputSource {
     private scene: Phaser.Scene;
@@ -28,10 +27,7 @@ class OnScreenInput implements InputSource {
     private attackButton!: Phaser.GameObjects.Image;
     private controlsVisible = true;
     private toggleControlsKey?: Phaser.Input.Keyboard.Key;
-    private physicsDebugKey?: Phaser.Input.Keyboard.Key;
-    private onTogglePhysicsDebug?: () => void;
     private handleToggleControlsKeyDown = () => this.toggleControlsVisibility();
-    private handlePhysicsDebugKeyDown = () => this.onTogglePhysicsDebug?.();
 
     private getPad(): number {
         return (1 / 64) * this.scene.scale.width;
@@ -270,10 +266,6 @@ class OnScreenInput implements InputSource {
         }
     }
 
-    public setPhysicsDebugToggle(handler: () => void) {
-        this.onTogglePhysicsDebug = handler;
-    }
-
     private registerKeyboardShortcuts() {
         const keyboard = this.scene.input.keyboard;
         if (!keyboard) {
@@ -283,20 +275,11 @@ class OnScreenInput implements InputSource {
         this.toggleControlsKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
         this.toggleControlsKey.on("down", this.handleToggleControlsKeyDown);
 
-        this.physicsDebugKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
-        this.physicsDebugKey.on("down", this.handlePhysicsDebugKeyDown);
-
         this.scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             if (this.toggleControlsKey) {
                 this.toggleControlsKey.off("down", this.handleToggleControlsKeyDown);
                 this.toggleControlsKey.destroy();
                 this.toggleControlsKey = undefined;
-            }
-
-            if (this.physicsDebugKey) {
-                this.physicsDebugKey.off("down", this.handlePhysicsDebugKeyDown);
-                this.physicsDebugKey.destroy();
-                this.physicsDebugKey = undefined;
             }
         });
     }
