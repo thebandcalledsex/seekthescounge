@@ -9,6 +9,7 @@ import TrainingDummy from "../entities/training-dummy";
 import Enemy from "../entities/enemy";
 import Pozzum from "../entities/pozzum";
 import Chaser from "../entities/chaser";
+import DebugInfo from "../ui/debug-info";
 
 const IMAGE_LAYER_BASE_DEPTH = -50;
 const { ENTITY_ASSETS_PATH } = constants;
@@ -22,6 +23,7 @@ class Game extends Phaser.Scene {
     private enemies!: Phaser.Physics.Arcade.Group;
     public map!: Phaser.Tilemaps.Tilemap;
     public groundLayer!: Phaser.Tilemaps.TilemapLayer;
+    private debugInfo?: DebugInfo;
 
     // One-time action flags
     private hasTouchedGround = false;
@@ -219,7 +221,6 @@ class Game extends Phaser.Scene {
             }
             attachedUiInputs.add(uiInput);
             this.inputController.addInputSource(uiInput);
-            uiInput.setPhysicsDebugToggle(() => this.togglePhysicsDebug());
             this.scene.bringToTop("ui"); // Ensure UI is overlayed on top
         };
 
@@ -549,8 +550,8 @@ class Game extends Phaser.Scene {
             });
         }
 
-        const spawnX = 10;
-        const spawnY = 180;
+        const spawnX = 1279;
+        const spawnY = 300;
 
         // Establish the player based on the input from the player selection scene
         if (this.selectedPlayer === "Rovert") {
@@ -569,14 +570,14 @@ class Game extends Phaser.Scene {
 
         // Create some enemies
         this.enemies = this.physics.add.group();
-        const chaser = new Chaser(this, this.player.x + 140, this.player.y, this.player);
-        const pozzum = new Pozzum(this, this.player.x + 250, this.player.y);
-        const pozzum2 = new Pozzum(this, this.player.x - 100, this.player.y);
-        const pozzum3 = new Pozzum(this, this.player.x - 250, this.player.y);
-        this.enemies.add(chaser);
-        this.enemies.add(pozzum);
-        this.enemies.add(pozzum2);
-        this.enemies.add(pozzum3);
+        //const chaser = new Chaser(this, this.player.x + 140, this.player.y, this.player);
+        //const pozzum = new Pozzum(this, this.player.x + 250, this.player.y);
+        //const pozzum2 = new Pozzum(this, this.player.x - 100, this.player.y);
+        //const pozzum3 = new Pozzum(this, this.player.x - 250, this.player.y);
+        //this.enemies.add(chaser);
+        //this.enemies.add(pozzum);
+        //this.enemies.add(pozzum2);
+        //this.enemies.add(pozzum3);
 
         // Set the world bounds
         this.cameras.main.setBounds(
@@ -654,24 +655,8 @@ class Game extends Phaser.Scene {
             //     text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
             // });
         }
-    }
 
-    private togglePhysicsDebug() {
-        const world = this.physics.world;
-        const enableDebug = !world.drawDebug;
-
-        world.drawDebug = enableDebug;
-
-        if (!world.debugGraphic) {
-            world.createDebugGraphic();
-        }
-
-        if (!world.debugGraphic) {
-            return;
-        }
-
-        world.debugGraphic.clear();
-        world.debugGraphic.setVisible(enableDebug);
+        this.debugInfo?.update();
     }
 
     private handlePlayerGroundCollision(tile: Phaser.Tilemaps.Tile) {
