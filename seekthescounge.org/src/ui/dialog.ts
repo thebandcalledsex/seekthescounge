@@ -39,22 +39,52 @@ export interface SayOptions {
 
 // Simple facade to own a single dialog box.
 export default class DialogManager {
-    private box: DialogBox;
+    private scene: Phaser.Scene;
+    private cfg: DialogConfig;
+    private box?: DialogBox;
+    private lifecycle: Promise<void>;
+
     constructor(scene: Phaser.Scene, cfg: DialogConfig = {}) {
-        this.box = new DialogBox(scene, cfg);
+        this.scene = scene;
+        this.cfg = cfg;
+        this.lifecycle = Promise.resolve();
     }
     // Show dialog; resolves when finished or a choice is selected. Returns selected index or void.
-    say(opts: SayOptions): Promise<number | void> {
-        return this.box.show(opts);
+    async say(opts: SayOptions): Promise<number | void> {
+        // Ensure calls run sequentially so each dialog fully tears down before the next.
+        const waitForPrev = this.lifecycle.catch(() => {});
+        const run = (async () => {
+            await waitForPrev;
+            this.destroyBox();
+            const box = new DialogBox(this.scene, this.cfg);
+            this.box = box;
+            try {
+                return await box.show(opts);
+            } finally {
+                if (this.box === box) {
+                    this.box = undefined;
+                }
+                box.destroy();
+            }
+        })();
+        this.lifecycle = run.then(() => {}, () => {});
+        return run;
     }
     hide() {
-        this.box.hide();
+        this.destroyBox();
     }
     setVisible(v: boolean) {
-        this.box.setVisible(v);
+        this.box?.setVisible(v);
     }
     get active() {
-        return this.box.active;
+        return Boolean(this.box?.active);
+    }
+
+    private destroyBox() {
+        if (this.box) {
+            this.box.destroy();
+            this.box = undefined;
+        }
     }
 }
 
@@ -75,11 +105,14 @@ class DialogBox {
 
     // Cursor tween for
     private cursorTween?: Phaser.Tweens.Tween;
+    private onPointerDown!: () => void;
+    private onResize!: () => void;
 
     // State
     public active = false;
     private awaitingAdvance = false;
     private skipping = false;
+    private destroyed = false;
 
     // Input (local; you can later wire to your InputController)
     private keys!: {
@@ -170,11 +203,13 @@ class DialogBox {
         };
 
         // Pointer acts as confirm
-        scene.input.on("pointerdown", () => this.tryAdvance());
+        this.onPointerDown = () => this.tryAdvance();
+        scene.input.on("pointerdown", this.onPointerDown);
 
         // Layout + resize handling
         this.layout();
-        this.scene.scale.on("resize", () => this.layout());
+        this.onResize = () => this.layout();
+        this.scene.scale.on("resize", this.onResize);
     }
 
     private animateHideSnapShut(): Promise<void> {
@@ -539,6 +574,27 @@ class DialogBox {
 
     private tryAdvance() {
         if (this.active && this.awaitingAdvance) this.awaitingAdvance = false;
+    }
+
+    destroy() {
+        if (this.destroyed) return;
+        this.destroyed = true;
+        this.active = false;
+
+        this.hideChoices();
+        this.cursorTween?.stop();
+        this.cursorTween?.remove();
+        this.scene.tweens.killTweensOf(this.container);
+
+        this.scene.input.off("pointerdown", this.onPointerDown);
+        this.scene.scale.off("resize", this.onResize);
+
+        this.keys.confirm.destroy();
+        this.keys.skip.destroy();
+        this.keys.up.destroy();
+        this.keys.down.destroy();
+
+        this.container.destroy(true);
     }
 }
 
