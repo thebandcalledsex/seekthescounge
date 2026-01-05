@@ -32,6 +32,15 @@ export interface DialogConfig {
     backgroundImageFrame?: string; // optional frame name if using an atlas/spritesheet
     backgroundCrop?: { x: number; y: number; width: number; height: number }; // optional crop rect to trim transparent padding
     textArea?: { x: number; y: number; width: number; height: number }; // optional content bounds inside the panel
+    portrait?: {
+        key: string;
+        frame?: string;
+        offsetX?: number; // local offset from panel/container left
+        offsetY?: number; // local offset from panel/container top
+        scale?: number;
+        originX?: number;
+        originY?: number;
+    };
 }
 
 // Per-call options when showing dialog.
@@ -99,14 +108,24 @@ export default class DialogManager {
 // Camera-fixed dialog box implementation.
 class DialogBox {
     private scene: Phaser.Scene;
-    private cfg: Required<Omit<DialogConfig, "backgroundImageFrame" | "textArea">> & {
+    private cfg: Required<Omit<DialogConfig, "backgroundImageFrame" | "textArea" | "portrait">> & {
         backgroundImageFrame?: string;
         textArea?: { x: number; y: number; width: number; height: number };
+        portrait?: {
+            key: string;
+            frame?: string;
+            offsetX: number;
+            offsetY: number;
+            scale: number;
+            originX: number;
+            originY: number;
+        };
     };
     private container: Phaser.GameObjects.Container;
 
     // Panel + text + UI
     private panel: PixelPanel;
+    private portrait?: Phaser.GameObjects.Image;
     private textObj!: Phaser.GameObjects.BitmapText | Phaser.GameObjects.Text;
     private advanceCursor!: Phaser.GameObjects.BitmapText | Phaser.GameObjects.Text;
 
@@ -163,6 +182,17 @@ class DialogBox {
                 height: 56,
             },
             textArea: cfg.textArea,
+            portrait: cfg.portrait
+                ? {
+                      key: cfg.portrait.key,
+                      frame: cfg.portrait.frame,
+                      offsetX: cfg.portrait.offsetX ?? 10,
+                      offsetY: cfg.portrait.offsetY ?? 4,
+                      scale: cfg.portrait.scale ?? 1,
+                      originX: cfg.portrait.originX ?? 0,
+                      originY: cfg.portrait.originY ?? 0,
+                  }
+                : undefined,
         };
 
         // Root UI container (camera-fixed)
@@ -177,6 +207,20 @@ class DialogBox {
         });
         this.panel.node.setScrollFactor(0);
         this.container.add(this.panel.node);
+
+        // Optional portrait on the left side of the panel.
+        if (this.cfg.portrait && scene.textures.exists(this.cfg.portrait.key)) {
+            this.scene.textures
+                .get(this.cfg.portrait.key)
+                .setFilter(Phaser.Textures.FilterMode.NEAREST);
+            const img = scene.add
+                .image(0, 0, this.cfg.portrait.key, this.cfg.portrait.frame)
+                .setOrigin(this.cfg.portrait.originX, this.cfg.portrait.originY)
+                .setScrollFactor(0)
+                .setScale(this.cfg.portrait.scale);
+            this.portrait = img;
+            this.container.add(img);
+        }
 
         // Create text objects (bitmap preferred)
         const useBitmap = Boolean(
@@ -383,6 +427,10 @@ class DialogBox {
         if (!usingImagePanel) {
             this.panel.resize(panelW, panelH);
             this.panel.redraw();
+        }
+
+        if (this.cfg.portrait && this.portrait) {
+            this.portrait.setPosition(this.cfg.portrait.offsetX, this.cfg.portrait.offsetY);
         }
 
         const textArea = this.getTextArea();
