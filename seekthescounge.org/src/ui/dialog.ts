@@ -214,14 +214,12 @@ class DialogBox {
 
     private animateHideSnapShut(): Promise<void> {
         return new Promise((res) => {
-            // Anchor bottom edge by moving y while shrinking
+            // Shrink upward from the top edge
             const startY = this.container.y;
-            const h = this.panel.height;
 
             this.scene.tweens.add({
                 targets: this.container,
                 scaleY: 0,
-                y: startY + h * 0.5, // shift so bottom edge visually "stays"
                 duration: DIALOG_SNAP_CLOSE_DURATION,
                 ease: "bounce.easeIn",
                 onComplete: () => {
@@ -236,9 +234,8 @@ class DialogBox {
     private animateShowSnapOpen(): Promise<void> {
         return new Promise((res) => {
             const startY = this.container.y;
-            const h = this.panel.height;
             this.container.setScale(1, 0);
-            this.container.setY(startY + h * 0.5);
+            this.container.setY(startY);
             this.container.setVisible(true);
 
             this.scene.tweens.add({
@@ -324,14 +321,10 @@ class DialogBox {
         const panelH =
             this.cfg.margin * 2 + this.cfg.lineHeight * this.cfg.rows + this.cfg.cursorPad;
 
-        // Position container so panel sits near bottom with edge margin
-        const y = Math.floor(cam.height - panelH - this.cfg.edgeMargin);
-        const x = Math.floor(this.cfg.edgeMargin);
-
-        // --- half-width centered layout ---
+        // --- half-width centered layout aligned near the top ---
         const panelW = Math.floor(w * 0.5); // 50 % of screen width
         const panelX = Math.floor((w - panelW) / 2); // center horizontally
-        const panelY = Math.floor(cam.height - panelH - this.cfg.edgeMargin);
+        const panelY = Math.floor(this.cfg.edgeMargin); // top padding
 
         this.container.setPosition(panelX, panelY);
         this.panel.resize(panelW, panelH);
