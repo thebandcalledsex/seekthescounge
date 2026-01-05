@@ -28,6 +28,7 @@ export interface DialogConfig {
     theme?: DialogTheme; // panel colors
     useBitmapFontKey?: string; // if provided and loaded, uses BitmapText
     bitmapFontSize?: number; // BitmapText font size (default 8)
+    headSide?: "left" | "right"; // selects dialog container art variant + portrait alignment
     backgroundImageKey?: string; // optional image texture key for panel background
     backgroundImageFrame?: string; // optional frame name if using an atlas/spritesheet
     backgroundCrop?: { x: number; y: number; width: number; height: number }; // optional crop rect to trim transparent padding
@@ -49,6 +50,7 @@ export interface SayOptions {
     speed?: number; // override global speed
     choices?: string[]; // optional menu choices
     onChar?: (char: string) => void; // tiny hook per typed char (e.g., blip sfx)
+    headSide?: "left" | "right"; // selects dialog container art variant + portrait alignment
 }
 
 // Simple facade to own a single dialog box.
@@ -70,7 +72,18 @@ export default class DialogManager {
         const run = (async () => {
             await waitForPrev;
             this.destroyBox();
-            const box = new DialogBox(this.scene, this.cfg);
+            const boxCfg =
+                opts.headSide === undefined
+                    ? this.cfg
+                    : {
+                          ...this.cfg,
+                          headSide: opts.headSide,
+                          backgroundImageKey:
+                              opts.headSide === "left"
+                                  ? "dialog-container-head-left"
+                                  : "dialog-container-head-right",
+                      };
+            const box = new DialogBox(this.scene, boxCfg);
             this.box = box;
             try {
                 return await box.show(opts);
@@ -155,6 +168,10 @@ class DialogBox {
     constructor(scene: Phaser.Scene, cfg: DialogConfig) {
         this.scene = scene;
 
+        const headSide: "left" | "right" =
+            cfg.headSide ??
+            (cfg.backgroundImageKey === "dialog-container-head-right" ? "right" : "left");
+
         this.cfg = {
             rows: cfg.rows ?? 3,
             lineHeight: cfg.lineHeight ?? 14,
@@ -173,7 +190,12 @@ class DialogBox {
                 borderOuterPx: 2,
                 borderInnerPx: 1,
             },
-            backgroundImageKey: cfg.backgroundImageKey ?? "dialog-container-head-left",
+            headSide,
+            backgroundImageKey:
+                cfg.backgroundImageKey ??
+                (headSide === "left"
+                    ? "dialog-container-head-left"
+                    : "dialog-container-head-right"),
             backgroundImageFrame: cfg.backgroundImageFrame,
             backgroundCrop: cfg.backgroundCrop ?? {
                 x: 42,
@@ -430,7 +452,15 @@ class DialogBox {
         }
 
         if (this.cfg.portrait && this.portrait) {
-            this.portrait.setPosition(this.cfg.portrait.offsetX, this.cfg.portrait.offsetY);
+            const w = this.portrait.displayWidth;
+            const x =
+                this.cfg.headSide === "left"
+                    ? this.cfg.portrait.offsetX + this.cfg.portrait.originX * w
+                    : this.panel.width -
+                      this.cfg.portrait.offsetX -
+                      (1 - this.cfg.portrait.originX) * w -
+                      1;
+            this.portrait.setPosition(x, this.cfg.portrait.offsetY);
         }
 
         const textArea = this.getTextArea();
@@ -477,9 +507,15 @@ class DialogBox {
         }
 
         const usingImagePanel = this.panel.node instanceof Phaser.GameObjects.Image;
-        if (usingImagePanel && this.cfg.backgroundImageKey === "dialog-container-head-left") {
-            // Hand-tuned to keep text inside the right container of the dialog art.
-            return { x: 62, y: 8, width: 87, height: 40 };
+        if (usingImagePanel) {
+            if (this.cfg.backgroundImageKey === "dialog-container-head-left") {
+                // Hand-tuned to keep text inside the right container of the dialog art.
+                return { x: 62, y: 8, width: 87, height: 40 };
+            }
+            if (this.cfg.backgroundImageKey === "dialog-container-head-right") {
+                // Mirror of the left-head layout: keep text inside the left container of the dialog art.
+                return { x: 8, y: 8, width: 87, height: 40 };
+            }
         }
 
         const x = this.cfg.margin;

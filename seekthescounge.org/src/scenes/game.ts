@@ -60,6 +60,10 @@ class Game extends Phaser.Scene {
             "dialog-container-head-left",
             "../../assets/ui/dialog-container-head-left.png",
         );
+        this.load.image(
+            "dialog-container-head-right",
+            "../../assets/ui/dialog-container-head-right.png",
+        );
         this.load.image("rovert-head", "../../assets/heads/rovert-head.png");
 
         this.load.atlas(
@@ -659,7 +663,7 @@ class Game extends Phaser.Scene {
             lineHeight: 10,
             rows: 3,
             theme: { fill: 0x0f0f1a, borderOuter: 0xffffff, borderInner: undefined }, // single border
-            portrait: { key: "rovert-head", offsetX: 4, offsetY: 4 },
+            portrait: { key: "rovert-head", offsetX: 4, offsetY: 3 },
         });
 
         this.events.on(Phaser.Scenes.Events.RESUME, () => {
@@ -712,6 +716,7 @@ class Game extends Phaser.Scene {
             void this.dialog
                 .say({
                     text: "Brother! Do you see that?! Holy shit..",
+                    headSide: "left",
                 })
                 .then(() => {
                     this.hasCompletedRovertFirstDialog = true;
