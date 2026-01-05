@@ -26,7 +26,8 @@ class Game extends Phaser.Scene {
     private debugInfo?: DebugInfo;
 
     // One-time action flags
-    private hasTouchedGround = false;
+    private hasTouchedGround: boolean = false;
+    private hasReached200: boolean = false;
 
     constructor() {
         super({ key: "Game" });
@@ -46,6 +47,10 @@ class Game extends Phaser.Scene {
         this.load.image("far-hills", "../../assets/backgrounds/far-hills.png");
         this.load.image("mountains", "../../assets/backgrounds/mountains.png");
         this.load.image("sky", "../../assets/backgrounds/sky.png");
+        this.load.image(
+            "dialog-container-head-left",
+            "../../assets/ui/dialog-container-head-left.png",
+        );
 
         this.load.atlas(
             "rovert-idle-right",
@@ -550,8 +555,8 @@ class Game extends Phaser.Scene {
             });
         }
 
-        const spawnX = 1279;
-        const spawnY = 300;
+        const spawnX = 50;
+        const spawnY = 200;
 
         // Establish the player based on the input from the player selection scene
         if (this.selectedPlayer === "Rovert") {
@@ -629,8 +634,10 @@ class Game extends Phaser.Scene {
         // Create a dialog box
         this.dialog = new DialogManager(this, {
             speed: 1,
-            rows: 2,
-            useBitmapFontKey: "pixel",
+            useBitmapFontKey: "dialog-font",
+            bitmapFontSize: 8,
+            lineHeight: 10,
+            rows: 3,
             theme: { fill: 0x0f0f1a, borderOuter: 0xffffff, borderInner: undefined }, // single border
         });
     }
@@ -651,9 +658,18 @@ class Game extends Phaser.Scene {
             this.hasTouchedGround = true;
 
             // Trigger dialog when the player touches the ground for the first time
-            // this.dialog.say({
-            //     text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
-            // });
+            this.dialog.say({
+                text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
+            });
+        }
+
+        // Trigger another dialog when the player reaches x position 200
+        if (this.player.x > 200 && !this.hasReached200) {
+            this.dialog.say({
+                text: "I hope you find what you seek.",
+            });
+            
+            this.hasReached200 = true;
         }
 
         this.debugInfo?.update();

@@ -27,6 +27,11 @@ export interface DialogConfig {
     maxWidth?: number; // optional fixed wrap width (px), else auto from panel width
     theme?: DialogTheme; // panel colors
     useBitmapFontKey?: string; // if provided and loaded, uses BitmapText
+    bitmapFontSize?: number; // BitmapText font size (default 8)
+    backgroundImageKey?: string; // optional image texture key for panel background
+    backgroundImageFrame?: string; // optional frame name if using an atlas/spritesheet
+    backgroundCrop?: { x: number; y: number; width: number; height: number }; // optional crop rect to trim transparent padding
+    textArea?: { x: number; y: number; width: number; height: number }; // optional content bounds inside the panel
 }
 
 // Per-call options when showing dialog.
@@ -91,7 +96,10 @@ export default class DialogManager {
 // Camera-fixed dialog box implementation.
 class DialogBox {
     private scene: Phaser.Scene;
-    private cfg: Required<DialogConfig>;
+    private cfg: Required<Omit<DialogConfig, "backgroundImageFrame" | "textArea">> & {
+        backgroundImageFrame?: string;
+        textArea?: { x: number; y: number; width: number; height: number };
+    };
     private container: Phaser.GameObjects.Container;
 
     // Panel + text + UI
@@ -134,7 +142,8 @@ class DialogBox {
             speed: cfg.speed ?? 2,
             tickDelay: cfg.tickDelay ?? 60,
             maxWidth: cfg.maxWidth ?? 0, // 0 = auto
-            useBitmapFontKey: cfg.useBitmapFontKey ?? "pixel",
+            useBitmapFontKey: cfg.useBitmapFontKey ?? "dialog-font",
+            bitmapFontSize: cfg.bitmapFontSize ?? 8,
             theme: cfg.theme ?? {
                 fill: 0x111122,
                 borderOuter: 0xffffff,
@@ -142,6 +151,16 @@ class DialogBox {
                 borderOuterPx: 2,
                 borderInnerPx: 1,
             },
+            backgroundImageKey: cfg.backgroundImageKey ?? "dialog-container-head-left",
+            backgroundImageFrame: cfg.backgroundImageFrame,
+            backgroundCrop:
+                cfg.backgroundCrop ?? {
+                    x: 42,
+                    y: 195,
+                    width: 157,
+                    height: 56,
+                },
+            textArea: cfg.textArea,
         };
 
         // Root UI container (camera-fixed)
@@ -149,21 +168,34 @@ class DialogBox {
         this.container.setScrollFactor(0);
 
         // Pixel panel sized in layout()
-        this.panel = new PixelPanel(scene, 10, 10, this.cfg.theme);
+        this.panel = new PixelPanel(scene, 10, 10, this.cfg.theme, {
+            key: this.cfg.backgroundImageKey,
+            frame: this.cfg.backgroundImageFrame,
+            crop: this.cfg.backgroundCrop,
+        });
         this.panel.node.setScrollFactor(0);
         this.container.add(this.panel.node);
 
         // Create text objects (bitmap preferred)
-        const useBitmap =
-            !!this.cfg.useBitmapFontKey && scene.cache.bitmapFont.exists(this.cfg.useBitmapFontKey);
+        const useBitmap = Boolean(
+            this.cfg.useBitmapFontKey && ensureBitmapFont(scene, this.cfg.useBitmapFontKey),
+        );
         if (useBitmap) {
-            const bt = scene.add.bitmapText(0, 0, this.cfg.useBitmapFontKey, "", 8);
+            const bt = scene.add.bitmapText(
+                0,
+                0,
+                this.cfg.useBitmapFontKey,
+                "",
+                this.cfg.bitmapFontSize,
+            );
             bt.setLetterSpacing(0);
+            bt.setTint(0x000000);
             this.textObj = bt;
         } else {
             this.textObj = scene.add.text(0, 0, "", {
                 fontFamily: "monospace",
                 fontSize: DIALOG_FONT_SIZE,
+                color: "#000000",
                 wordWrap: { width: 1, useAdvancedWrap: true },
             });
             (this.textObj as Phaser.GameObjects.Text).setLineSpacing(0);
@@ -173,11 +205,19 @@ class DialogBox {
 
         // Advance cursor (blinking "▶")
         if (useBitmap) {
-            this.advanceCursor = scene.add.bitmapText(0, 0, this.cfg.useBitmapFontKey, "▶", 8);
+            this.advanceCursor = scene.add.bitmapText(
+                0,
+                0,
+                this.cfg.useBitmapFontKey,
+                ">",
+                this.cfg.bitmapFontSize,
+            );
+            (this.advanceCursor as Phaser.GameObjects.BitmapText).setTint(0x000000);
         } else {
-            this.advanceCursor = scene.add.text(0, 0, "▶", {
+            this.advanceCursor = scene.add.text(0, 0, ">", {
                 fontFamily: "monospace",
                 fontSize: "12px",
+                color: "#000000",
             });
         }
         this.advanceCursor.setAlpha(0).setScrollFactor(0);
@@ -214,16 +254,18 @@ class DialogBox {
 
     private animateHideSnapShut(): Promise<void> {
         return new Promise((res) => {
-            // Shrink upward from the top edge
             const startY = this.container.y;
+            const h = this.panel.height;
 
             this.scene.tweens.add({
                 targets: this.container,
                 scaleY: 0,
+                // Anchor the top edge while scaling by shifting y if scaling occurs around center.
+                y: startY - h * 0.5,
                 duration: DIALOG_SNAP_CLOSE_DURATION,
                 ease: "bounce.easeIn",
                 onComplete: () => {
-                    this.container.setScale(1).setY(startY); // reset
+                    this.container.setAlpha(1).setScale(1).setY(startY);
                     this.hide();
                     res();
                 },
@@ -234,19 +276,20 @@ class DialogBox {
     private animateShowSnapOpen(): Promise<void> {
         return new Promise((res) => {
             const startY = this.container.y;
+            const h = this.panel.height;
+
+            this.container.setAlpha(1);
             this.container.setScale(1, 0);
-            this.container.setY(startY);
+            this.container.setY(startY - h * 0.5);
             this.container.setVisible(true);
 
             this.scene.tweens.add({
                 targets: this.container,
-                scaleY: 1,
                 y: startY,
+                scaleY: 1,
                 duration: DIALOG_SNAP_OPEN_DURATION,
                 ease: "bounce.easeOut",
-                onComplete: () => {
-                    res();
-                },
+                onComplete: () => res(),
             });
         });
     }
@@ -314,24 +357,32 @@ class DialogBox {
 
     // -------------------- Layout & sizing --------------------
 
-    // Compute and apply layout for camera-fixed bottom box sized to 2 rows.
+    // Compute and apply layout for camera-fixed top box sized to configured rows.
     private layout() {
         const cam = this.scene.cameras.main;
         const w = Math.floor(cam.width);
-        const panelH =
+        const computedPanelH =
             this.cfg.margin * 2 + this.cfg.lineHeight * this.cfg.rows + this.cfg.cursorPad;
 
-        // --- half-width centered layout aligned near the top ---
-        const panelW = Math.floor(w * 0.5); // 50 % of screen width
-        const panelX = Math.floor((w - panelW) / 2); // center horizontally
-        const panelY = Math.floor(this.cfg.edgeMargin); // top padding
+        // Image-backed panels are fixed-size; Graphics panels use the computed size.
+        const usingImagePanel = this.panel.node instanceof Phaser.GameObjects.Image;
+        const panelW = usingImagePanel ? this.panel.width : Math.floor(w * 0.5); // 50 % of screen width
+        const panelH = usingImagePanel ? this.panel.height : computedPanelH;
+
+        // Center horizontally, align near top
+        const panelX = Math.floor((w - panelW) / 2);
+        const panelY = Math.floor(this.cfg.edgeMargin);
 
         this.container.setPosition(panelX, panelY);
-        this.panel.resize(panelW, panelH);
-        this.panel.redraw();
+        if (!usingImagePanel) {
+            this.panel.resize(panelW, panelH);
+            this.panel.redraw();
+        }
+
+        const textArea = this.getTextArea();
 
         // Text origin at top-left inside panel
-        this.textObj.setPosition(this.cfg.margin, this.cfg.margin);
+        this.textObj.setPosition(textArea.x, textArea.y);
 
         // Ensure correct wrap width on Phaser Text/BitmapText
         const wrapW = this.innerWidth();
@@ -345,17 +396,39 @@ class DialogBox {
 
     // Inner content width (panel minus margins).
     private innerWidth(): number {
-        const w = this.panel.width - this.cfg.margin * 2 - this.cfg.cursorPad; // ← subtract cursorPad
+        const textArea = this.getTextArea();
+        const w = textArea.width;
         return Math.floor(this.cfg.maxWidth > 0 ? Math.min(this.cfg.maxWidth, w) : w);
     }
 
     // Bottom-right "next" cursor position inside the panel.
     private positionAdvanceCursor() {
-        const cw = 8; // approximate glyph size of the cursor
-        const ch = 10;
-        const x = this.panel.width - this.cfg.margin - cw;
-        const y = this.panel.height - this.cfg.margin - ch;
+        const cw =
+            this.advanceCursor instanceof Phaser.GameObjects.BitmapText ? this.cfg.bitmapFontSize : 8;
+        const ch =
+            this.advanceCursor instanceof Phaser.GameObjects.BitmapText ? this.cfg.bitmapFontSize : 10;
+        const textArea = this.getTextArea();
+        const x = textArea.x + textArea.width - cw;
+        const y = textArea.y + textArea.height - ch;
         this.advanceCursor.setPosition(x, y);
+    }
+
+    private getTextArea(): { x: number; y: number; width: number; height: number } {
+        if (this.cfg.textArea) {
+            return this.cfg.textArea;
+        }
+
+        const usingImagePanel = this.panel.node instanceof Phaser.GameObjects.Image;
+        if (usingImagePanel && this.cfg.backgroundImageKey === "dialog-container-head-left") {
+            // Hand-tuned to keep text inside the right container of the dialog art.
+            return { x: 62, y: 8, width: 87, height: 40 };
+        }
+
+        const x = this.cfg.margin;
+        const y = this.cfg.margin;
+        const width = Math.max(1, this.panel.width - this.cfg.margin * 2 - this.cfg.cursorPad);
+        const height = Math.max(1, this.panel.height - this.cfg.margin * 2);
+        return { x, y, width, height };
     }
 
     // -------------------- Typing & paging --------------------
@@ -370,7 +443,11 @@ class DialogBox {
         this.advanceCursor.setAlpha(0);
         this.skipping = false;
 
-        const maxCols = Math.max(1, Math.floor(wrapW / DIALOG_CHAR_WIDTH_GUESS));
+        const charWidthGuess =
+            this.textObj instanceof Phaser.GameObjects.BitmapText
+                ? this.cfg.bitmapFontSize
+                : DIALOG_CHAR_WIDTH_GUESS;
+        const maxCols = Math.max(1, Math.floor(wrapW / Math.max(1, charWidthGuess)));
         const maxRows = this.cfg.rows;
 
         // tokenize: words and spaces
@@ -474,12 +551,13 @@ class DialogBox {
         this.hideChoices();
 
         const useBitmap = this.textObj instanceof Phaser.GameObjects.BitmapText;
+        const textArea = this.getTextArea();
         const startY = Math.min(
             // ensure list stays inside panel
-            this.cfg.margin + this.cfg.lineHeight, // below text rows
+            textArea.y + this.cfg.lineHeight, // below text rows
             Math.max(
-                this.cfg.margin,
-                this.panel.height - this.cfg.margin - choices.length * this.cfg.lineHeight,
+                textArea.y,
+                textArea.y + textArea.height - choices.length * this.cfg.lineHeight,
             ),
         );
 
@@ -488,36 +566,44 @@ class DialogBox {
             const y = startY + idx * this.cfg.lineHeight;
             const obj = useBitmap
                 ? this.scene.add.bitmapText(
-                      this.cfg.margin + 12,
+                      textArea.x + 12,
                       y,
                       (this.textObj as Phaser.GameObjects.BitmapText).font,
                       label,
-                      8,
+                      this.cfg.bitmapFontSize,
                   )
-                : this.scene.add.text(this.cfg.margin + 12, y, label, {
+                : this.scene.add.text(textArea.x + 12, y, label, {
                       fontFamily: "monospace",
                       fontSize: "12px",
+                      color: "#000000",
                   });
 
             obj.setOrigin(0, 0).setScrollFactor(0);
+            if (obj instanceof Phaser.GameObjects.BitmapText) {
+                obj.setTint(0x000000);
+            }
             this.container.add(obj);
             this.choiceTexts.push(obj);
         });
 
         this.choiceCursor = useBitmap
             ? this.scene.add.bitmapText(
-                  this.cfg.margin,
+                  textArea.x,
                   startY,
                   (this.textObj as Phaser.GameObjects.BitmapText).font,
-                  "►",
-                  8,
+                  ">",
+                  this.cfg.bitmapFontSize,
               )
-            : this.scene.add.text(this.cfg.margin, startY, "►", {
+            : this.scene.add.text(textArea.x, startY, "►", {
                   fontFamily: "monospace",
                   fontSize: "12px",
+                  color: "#000000",
               });
 
         this.choiceCursor.setOrigin(0, 0).setScrollFactor(0);
+        if (this.choiceCursor instanceof Phaser.GameObjects.BitmapText) {
+            this.choiceCursor.setTint(0x000000);
+        }
         this.container.add(this.choiceCursor);
 
         let sel = 0;
@@ -594,15 +680,45 @@ class DialogBox {
 // -------------------- Pixel panel --------------------
 
 class PixelPanel {
-    public node: Phaser.GameObjects.Graphics;
+    public node: Phaser.GameObjects.Graphics | Phaser.GameObjects.Image;
     public width: number;
     public height: number;
     private theme: Required<DialogTheme>;
+    private isImage: boolean;
 
-    constructor(scene: Phaser.Scene, w: number, h: number, theme: DialogTheme) {
-        this.node = scene.add.graphics();
-        this.width = Math.floor(w);
-        this.height = Math.floor(h);
+    constructor(
+        scene: Phaser.Scene,
+        w: number,
+        h: number,
+        theme: DialogTheme,
+        background?: {
+            key?: string;
+            frame?: string;
+            crop?: { x: number; y: number; width: number; height: number };
+        },
+    ) {
+        const hasImage = background?.key && scene.textures.exists(background.key);
+        this.isImage = Boolean(hasImage);
+
+        if (hasImage) {
+            const textureKey = background!.key!;
+            let frame = background?.frame;
+            if (!frame && background?.crop) {
+                const { x, y, width, height } = background.crop;
+                frame = `__crop_${x}_${y}_${width}_${height}`;
+                const tex = scene.textures.get(textureKey);
+                if (!tex.has(frame)) {
+                    tex.add(frame, 0, x, y, width, height);
+                }
+            }
+            this.node = scene.add.image(0, 0, textureKey, frame).setOrigin(0, 0);
+            this.width = Math.floor((this.node as Phaser.GameObjects.Image).width);
+            this.height = Math.floor((this.node as Phaser.GameObjects.Image).height);
+        } else {
+            this.node = scene.add.graphics();
+            this.width = Math.floor(w);
+            this.height = Math.floor(h);
+        }
         // apply defaults
         this.theme = {
             fill: theme.fill ?? 0x111122,
@@ -615,6 +731,10 @@ class PixelPanel {
     }
 
     resize(w: number, h: number) {
+        if (this.isImage) {
+            // Image-backed panels have a fixed size; do not resize/scale to avoid warping.
+            return;
+        }
         this.width = Math.floor(w);
         this.height = Math.floor(h);
     }
@@ -624,6 +744,9 @@ class PixelPanel {
     }
 
     redraw() {
+        if (this.node instanceof Phaser.GameObjects.Image) {
+            return;
+        }
         this.node.clear();
 
         // Fill
@@ -645,6 +768,91 @@ class PixelPanel {
 }
 
 // -------------------- Helpers --------------------
+
+function ensureBitmapFont(scene: Phaser.Scene, fontKey: string): boolean {
+    if (scene.cache.bitmapFont.exists(fontKey)) return true;
+    if (typeof document === "undefined") return false;
+
+    const textureKey = `${fontKey}__texture`;
+
+    if (!scene.textures.exists(textureKey)) {
+        const glyphW = 8;
+        const glyphH = 8;
+        const firstChar = 32;
+        const lastChar = 126;
+        const charsPerRow = 16;
+        const totalChars = lastChar - firstChar + 1;
+        const rows = Math.ceil(totalChars / charsPerRow);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = charsPerRow * glyphW;
+        canvas.height = rows * glyphH;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return false;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#ffffff";
+
+        for (let code = firstChar; code <= lastChar; code++) {
+            const glyph = FONT8X8_BASIC[code] ?? FONT8X8_BASIC[0];
+            const index = code - firstChar;
+            const gx = (index % charsPerRow) * glyphW;
+            const gy = Math.floor(index / charsPerRow) * glyphH;
+
+            for (let y = 0; y < 8; y++) {
+                const row = glyph[y] ?? 0;
+                for (let x = 0; x < 8; x++) {
+                    if (row & (1 << x)) {
+                        ctx.fillRect(gx + x, gy + y, 1, 1);
+                    }
+                }
+            }
+        }
+
+        scene.textures.addCanvas(textureKey, canvas);
+        scene.textures.get(textureKey).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
+
+    const texture = scene.textures.get(textureKey);
+    const frame = texture.get();
+
+    const glyphW = 8;
+    const glyphH = 8;
+    const firstChar = 32;
+    const lastChar = 126;
+    const charsPerRow = 16;
+    const totalChars = lastChar - firstChar + 1;
+    const rows = Math.ceil(totalChars / charsPerRow);
+    const scaleW = charsPerRow * glyphW;
+    const scaleH = rows * glyphH;
+
+    const chars: string[] = [];
+    for (let code = firstChar; code <= lastChar; code++) {
+        const index = code - firstChar;
+        const x = (index % charsPerRow) * glyphW;
+        const y = Math.floor(index / charsPerRow) * glyphH;
+        chars.push(
+            `<char id="${code}" x="${x}" y="${y}" width="${glyphW}" height="${glyphH}" xoffset="0" yoffset="0" xadvance="${glyphW}" page="0" chnl="0"/>`,
+        );
+    }
+
+    const xmlText =
+        `<?xml version="1.0"?>` +
+        `<font>` +
+        `<info face="${fontKey}" size="${glyphH}" bold="0" italic="0" charset="" unicode="0" stretchH="100" smooth="0" aa="0" padding="0,0,0,0" spacing="0,0"/>` +
+        `<common lineHeight="${glyphH}" base="${glyphH}" scaleW="${scaleW}" scaleH="${scaleH}" pages="1" packed="0"/>` +
+        `<pages><page id="0" file="${fontKey}.png"/></pages>` +
+        `<chars count="${totalChars}">` +
+        chars.join("") +
+        `</chars>` +
+        `</font>`;
+
+    const xml = new DOMParser().parseFromString(xmlText, "application/xml");
+    const data = Phaser.GameObjects.BitmapText.ParseXMLBitmapFont(xml, frame, 0, 0);
+
+    scene.cache.bitmapFont.add(fontKey, { data, texture: textureKey, frame: null });
+    return true;
+}
 
 function delay(scene: Phaser.Scene, ms: number) {
     return new Promise<void>((res) => scene.time.delayedCall(ms, () => res()));
@@ -709,3 +917,134 @@ function paginate(s: string, maxChars: number): string[] {
     if (page.trim().length) pages.push(page.trim());
     return pages;
 }
+
+const FONT8X8_BASIC: ReadonlyArray<ReadonlyArray<number>> = [
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x18, 0x3c, 0x3c, 0x18, 0x18, 0x00, 0x18, 0x00],
+    [0x36, 0x36, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x36, 0x36, 0x7f, 0x36, 0x7f, 0x36, 0x36, 0x00],
+    [0x0c, 0x3e, 0x03, 0x1e, 0x30, 0x1f, 0x0c, 0x00],
+    [0x00, 0x63, 0x33, 0x18, 0x0c, 0x66, 0x63, 0x00],
+    [0x1c, 0x36, 0x1c, 0x6e, 0x3b, 0x33, 0x6e, 0x00],
+    [0x06, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x18, 0x0c, 0x06, 0x06, 0x06, 0x0c, 0x18, 0x00],
+    [0x06, 0x0c, 0x18, 0x18, 0x18, 0x0c, 0x06, 0x00],
+    [0x00, 0x66, 0x3c, 0xff, 0x3c, 0x66, 0x00, 0x00],
+    [0x00, 0x0c, 0x0c, 0x3f, 0x0c, 0x0c, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x0c, 0x0c, 0x06],
+    [0x00, 0x00, 0x00, 0x3f, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x0c, 0x0c, 0x00],
+    [0x60, 0x30, 0x18, 0x0c, 0x06, 0x03, 0x01, 0x00],
+    [0x3e, 0x63, 0x73, 0x7b, 0x6f, 0x67, 0x3e, 0x00],
+    [0x0c, 0x0e, 0x0c, 0x0c, 0x0c, 0x0c, 0x3f, 0x00],
+    [0x1e, 0x33, 0x30, 0x1c, 0x06, 0x33, 0x3f, 0x00],
+    [0x1e, 0x33, 0x30, 0x1c, 0x30, 0x33, 0x1e, 0x00],
+    [0x38, 0x3c, 0x36, 0x33, 0x7f, 0x30, 0x78, 0x00],
+    [0x3f, 0x03, 0x1f, 0x30, 0x30, 0x33, 0x1e, 0x00],
+    [0x1c, 0x06, 0x03, 0x1f, 0x33, 0x33, 0x1e, 0x00],
+    [0x3f, 0x33, 0x30, 0x18, 0x0c, 0x0c, 0x0c, 0x00],
+    [0x1e, 0x33, 0x33, 0x1e, 0x33, 0x33, 0x1e, 0x00],
+    [0x1e, 0x33, 0x33, 0x3e, 0x30, 0x18, 0x0e, 0x00],
+    [0x00, 0x0c, 0x0c, 0x00, 0x00, 0x0c, 0x0c, 0x00],
+    [0x00, 0x0c, 0x0c, 0x00, 0x00, 0x0c, 0x0c, 0x06],
+    [0x18, 0x0c, 0x06, 0x03, 0x06, 0x0c, 0x18, 0x00],
+    [0x00, 0x00, 0x3f, 0x00, 0x00, 0x3f, 0x00, 0x00],
+    [0x06, 0x0c, 0x18, 0x30, 0x18, 0x0c, 0x06, 0x00],
+    [0x1e, 0x33, 0x30, 0x18, 0x0c, 0x00, 0x0c, 0x00],
+    [0x3e, 0x63, 0x7b, 0x7b, 0x7b, 0x03, 0x1e, 0x00],
+    [0x0c, 0x1e, 0x33, 0x33, 0x3f, 0x33, 0x33, 0x00],
+    [0x3f, 0x66, 0x66, 0x3e, 0x66, 0x66, 0x3f, 0x00],
+    [0x3c, 0x66, 0x03, 0x03, 0x03, 0x66, 0x3c, 0x00],
+    [0x1f, 0x36, 0x66, 0x66, 0x66, 0x36, 0x1f, 0x00],
+    [0x7f, 0x46, 0x16, 0x1e, 0x16, 0x46, 0x7f, 0x00],
+    [0x7f, 0x46, 0x16, 0x1e, 0x16, 0x06, 0x0f, 0x00],
+    [0x3c, 0x66, 0x03, 0x03, 0x73, 0x66, 0x7c, 0x00],
+    [0x33, 0x33, 0x33, 0x3f, 0x33, 0x33, 0x33, 0x00],
+    [0x1e, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x1e, 0x00],
+    [0x78, 0x30, 0x30, 0x30, 0x33, 0x33, 0x1e, 0x00],
+    [0x67, 0x66, 0x36, 0x1e, 0x36, 0x66, 0x67, 0x00],
+    [0x0f, 0x06, 0x06, 0x06, 0x46, 0x66, 0x7f, 0x00],
+    [0x63, 0x77, 0x7f, 0x7f, 0x6b, 0x63, 0x63, 0x00],
+    [0x63, 0x67, 0x6f, 0x7b, 0x73, 0x63, 0x63, 0x00],
+    [0x1c, 0x36, 0x63, 0x63, 0x63, 0x36, 0x1c, 0x00],
+    [0x3f, 0x66, 0x66, 0x3e, 0x06, 0x06, 0x0f, 0x00],
+    [0x1e, 0x33, 0x33, 0x33, 0x3b, 0x1e, 0x38, 0x00],
+    [0x3f, 0x66, 0x66, 0x3e, 0x36, 0x66, 0x67, 0x00],
+    [0x1e, 0x33, 0x07, 0x0e, 0x38, 0x33, 0x1e, 0x00],
+    [0x3f, 0x2d, 0x0c, 0x0c, 0x0c, 0x0c, 0x1e, 0x00],
+    [0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x3f, 0x00],
+    [0x33, 0x33, 0x33, 0x33, 0x33, 0x1e, 0x0c, 0x00],
+    [0x63, 0x63, 0x63, 0x6b, 0x7f, 0x77, 0x63, 0x00],
+    [0x63, 0x63, 0x36, 0x1c, 0x1c, 0x36, 0x63, 0x00],
+    [0x33, 0x33, 0x33, 0x1e, 0x0c, 0x0c, 0x1e, 0x00],
+    [0x7f, 0x63, 0x31, 0x18, 0x4c, 0x66, 0x7f, 0x00],
+    [0x1e, 0x06, 0x06, 0x06, 0x06, 0x06, 0x1e, 0x00],
+    [0x03, 0x06, 0x0c, 0x18, 0x30, 0x60, 0x40, 0x00],
+    [0x1e, 0x18, 0x18, 0x18, 0x18, 0x18, 0x1e, 0x00],
+    [0x08, 0x1c, 0x36, 0x63, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff],
+    [0x0c, 0x0c, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x1e, 0x30, 0x3e, 0x33, 0x6e, 0x00],
+    [0x07, 0x06, 0x06, 0x3e, 0x66, 0x66, 0x3b, 0x00],
+    [0x00, 0x00, 0x1e, 0x33, 0x03, 0x33, 0x1e, 0x00],
+    [0x38, 0x30, 0x30, 0x3e, 0x33, 0x33, 0x6e, 0x00],
+    [0x00, 0x00, 0x1e, 0x33, 0x3f, 0x03, 0x1e, 0x00],
+    [0x1c, 0x36, 0x06, 0x0f, 0x06, 0x06, 0x0f, 0x00],
+    [0x00, 0x00, 0x6e, 0x33, 0x33, 0x3e, 0x30, 0x1f],
+    [0x07, 0x06, 0x36, 0x6e, 0x66, 0x66, 0x67, 0x00],
+    [0x0c, 0x00, 0x0e, 0x0c, 0x0c, 0x0c, 0x1e, 0x00],
+    [0x30, 0x00, 0x30, 0x30, 0x30, 0x33, 0x33, 0x1e],
+    [0x07, 0x06, 0x66, 0x36, 0x1e, 0x36, 0x67, 0x00],
+    [0x0e, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x1e, 0x00],
+    [0x00, 0x00, 0x33, 0x7f, 0x7f, 0x6b, 0x63, 0x00],
+    [0x00, 0x00, 0x1f, 0x33, 0x33, 0x33, 0x33, 0x00],
+    [0x00, 0x00, 0x1e, 0x33, 0x33, 0x33, 0x1e, 0x00],
+    [0x00, 0x00, 0x3b, 0x66, 0x66, 0x3e, 0x06, 0x0f],
+    [0x00, 0x00, 0x6e, 0x33, 0x33, 0x3e, 0x30, 0x78],
+    [0x00, 0x00, 0x3b, 0x6e, 0x66, 0x06, 0x0f, 0x00],
+    [0x00, 0x00, 0x3e, 0x03, 0x1e, 0x30, 0x1f, 0x00],
+    [0x08, 0x0c, 0x3e, 0x0c, 0x0c, 0x2c, 0x18, 0x00],
+    [0x00, 0x00, 0x33, 0x33, 0x33, 0x33, 0x6e, 0x00],
+    [0x00, 0x00, 0x33, 0x33, 0x33, 0x1e, 0x0c, 0x00],
+    [0x00, 0x00, 0x63, 0x6b, 0x7f, 0x7f, 0x36, 0x00],
+    [0x00, 0x00, 0x63, 0x36, 0x1c, 0x36, 0x63, 0x00],
+    [0x00, 0x00, 0x33, 0x33, 0x33, 0x3e, 0x30, 0x1f],
+    [0x00, 0x00, 0x3f, 0x19, 0x0c, 0x26, 0x3f, 0x00],
+    [0x38, 0x0c, 0x0c, 0x07, 0x0c, 0x0c, 0x38, 0x00],
+    [0x18, 0x18, 0x18, 0x00, 0x18, 0x18, 0x18, 0x00],
+    [0x07, 0x0c, 0x0c, 0x38, 0x0c, 0x0c, 0x07, 0x00],
+    [0x6e, 0x3b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+];

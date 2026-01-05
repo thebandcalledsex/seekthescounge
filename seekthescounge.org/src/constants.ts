@@ -1,4 +1,4 @@
-export const GAME_VERSION = "1.38";
+export const GAME_VERSION = "1.51";
 
 // game dimensions
 export const GAME_WIDTH = 286;
@@ -27,7 +27,7 @@ export const DIALOG_SNAP_CLOSE_DURATION = 400; // ms
 export const DIALOG_FONT_SIZE = "10px";
 
 // dialog box char width guess for paging math
-export const DIALOG_CHAR_WIDTH_GUESS = 6;
+export const DIALOG_CHAR_WIDTH_GUESS = 8;
 
 // button dimensions
 export const BUTTON_WIDTH_FACTOR = 0.25; // button width relative to screen width
