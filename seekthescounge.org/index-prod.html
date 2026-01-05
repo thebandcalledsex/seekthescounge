@@ -29,6 +29,10 @@
         body.overlay-active canvas {
             visibility: hidden;
         }
+        body.pause-overlay-active #phaser,
+        body.pause-overlay-active canvas {
+            visibility: hidden;
+        }
         .app-overlay {
             position: fixed;
             inset: 0;
@@ -43,13 +47,17 @@
             text-transform: uppercase;
             z-index: 9999;
         }
-        body.overlay-active .app-overlay {
+        body.overlay-active #app-overlay {
+            display: flex;
+        }
+        body.pause-overlay-active #pause-overlay {
             display: flex;
         }
     </style>
 </head>
 <body class="overlay-active">
     <div id="app-overlay" class="app-overlay">Loading...</div>
+    <div id="pause-overlay" class="app-overlay">Paused</div>
     <div id="phaser"></div>
 </body>
 </html>

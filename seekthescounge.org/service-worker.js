@@ -1,4 +1,4 @@
-const CACHE_VERSION = "1.18";
+const CACHE_VERSION = "1.53";
 const APP_SHELL_CACHE = `seekthescounge-shell-v${CACHE_VERSION}`;
 const CORE_ASSETS = ["/", "/index.html", "/manifest.webmanifest"];
 const OFFLINE_FALLBACK = "/index.html";

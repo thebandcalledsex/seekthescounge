@@ -4,6 +4,7 @@ import PlayerSelect from "./scenes/player-select";
 import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION } from "./constants";
 import UiScene from "./scenes/ui";
 import { initOverlay } from "./ui/overlay";
+import { initPortraitPause } from "./ui/portrait-pause";
 import { unregisterServiceWorkers, setupServiceWorker } from "./pwa/service-worker-client";
 
 const MIN_LOADING_OVERLAY_MS = 500;
@@ -80,5 +81,7 @@ if ("serviceWorker" in navigator) {
 } else {
     dismissOverlay();
 }
+
+initPortraitPause({ game, enabled: isMobilePlatform });
 
 console.info(`Seek The Scounge v${GAME_VERSION}`);
