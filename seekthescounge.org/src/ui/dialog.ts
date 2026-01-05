@@ -51,6 +51,7 @@ export interface SayOptions {
     choices?: string[]; // optional menu choices
     onChar?: (char: string) => void; // tiny hook per typed char (e.g., blip sfx)
     headSide?: "left" | "right"; // selects dialog container art variant + portrait alignment
+    portrait?: { key: string; frame?: string } | null; // override portrait/head asset; null hides portrait
 }
 
 // Simple facade to own a single dialog box.
@@ -72,17 +73,22 @@ export default class DialogManager {
         const run = (async () => {
             await waitForPrev;
             this.destroyBox();
-            const boxCfg =
-                opts.headSide === undefined
-                    ? this.cfg
-                    : {
-                          ...this.cfg,
-                          headSide: opts.headSide,
-                          backgroundImageKey:
-                              opts.headSide === "left"
-                                  ? "dialog-container-head-left"
-                                  : "dialog-container-head-right",
-                      };
+            const boxCfg: DialogConfig = { ...this.cfg };
+            if (opts.headSide !== undefined) {
+                boxCfg.headSide = opts.headSide;
+                boxCfg.backgroundImageKey =
+                    opts.headSide === "left"
+                        ? "dialog-container-head-left"
+                        : "dialog-container-head-right";
+            }
+            if (opts.portrait === null) {
+                boxCfg.portrait = undefined;
+            } else if (opts.portrait) {
+                boxCfg.portrait = {
+                    ...(boxCfg.portrait ?? { key: opts.portrait.key }),
+                    ...opts.portrait,
+                };
+            }
             const box = new DialogBox(this.scene, boxCfg);
             this.box = box;
             try {
@@ -174,7 +180,7 @@ class DialogBox {
 
         this.cfg = {
             rows: cfg.rows ?? 3,
-            lineHeight: cfg.lineHeight ?? 14,
+            lineHeight: cfg.lineHeight ?? 15,
             margin: cfg.margin ?? 8,
             cursorPad: cfg.cursorPad ?? 6,
             edgeMargin: cfg.edgeMargin ?? 4,
@@ -384,7 +390,9 @@ class DialogBox {
         this.setVisible(true);
 
         const wrapW = this.innerWidth();
-        let remaining = text;
+        // Support explicit page breaks without manual whitespace/newlines.
+        // Usage: "First page text<pg>Second page text"
+        let remaining = text.split("<pg>").join("\f");
         let chosen: number | void = undefined;
 
         while (remaining.length > 0) {
@@ -510,11 +518,11 @@ class DialogBox {
         if (usingImagePanel) {
             if (this.cfg.backgroundImageKey === "dialog-container-head-left") {
                 // Hand-tuned to keep text inside the right container of the dialog art.
-                return { x: 62, y: 8, width: 87, height: 40 };
+                return { x: 60, y: 7, width: 90, height: 42 };
             }
             if (this.cfg.backgroundImageKey === "dialog-container-head-right") {
                 // Mirror of the left-head layout: keep text inside the left container of the dialog art.
-                return { x: 8, y: 8, width: 87, height: 40 };
+                return { x: 7, y: 7, width: 90, height: 42 };
             }
         }
 
@@ -547,6 +555,7 @@ class DialogBox {
         // tokenize: words and spaces
         const tokens = remainingText.match(/(\S+|\s+)/g) ?? [];
         let ti = 0;
+        let tokenRemainder: string | null = null;
 
         // track current line fill and row index from our own explicit '\n's
         let lineCols = 0; // columns in current line (using charWidthGuess)
@@ -569,6 +578,7 @@ class DialogBox {
 
         while (ti < tokens.length) {
             const tok = tokens[ti];
+            let hitPageBreak = false;
 
             // If this token is a word, decide wrapping BEFORE we start typing it
             const isSpace = /^\s+$/.test(tok);
@@ -584,6 +594,7 @@ class DialogBox {
                         // lineCols resets via append()
                     } else {
                         // No vertical space left → stop page here and return leftovers
+                        tokenRemainder = tok;
                         break;
                     }
                 }
@@ -592,12 +603,34 @@ class DialogBox {
             // Type this token char-by-char (or fast-forward when skipping)
             let k = 0;
             while (k < tok.length) {
+                // Explicit page break marker: "\f" (inserted by "<pg>" in show()).
+                if (this.skipping) {
+                    const ffIdx = tok.indexOf("\f", k);
+                    if (ffIdx !== -1) {
+                        const before = tok.slice(k, ffIdx);
+                        if (before && !/^\s*$/.test(before)) {
+                            append(before);
+                            if (onChar) onChar(before);
+                        }
+                        tokenRemainder = tok.slice(ffIdx + 1);
+                        hitPageBreak = true;
+                        k = tok.length;
+                        break;
+                    }
+                } else if (tok[k] === "\f") {
+                    tokenRemainder = tok.slice(k + 1);
+                    hitPageBreak = true;
+                    k = tok.length;
+                    break;
+                }
+
                 const chunk = this.skipping ? tok.slice(k) : tok[k];
                 // If a newline chunk would exceed rows, stop before appending
                 if (chunk.includes("\n") && rowIdx >= maxRows - 1) {
                     // don’t append; finish page and leave token remainder for next page
                     // keep k where it is so the remainder of this token gets returned
-                    k = tok.length; // ensure we treat as leftover; ti not advanced
+                    tokenRemainder = tok.slice(k);
+                    k = tok.length;
                     break;
                 }
 
@@ -613,10 +646,16 @@ class DialogBox {
                 // If we somehow reached a new row count limit exactly, also stop
                 if (rowIdx >= maxRows) {
                     // rollback isn’t needed because we only create new rows via our own '\n'
+                    tokenRemainder = tok.slice(k);
                     break;
                 }
 
                 await delay(this.scene, this.cfg.tickDelay);
+            }
+
+            // If we hit an explicit page break, stop immediately and return leftovers after it.
+            if (hitPageBreak) {
+                break;
             }
 
             // If we exited early because page filled, stop before consuming this token
@@ -625,6 +664,7 @@ class DialogBox {
                 (ti < tokens.length - 1 || k < tok.length)
             ) {
                 // leave current token (or its remainder) in leftovers
+                if (tokenRemainder === null) tokenRemainder = tok.slice(k);
                 break;
             }
 
@@ -635,7 +675,10 @@ class DialogBox {
         this.keys.skip.off("down", handleSkip);
 
         // Leftover text (everything we didn’t consume on this page)
-        const leftovers = tokens.slice(ti).join("");
+        const leftovers =
+            tokenRemainder === null
+                ? tokens.slice(ti).join("")
+                : tokenRemainder + tokens.slice(ti + 1).join("");
         return leftovers;
     }
 

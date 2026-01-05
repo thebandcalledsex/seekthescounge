@@ -32,6 +32,7 @@ class Game extends Phaser.Scene {
     private hasCompletedRovertFirstDialog: boolean = false;
     private hasReached500: boolean = false;
     private hasPlayedDragonCutscene: boolean = false;
+    private hasCompletedShueyPostDragonDialog: boolean = false;
     private ignoreInputUntilRelease: boolean = false;
 
     constructor() {
@@ -45,6 +46,7 @@ class Game extends Phaser.Scene {
         this.hasCompletedRovertFirstDialog = false;
         this.hasReached500 = false;
         this.hasPlayedDragonCutscene = false;
+        this.hasCompletedShueyPostDragonDialog = false;
     }
 
     public preload() {
@@ -65,6 +67,7 @@ class Game extends Phaser.Scene {
             "../../assets/ui/dialog-container-head-right.png",
         );
         this.load.image("rovert-head", "../../assets/heads/rovert-head.png");
+        this.load.image("shuey-head", "../../assets/heads/shuey-head.png");
 
         this.load.atlas(
             "rovert-idle-right",
@@ -660,8 +663,8 @@ class Game extends Phaser.Scene {
             speed: 1,
             useBitmapFontKey: "dialog-font",
             bitmapFontSize: 8,
-            lineHeight: 10,
-            rows: 3,
+            lineHeight: 11,
+            rows: 4,
             theme: { fill: 0x0f0f1a, borderOuter: 0xffffff, borderInner: undefined }, // single border
             portrait: { key: "rovert-head", offsetX: 4, offsetY: 3 },
         });
@@ -715,7 +718,7 @@ class Game extends Phaser.Scene {
             // Trigger dialog when the player touches rovert for the first time
             void this.dialog
                 .say({
-                    text: "Brother! Do you see that?! Holy shit..",
+                    text: "Brother! Do you see that?! <pg>Holy shit..",
                     headSide: "left",
                 })
                 .then(() => {
@@ -729,7 +732,6 @@ class Game extends Phaser.Scene {
 
         // Transition into dragon-falling once the player has reached x 500, met Rovert, and finished that dialog
         if (
-            this.hasReached500 &&
             this.hasMetRovert &&
             this.hasCompletedRovertFirstDialog &&
             !this.dialog.active &&
@@ -751,6 +753,28 @@ class Game extends Phaser.Scene {
             });
             return;
         }
+
+        // After the dragon cutscene, shuey says something to rovert
+        if (
+            this.hasPlayedDragonCutscene &&
+            this.hasMetRovert &&
+            this.hasCompletedRovertFirstDialog &&
+            !this.dialog.active &&
+            !this.hasCompletedShueyPostDragonDialog
+        ) {
+            this.hasCompletedShueyPostDragonDialog = true;
+
+            void this.dialog
+                .say({
+                    text: "Holy fucking jesus christ! A <pg> a.. <pg> DRAGON!",
+                    headSide: "right",
+                    portrait: { key: "shuey-head" },
+                })
+                .then(() => {
+                    // Nothing for now
+                });
+        }
+
 
         this.debugInfo?.update();
     }
