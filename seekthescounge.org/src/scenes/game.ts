@@ -37,8 +37,8 @@ class Game extends Phaser.Scene {
     }
 
     // Receive the selected player from the player selection scene
-    init(data: { selectedPlayer: string }) {
-        this.selectedPlayer = data.selectedPlayer || "Rovert";
+    init(data?: { selectedPlayer?: string }) {
+        this.selectedPlayer = data?.selectedPlayer || "Rovert";
         this.hasTouchedGround = false;
         this.hasReached500 = false;
     }
@@ -213,12 +213,12 @@ class Game extends Phaser.Scene {
         // Initialize the input controller and hook it up to the UI scene
 
         // Ensure UI scene is running
-        if (!this.scene.isActive("ui")) {
-            this.scene.launch("ui");
+        if (!this.scene.isActive("Ui")) {
+            this.scene.launch("Ui");
         }
 
         // Get reference to the live UI scene
-        const uiScene = this.scene.get("ui") as UiScene;
+        const uiScene = this.scene.get("Ui") as UiScene;
 
         // Now bind input controller to that UI scene
         this.inputController = new InputController(uiScene);
@@ -231,7 +231,7 @@ class Game extends Phaser.Scene {
             }
             attachedUiInputs.add(uiInput);
             this.inputController.addInputSource(uiInput);
-            this.scene.bringToTop("ui"); // Ensure UI is overlayed on top
+            this.scene.bringToTop("Ui"); // Ensure UI is overlayed on top
         };
 
         // Once the UI is ready, attach it as an input source to the input controller
@@ -728,13 +728,13 @@ class Game extends Phaser.Scene {
             this.hasReached500 = true;
             this.ignoreInputUntilRelease = true;
             this.input.keyboard?.resetKeys();
-            const uiScene = this.scene.get("ui") as UiScene;
+            const uiScene = this.scene.get("Ui") as UiScene;
             uiScene?.uiInput?.reset();
             this.scene.pause("Game");
-            if (this.scene.isActive("ui")) {
-                this.scene.pause("ui");
+            if (this.scene.isActive("Ui")) {
+                this.scene.pause("Ui");
             }
-            this.scene.launch("dragon-falling", {
+            this.scene.launch("DragonFalling", {
                 returnSceneKey: "Game",
                 resumeUi: true,
                 loops: 3,

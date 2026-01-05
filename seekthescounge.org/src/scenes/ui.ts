@@ -5,7 +5,7 @@ export default class UiScene extends Phaser.Scene {
     public uiInput!: OnScreenInput;
 
     constructor() {
-        super({ key: "ui" });
+        super({ key: "Ui" });
     }
 
     create() {

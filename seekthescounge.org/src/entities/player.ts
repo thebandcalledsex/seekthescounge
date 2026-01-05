@@ -477,7 +477,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
         // Play death animation
         this.playDeathAnimation();
 
-        // Death zoom transition, then switch to PlayerSelect scene.
+        // Death zoom transition, then switch back to the begin scene.
         const { x: focusX, y: focusY } = this.playerBody.center;
         const camera = this.scene.cameras.main;
         const originalZoom = camera.zoom;
@@ -490,8 +490,8 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
             camera.setZoom(originalZoom);
 
             const scenePlugin = this.scene.scene;
-            if (scenePlugin.isActive("ui")) {
-                scenePlugin.stop("ui");
+            if (scenePlugin.isActive("Ui")) {
+                scenePlugin.stop("Ui");
             }
 
             this.setActive(false);
@@ -500,7 +500,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
             scenePlugin.stop("Game");
 
-            scenePlugin.start("PlayerSelect");
+            scenePlugin.start("Begin");
         });
     }
 

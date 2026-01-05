@@ -10,7 +10,7 @@ class DragonFalling extends Phaser.Scene {
     private imgEl?: HTMLImageElement;
 
     constructor() {
-        super({ key: "dragon-falling" });
+        super({ key: "DragonFalling" });
     }
 
     init(data: {
@@ -85,10 +85,10 @@ class DragonFalling extends Phaser.Scene {
         const tick = () => {
             completedLoops += 1;
             if (completedLoops >= this.loops) {
-                this.scene.stop("dragon-falling");
+                this.scene.stop("DragonFalling");
                 this.scene.resume(this.returnSceneKey);
                 if (this.resumeUi) {
-                    this.scene.resume("ui");
+                    this.scene.resume("Ui");
                 }
                 return;
             }
