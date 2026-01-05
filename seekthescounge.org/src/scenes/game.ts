@@ -687,12 +687,7 @@ class Game extends Phaser.Scene {
             const jump = dialogActive ? false : this.inputController.isJumpPressed();
 
             // Check for input for the player
-            this.player.update(
-                moveLeft,
-                moveRight,
-                jump,
-                this.inputController.isAttackPressed(),
-            );
+            this.player.update(moveLeft, moveRight, jump, this.inputController.isAttackPressed());
         }
 
         // // Check if the player has touched the ground

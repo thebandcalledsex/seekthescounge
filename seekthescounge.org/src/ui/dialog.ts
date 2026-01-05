@@ -72,7 +72,10 @@ export default class DialogManager {
                 box.destroy();
             }
         })();
-        this.lifecycle = run.then(() => {}, () => {});
+        this.lifecycle = run.then(
+            () => {},
+            () => {},
+        );
         return run;
     }
     hide() {
@@ -153,13 +156,12 @@ class DialogBox {
             },
             backgroundImageKey: cfg.backgroundImageKey ?? "dialog-container-head-left",
             backgroundImageFrame: cfg.backgroundImageFrame,
-            backgroundCrop:
-                cfg.backgroundCrop ?? {
-                    x: 42,
-                    y: 195,
-                    width: 157,
-                    height: 56,
-                },
+            backgroundCrop: cfg.backgroundCrop ?? {
+                x: 42,
+                y: 195,
+                width: 157,
+                height: 56,
+            },
             textArea: cfg.textArea,
         };
 
@@ -408,9 +410,13 @@ class DialogBox {
     // Bottom-right "next" cursor position inside the panel.
     private positionAdvanceCursor() {
         const cw =
-            this.advanceCursor instanceof Phaser.GameObjects.BitmapText ? this.cfg.bitmapFontSize : 8;
+            this.advanceCursor instanceof Phaser.GameObjects.BitmapText
+                ? this.cfg.bitmapFontSize
+                : 8;
         const ch =
-            this.advanceCursor instanceof Phaser.GameObjects.BitmapText ? this.cfg.bitmapFontSize : 10;
+            this.advanceCursor instanceof Phaser.GameObjects.BitmapText
+                ? this.cfg.bitmapFontSize
+                : 10;
         const textArea = this.getTextArea();
         const x = textArea.x + textArea.width - cw;
         const y = textArea.y + textArea.height - ch;
