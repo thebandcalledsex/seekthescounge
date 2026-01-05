@@ -3,6 +3,7 @@ import Game from "./scenes/game";
 import PlayerSelect from "./scenes/player-select";
 import { GAME_WIDTH, GAME_HEIGHT, GAME_VERSION } from "./constants";
 import UiScene from "./scenes/ui";
+import DragonFalling from "./scenes/dragon-falling";
 import { initOverlay } from "./ui/overlay";
 import { initPortraitPause } from "./ui/portrait-pause";
 import { unregisterServiceWorkers, setupServiceWorker } from "./pwa/service-worker-client";
@@ -29,7 +30,8 @@ const config: Phaser.Types.Core.GameConfig = {
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
     disableContextMenu: true,
-    scene: [PlayerSelect, Game, UiScene],
+    dom: { createContainer: true },
+    scene: [Game, DragonFalling, UiScene],
     physics: {
         default: "arcade",
         arcade: {

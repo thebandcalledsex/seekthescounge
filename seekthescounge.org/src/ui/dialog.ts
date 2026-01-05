@@ -308,10 +308,11 @@ class DialogBox {
         // Short delay to avoid jarring instant pop-up
         await delay(this.scene, 450);
 
+        // Mark active before the open animation begins so gameplay input can be disabled immediately.
+        this.active = true;
+
         // Animate dialog box opening
         await this.animateShowSnapOpen();
-
-        this.active = true;
         this.setVisible(true);
 
         const wrapW = this.innerWidth();
@@ -343,6 +344,9 @@ class DialogBox {
 
         // animate dialog box closing
         await this.animateHideSnapShut();
+
+        this.active = false;
+        this.setVisible(false);
 
         return chosen;
     }

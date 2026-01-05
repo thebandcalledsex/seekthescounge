@@ -16,6 +16,8 @@ const { ENTITY_ASSETS_PATH } = constants;
 
 class Game extends Phaser.Scene {
     private player!: Rovert | Shuey;
+    private rovert!: Rovert;
+    private shuey!: Shuey;
     private selectedPlayer: string = "Rovert";
     private inputController!: InputController;
     private dialog!: DialogManager;
@@ -27,7 +29,8 @@ class Game extends Phaser.Scene {
 
     // One-time action flags
     private hasTouchedGround: boolean = false;
-    private hasReached200: boolean = false;
+    private hasReached500: boolean = false;
+    private ignoreInputUntilRelease: boolean = false;
 
     constructor() {
         super({ key: "Game" });
@@ -36,6 +39,8 @@ class Game extends Phaser.Scene {
     // Receive the selected player from the player selection scene
     init(data: { selectedPlayer: string }) {
         this.selectedPlayer = data.selectedPlayer || "Rovert";
+        this.hasTouchedGround = false;
+        this.hasReached500 = false;
     }
 
     public preload() {
@@ -558,13 +563,20 @@ class Game extends Phaser.Scene {
         const spawnX = 50;
         const spawnY = 200;
 
-        // Establish the player based on the input from the player selection scene
-        if (this.selectedPlayer === "Rovert") {
-            this.player = new Rovert(this, spawnX, spawnY, "rovert-idle-right"); // Create rovert at (100,100)
-        } else {
-            this.player = new Shuey(this, spawnX, spawnY, "shuey-idle-right"); // Create shuey at (100,100)
-            this.player.play("shuey-idle-right");
-        }
+        // // Establish the player based on the input from the player selection scene
+        // if (this.selectedPlayer === "Rovert") {
+        //     this.player = new Rovert(this, spawnX, spawnY, "rovert-idle-right"); // Create rovert at (100,100)
+        // } else {
+        //     this.player = new Shuey(this, spawnX, spawnY, "shuey-idle-right"); // Create shuey at (100,100)
+        //     this.player.play("shuey-idle-right");
+        // }
+
+        // Spawn shuey and rovert together
+        this.player = new Shuey(this, spawnX, spawnY, "shuey-idle-right"); // Create shuey at (100,100)
+        this.player.play("shuey-idle-right");
+        this.rovert = new Rovert(this, 475, spawnY, "rovert-idle-right"); // Create rovert at (100,100)
+        this.rovert.play("rovert-idle-right");
+        this.rovert.setImmovable(true);
 
         // Create some training dummies
         this.trainingDummies = this.physics.add.group();
@@ -610,6 +622,9 @@ class Game extends Phaser.Scene {
         });
         this.physics.add.collider(this.trainingDummies, groundLayer);
         this.physics.add.collider(this.enemies, groundLayer);
+        this.physics.add.collider(this.rovert, groundLayer, (_playerObj, tileObj) => {
+            this.handlePlayerGroundCollision(tileObj as unknown as Phaser.Tilemaps.Tile);
+        });
 
         // Add collision between player and training dummies
         this.physics.add.collider(this.player, this.trainingDummies);
@@ -640,36 +655,91 @@ class Game extends Phaser.Scene {
             rows: 3,
             theme: { fill: 0x0f0f1a, borderOuter: 0xffffff, borderInner: undefined }, // single border
         });
+
+        this.events.on(Phaser.Scenes.Events.RESUME, () => {
+            this.input.enabled = true;
+            this.ignoreInputUntilRelease = true;
+            this.input.keyboard?.resetKeys();
+        });
+        this.events.on(Phaser.Scenes.Events.PAUSE, () => {
+            this.input.enabled = false;
+            this.input.keyboard?.resetKeys();
+        });
     }
 
     public update() {
         // Update game objects here every frame
 
-        // Check for input for the player
-        this.player.update(
-            this.inputController.isLeftPressed(),
-            this.inputController.isRightPressed(),
-            this.inputController.isJumpPressed(),
-            this.inputController.isAttackPressed(),
-        );
+        const wasIgnoringInput = this.ignoreInputUntilRelease;
+        if (wasIgnoringInput) {
+            const anyPressed =
+                this.inputController.isLeftPressed() ||
+                this.inputController.isRightPressed() ||
+                this.inputController.isJumpPressed() ||
+                this.inputController.isAttackPressed();
+            if (!anyPressed) {
+                this.ignoreInputUntilRelease = false;
+            }
+        } else {
+            const dialogActive = this.dialog?.active ?? false;
+            const moveLeft = dialogActive ? false : this.inputController.isLeftPressed();
+            const moveRight = dialogActive ? false : this.inputController.isRightPressed();
+            const jump = dialogActive ? false : this.inputController.isJumpPressed();
 
-        // Check if the player has touched the ground
-        if (this.player.body && this.player.body.blocked.down && !this.hasTouchedGround) {
+            // Check for input for the player
+            this.player.update(
+                moveLeft,
+                moveRight,
+                jump,
+                this.inputController.isAttackPressed(),
+            );
+        }
+
+        // // Check if the player has touched the ground
+        // if (this.player.body && this.player.body.blocked.down && !this.hasTouchedGround) {
+        //     this.hasTouchedGround = true;
+
+        //     // Trigger dialog when the player touches the ground for the first time
+        //     this.dialog.say({
+        //         text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
+        //     });
+        // }
+
+        // When the player touches rovert for the first time, have rovert speak
+        if (
+            this.player.body &&
+            this.rovert.body &&
+            Phaser.Geom.Intersects.RectangleToRectangle(
+                this.player.getBounds(),
+                this.rovert.getBounds(),
+            ) &&
+            !this.hasTouchedGround
+        ) {
             this.hasTouchedGround = true;
 
-            // Trigger dialog when the player touches the ground for the first time
+            // Trigger dialog when the player touches rovert for the first time
             this.dialog.say({
-                text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
+                text: "Brother! Do you see that?! Holy shit..",
             });
         }
 
-        // Trigger another dialog when the player reaches x position 200
-        if (this.player.x > 200 && !this.hasReached200) {
-            this.dialog.say({
-                text: "I hope you find what you seek.",
+        // Transition into dragon-falling once the player reaches x 500
+        if (this.player.x > 500 && !this.hasReached500) {
+            this.hasReached500 = true;
+            this.ignoreInputUntilRelease = true;
+            this.input.keyboard?.resetKeys();
+            const uiScene = this.scene.get("ui") as UiScene;
+            uiScene?.uiInput?.reset();
+            this.scene.pause("Game");
+            if (this.scene.isActive("ui")) {
+                this.scene.pause("ui");
+            }
+            this.scene.launch("dragon-falling", {
+                returnSceneKey: "Game",
+                resumeUi: true,
+                loops: 3,
             });
-            
-            this.hasReached200 = true;
+            return;
         }
 
         this.debugInfo?.update();
