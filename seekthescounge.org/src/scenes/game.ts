@@ -28,8 +28,10 @@ class Game extends Phaser.Scene {
     private debugInfo?: DebugInfo;
 
     // One-time action flags
-    private hasTouchedGround: boolean = false;
+    private hasMetRovert: boolean = false;
+    private hasCompletedRovertFirstDialog: boolean = false;
     private hasReached500: boolean = false;
+    private hasPlayedDragonCutscene: boolean = false;
     private ignoreInputUntilRelease: boolean = false;
 
     constructor() {
@@ -39,8 +41,10 @@ class Game extends Phaser.Scene {
     // Receive the selected player from the player selection scene
     init(data?: { selectedPlayer?: string }) {
         this.selectedPlayer = data?.selectedPlayer || "Rovert";
-        this.hasTouchedGround = false;
+        this.hasMetRovert = false;
+        this.hasCompletedRovertFirstDialog = false;
         this.hasReached500 = false;
+        this.hasPlayedDragonCutscene = false;
     }
 
     public preload() {
@@ -690,16 +694,6 @@ class Game extends Phaser.Scene {
             this.player.update(moveLeft, moveRight, jump, this.inputController.isAttackPressed());
         }
 
-        // // Check if the player has touched the ground
-        // if (this.player.body && this.player.body.blocked.down && !this.hasTouchedGround) {
-        //     this.hasTouchedGround = true;
-
-        //     // Trigger dialog when the player touches the ground for the first time
-        //     this.dialog.say({
-        //         text: "Welcome kind traveler! \t\t\t Are you lost, my friend?",
-        //     });
-        // }
-
         // When the player touches rovert for the first time, have rovert speak
         if (
             this.player.body &&
@@ -708,19 +702,33 @@ class Game extends Phaser.Scene {
                 this.player.getBounds(),
                 this.rovert.getBounds(),
             ) &&
-            !this.hasTouchedGround
+            !this.hasMetRovert
         ) {
-            this.hasTouchedGround = true;
+            this.hasMetRovert = true;
 
             // Trigger dialog when the player touches rovert for the first time
-            this.dialog.say({
-                text: "Brother! Do you see that?! Holy shit..",
-            });
+            void this.dialog
+                .say({
+                    text: "Brother! Do you see that?! Holy shit..",
+                })
+                .then(() => {
+                    this.hasCompletedRovertFirstDialog = true;
+                });
         }
 
-        // Transition into dragon-falling once the player reaches x 500
-        if (this.player.x > 500 && !this.hasReached500) {
+        if (this.player.x > 500) {
             this.hasReached500 = true;
+        }
+
+        // Transition into dragon-falling once the player has reached x 500, met Rovert, and finished that dialog
+        if (
+            this.hasReached500 &&
+            this.hasMetRovert &&
+            this.hasCompletedRovertFirstDialog &&
+            !this.dialog.active &&
+            !this.hasPlayedDragonCutscene
+        ) {
+            this.hasPlayedDragonCutscene = true;
             this.ignoreInputUntilRelease = true;
             this.input.keyboard?.resetKeys();
             const uiScene = this.scene.get("Ui") as UiScene;
