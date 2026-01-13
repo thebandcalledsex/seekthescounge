@@ -95,15 +95,13 @@ class DebugInfo {
         const pixelY = Math.round(body.bottom);
         const text = `Player px: x=${pixelX} y=${pixelY}`;
         const x = this.scene.cameras.main.width - this.padding;
-        const y = this.padding;
+        const y = this.padding + 12;
 
         if (!this.overlayText) {
             this.overlayText = this.scene.add
                 .text(x, y, text, {
                     color: "#ffffff",
                     fontSize: this.fontSize,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    padding: { x: 6, y: 4 },
                 })
                 .setScrollFactor(0)
                 .setDepth(9999)
@@ -114,9 +112,7 @@ class DebugInfo {
             this.overlayText.setStyle({
                 color: "#ffffff",
                 fontSize: this.fontSize,
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
             });
-            this.overlayText.setPadding(6, 4);
             this.overlayText.setOrigin(1, 0);
         }
 
