@@ -766,7 +766,7 @@ class Game extends Phaser.Scene {
 
             void this.dialog
                 .say({
-                    text: "Holy fucking jesus christ! A <pg> a.. <pg> DRAGON!",
+                    text: "Holy mother of pearl!<pg> A <pg>a.. <pg>A DRAGON!",
                     headSide: "right",
                     portrait: { key: "shuey-head" },
                 })
