@@ -1,4 +1,4 @@
-export const GAME_VERSION = "1.51";
+export const GAME_VERSION = "1.56";
 
 // game dimensions
 export const GAME_WIDTH = 286;
