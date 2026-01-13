@@ -721,7 +721,7 @@ class Rovert extends Player {
 }
 
 class Shuey extends Player {
-    protected speed: number = 120; // Horizontal speed for movement
+    protected speed: number = 110; // Horizontal speed for movement
     protected jumpSpeed: number = 215; // Vertical speed for jumping
     protected wallSlideFallSpeedFactor: number = 0.6; // 60% fall speed when wall sliding
     protected wallJumpHorizontalSpeed: number = 144; // Horizontal speed away from wall
