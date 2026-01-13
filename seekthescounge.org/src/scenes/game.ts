@@ -7,7 +7,7 @@ import DialogManager from "../ui/dialog";
 import OnScreenInput from "../input/on-screen-input";
 import TrainingDummy from "../entities/training-dummy";
 import Enemy from "../entities/enemy";
-import Pozzum from "../entities/pozzum";
+import Pozzum, { ScoungedPozzum } from "../entities/pozzum";
 import Chaser from "../entities/chaser";
 import DebugInfo from "../ui/debug-info";
 
@@ -572,7 +572,7 @@ class Game extends Phaser.Scene {
             });
         }
 
-        const spawnX = 50;
+        const spawnX = 100;
         const spawnY = 200;
 
         // // Establish the player based on the input from the player selection scene
@@ -604,13 +604,11 @@ class Game extends Phaser.Scene {
         // Create some enemies
         this.enemies = this.physics.add.group();
         //const chaser = new Chaser(this, this.player.x + 140, this.player.y, this.player);
-        //const pozzum = new Pozzum(this, this.player.x + 250, this.player.y);
-        //const pozzum2 = new Pozzum(this, this.player.x - 100, this.player.y);
-        //const pozzum3 = new Pozzum(this, this.player.x - 250, this.player.y);
+        const pozzum = new Pozzum(this, 400, this.player.y);
+        const scoungedPozzum = new ScoungedPozzum(this, 1444, this.player.y, this.player);
         //this.enemies.add(chaser);
-        //this.enemies.add(pozzum);
-        //this.enemies.add(pozzum2);
-        //this.enemies.add(pozzum3);
+        this.enemies.add(pozzum);
+        this.enemies.add(scoungedPozzum);
 
         // Set the world bounds
         this.cameras.main.setBounds(
@@ -651,11 +649,24 @@ class Game extends Phaser.Scene {
                 const enemy = enemyObj as Enemy;
                 enemy.tryDamage(this.player);
             },
-            undefined,
+            (_playerObj, enemyObj) => enemyObj instanceof ScoungedPozzum,
             this,
         );
-        this.physics.add.collider(this.enemies, this.trainingDummies);
-        this.physics.add.collider(this.enemies, this.enemies);
+        this.physics.add.collider(
+            this.enemies,
+            this.trainingDummies,
+            undefined,
+            (enemyObj) => enemyObj instanceof ScoungedPozzum,
+            this,
+        );
+        this.physics.add.collider(
+            this.enemies,
+            this.enemies,
+            undefined,
+            (enemyObj, otherObj) =>
+                enemyObj instanceof ScoungedPozzum || otherObj instanceof ScoungedPozzum,
+            this,
+        );
 
         // No overlap handler needed; collision callback handles damage.
 
