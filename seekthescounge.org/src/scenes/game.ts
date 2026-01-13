@@ -589,6 +589,10 @@ class Game extends Phaser.Scene {
         this.rovert = new Rovert(this, 475, spawnY, "rovert-idle-right"); // Create rovert at (100,100)
         this.rovert.play("rovert-idle-right");
         this.rovert.setImmovable(true);
+        this.debugInfo = new DebugInfo({
+            scene: this,
+            getPlayerBody: () => this.player?.body as Phaser.Physics.Arcade.Body | undefined,
+        });
 
         // Create some training dummies
         this.trainingDummies = this.physics.add.group();
