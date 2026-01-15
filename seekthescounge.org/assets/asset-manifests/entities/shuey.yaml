@@ -1,0 +1,68 @@
+assets:
+  idle:
+    - type: atlas
+      key: "shuey-idle-right"
+      texture: "../../assets/entities/shuey/idle/shuey-idle-right.png"
+      atlas: "../../assets/entities/shuey/idle/shuey-idle-right.json"
+    - type: atlas
+      key: "shuey-idle-left"
+      texture: "../../assets/entities/shuey/idle/shuey-idle-left.png?v=2"
+      atlas: "../../assets/entities/shuey/idle/shuey-idle-left.json?v=2"
+  running:
+    - type: atlas
+      key: "shuey-running-left"
+      texture: "../../assets/entities/shuey/running/shuey-running-left.png"
+      atlas: "../../assets/entities/shuey/running/shuey-running-left.json"
+    - type: atlas
+      key: "shuey-running-right"
+      texture: "../../assets/entities/shuey/running/shuey-running-right.png"
+      atlas: "../../assets/entities/shuey/running/shuey-running-right.json"
+  attacking:
+    - type: atlas
+      key: "shuey-idle-attack-right"
+      texture: "../../assets/entities/shuey/attacking/shuey-idle-attack-right.png"
+      atlas: "../../assets/entities/shuey/attacking/shuey-idle-attack-right.json"
+    - type: atlas
+      key: "shuey-idle-attack-left"
+      texture: "../../assets/entities/shuey/attacking/shuey-idle-attack-left.png"
+      atlas: "../../assets/entities/shuey/attacking/shuey-idle-attack-left.json"
+    - type: atlas
+      key: "shuey-moving-attack-right"
+      texture: "../../assets/entities/shuey/attacking/shuey-moving-attack-right.png"
+      atlas: "../../assets/entities/shuey/attacking/shuey-moving-attack-right.json"
+    - type: atlas
+      key: "shuey-moving-attack-left"
+      texture: "../../assets/entities/shuey/attacking/shuey-moving-attack-left.png"
+      atlas: "../../assets/entities/shuey/attacking/shuey-moving-attack-left.json"
+  jumping-rise:
+    - type: atlas
+      key: "shuey-jump-rise-right"
+      texture: "../../assets/entities/shuey/jumping/rise/shuey-jump-rise-right.png"
+      atlas: "../../assets/entities/shuey/jumping/rise/shuey-jump-rise-right.json"
+    - type: atlas
+      key: "shuey-jump-rise-left"
+      texture: "../../assets/entities/shuey/jumping/rise/shuey-jump-rise-left.png"
+      atlas: "../../assets/entities/shuey/jumping/rise/shuey-jump-rise-left.json"
+  jumping-fall:
+    - type: atlas
+      key: "shuey-jump-fall-right"
+      texture: "../../assets/entities/shuey/jumping/fall/shuey-jump-fall-right.png"
+      atlas: "../../assets/entities/shuey/jumping/fall/shuey-jump-fall-right.json"
+    - type: atlas
+      key: "shuey-jump-fall-left"
+      texture: "../../assets/entities/shuey/jumping/fall/shuey-jump-fall-left.png"
+      atlas: "../../assets/entities/shuey/jumping/fall/shuey-jump-fall-left.json"
+  wall-slide:
+    - type: atlas
+      key: "shuey-wall-slide-left"
+      texture: "../../assets/entities/shuey/wall-slide/shuey-wall-slide-left.png"
+      atlas: "../../assets/entities/shuey/wall-slide/shuey-wall-slide-left.json"
+    - type: atlas
+      key: "shuey-wall-slide-right"
+      texture: "../../assets/entities/shuey/wall-slide/shuey-wall-slide-right.png"
+      atlas: "../../assets/entities/shuey/wall-slide/shuey-wall-slide-right.json"
+  death:
+    - type: atlas
+      key: "shuey-death"
+      texture: "../../assets/entities/shuey/death/shuey-death.png"
+      atlas: "../../assets/entities/shuey/death/shuey-death.json"

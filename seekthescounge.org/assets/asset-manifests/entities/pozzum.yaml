@@ -1,0 +1,9 @@
+assets:
+  - type: atlas
+    key: "pozzum-cruzing-left"
+    texture: "../../assets/entities/pozzum/pozzum-cruzing-left.png"
+    atlas: "../../assets/entities/pozzum/pozzum-cruzing-left.json"
+  - type: atlas
+    key: "pozzum-cruzing-right"
+    texture: "../../assets/entities/pozzum/pozzum-cruzing-right.png"
+    atlas: "../../assets/entities/pozzum/pozzum-cruzing-right.json"

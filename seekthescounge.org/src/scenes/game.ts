@@ -10,9 +10,15 @@ import Enemy from "../entities/enemy";
 import Pozzum, { ScoungedPozzum } from "../entities/pozzum";
 import Chaser from "../entities/chaser";
 import DebugInfo from "../ui/debug-info";
+import {
+    getAssetManifestSourcesFromIndexCache,
+    queueAssetManifestIndex,
+    queueAssetManifests,
+    queueAssetsFromManifestCache,
+} from "../assets/asset-manifest-loader";
+import { GAME_ASSET_MANIFEST_INDEX } from "../assets/game-asset-manifests";
 
 const IMAGE_LAYER_BASE_DEPTH = -50;
-const { ENTITY_ASSETS_PATH } = constants;
 
 class Game extends Phaser.Scene {
     private player!: Rovert | Shuey;
@@ -26,6 +32,8 @@ class Game extends Phaser.Scene {
     public map!: Phaser.Tilemaps.Tilemap;
     public groundLayer!: Phaser.Tilemaps.TilemapLayer;
     private debugInfo?: DebugInfo;
+    private assetsLoaded = false;
+    private assetsLoading = false;
 
     // One-time action flags
     private hasMetRovert: boolean = false;
@@ -50,154 +58,44 @@ class Game extends Phaser.Scene {
     }
 
     public preload() {
-        // Load assets here
+        if (this.assetsLoaded || this.assetsLoading) {
+            return;
+        }
+
+        this.assetsLoading = true;
         console.log("Preloading assets....");
 
-        // load background layers
-        this.load.image("close-hills", "../../assets/backgrounds/close-hills.png");
-        this.load.image("far-hills", "../../assets/backgrounds/far-hills.png");
-        this.load.image("mountains", "../../assets/backgrounds/mountains.png");
-        this.load.image("sky", "../../assets/backgrounds/sky.png");
-        this.load.image(
-            "dialog-container-head-left",
-            "../../assets/ui/dialog-container-head-left.png",
-        );
-        this.load.image(
-            "dialog-container-head-right",
-            "../../assets/ui/dialog-container-head-right.png",
-        );
-        this.load.image("rovert-head", "../../assets/heads/rovert-head.png");
-        this.load.image("shuey-head", "../../assets/heads/shuey-head.png");
+        // Load YAML manifest index first, then queue assets from the listed entries.
+        queueAssetManifestIndex(this, GAME_ASSET_MANIFEST_INDEX);
 
-        this.load.atlas(
-            "rovert-idle-right",
-            `${ENTITY_ASSETS_PATH}/rovert/idle/rovert-idle-right.png`,
-            `${ENTITY_ASSETS_PATH}/rovert/idle/rovert-idle-right.json`,
-        );
-        this.load.atlas(
-            "rovert-idle-left",
-            `${ENTITY_ASSETS_PATH}/rovert/idle/rovert-idle-left.png`,
-            `${ENTITY_ASSETS_PATH}/rovert/idle/rovert-idle-left.json`,
-        );
-        this.load.atlas(
-            "rovert-running-left",
-            `${ENTITY_ASSETS_PATH}/rovert/running/rovert-running-left.png`,
-            `${ENTITY_ASSETS_PATH}/rovert/running/rovert-running-left.json`,
-        );
-        this.load.atlas(
-            "rovert-running-right",
-            `${ENTITY_ASSETS_PATH}/rovert/running/rovert-running-right.png`,
-            `${ENTITY_ASSETS_PATH}/rovert/running/rovert-running-right.json`,
-        );
-        this.load.atlas(
-            "rovert-idle-attack-right",
-            `${ENTITY_ASSETS_PATH}/rovert/attacking/rovert-idle-attack-right.png`,
-            `${ENTITY_ASSETS_PATH}/rovert/attacking/rovert-idle-attack-right.json`,
-        );
+        this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+            const manifestSources = getAssetManifestSourcesFromIndexCache(
+                this,
+                GAME_ASSET_MANIFEST_INDEX,
+            );
+            queueAssetManifests(this, manifestSources);
 
-        this.load.atlas(
-            "shuey-idle-right",
-            `${ENTITY_ASSETS_PATH}/shuey/idle/shuey-idle-right.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/idle/shuey-idle-right.json`,
-        );
-        this.load.atlas(
-            "shuey-idle-left",
-            `${ENTITY_ASSETS_PATH}/shuey/idle/shuey-idle-left.png?v=2`,
-            `${ENTITY_ASSETS_PATH}/shuey/idle/shuey-idle-left.json?v=2`,
-        );
-        this.load.atlas(
-            "shuey-running-left",
-            `${ENTITY_ASSETS_PATH}/shuey/running/shuey-running-left.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/running/shuey-running-left.json`,
-        );
-        this.load.atlas(
-            "shuey-running-right",
-            `${ENTITY_ASSETS_PATH}/shuey/running/shuey-running-right.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/running/shuey-running-right.json`,
-        );
-        this.load.atlas(
-            "shuey-idle-attack-right",
-            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-idle-attack-right.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-idle-attack-right.json`,
-        );
-        this.load.atlas(
-            "shuey-idle-attack-left",
-            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-idle-attack-left.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-idle-attack-left.json`,
-        );
-        this.load.atlas(
-            "shuey-moving-attack-right",
-            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-moving-attack-right.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-moving-attack-right.json`,
-        );
-        this.load.atlas(
-            "shuey-moving-attack-left",
-            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-moving-attack-left.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/attacking/shuey-moving-attack-left.json`,
-        );
-        this.load.atlas(
-            "shuey-jump-rise-right",
-            `${ENTITY_ASSETS_PATH}/shuey/jumping/rise/shuey-jump-rise-right.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/jumping/rise/shuey-jump-rise-right.json`,
-        );
-        this.load.atlas(
-            "shuey-jump-rise-left",
-            `${ENTITY_ASSETS_PATH}/shuey/jumping/rise/shuey-jump-rise-left.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/jumping/rise/shuey-jump-rise-left.json`,
-        );
-        this.load.atlas(
-            "shuey-jump-fall-right",
-            `${ENTITY_ASSETS_PATH}/shuey/jumping/fall/shuey-jump-fall-right.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/jumping/fall/shuey-jump-fall-right.json`,
-        );
-        this.load.atlas(
-            "shuey-jump-fall-left",
-            `${ENTITY_ASSETS_PATH}/shuey/jumping/fall/shuey-jump-fall-left.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/jumping/fall/shuey-jump-fall-left.json`,
-        );
-        this.load.atlas(
-            "shuey-wall-slide-left",
-            `${ENTITY_ASSETS_PATH}/shuey/wall-slide/shuey-wall-slide-left.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/wall-slide/shuey-wall-slide-left.json`,
-        );
-        this.load.atlas(
-            "shuey-wall-slide-right",
-            `${ENTITY_ASSETS_PATH}/shuey/wall-slide/shuey-wall-slide-right.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/wall-slide/shuey-wall-slide-right.json`,
-        );
-        this.load.atlas(
-            "shuey-death",
-            `${ENTITY_ASSETS_PATH}/shuey/death/shuey-death.png`,
-            `${ENTITY_ASSETS_PATH}/shuey/death/shuey-death.json`,
-        );
+            this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+                queueAssetsFromManifestCache(this, manifestSources);
+                OnScreenInput.preload(this);
 
-        this.load.atlas(
-            "pozzum-cruzing-left",
-            `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-left.png`,
-            `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-left.json`,
-        );
-        this.load.atlas(
-            "pozzum-cruzing-right",
-            `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-right.png`,
-            `${ENTITY_ASSETS_PATH}/pozzum/pozzum-cruzing-right.json`,
-        );
+                this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+                    this.assetsLoaded = true;
+                    this.assetsLoading = false;
+                    this.scene.restart();
+                });
 
-        // Load the tilemap for level 1 and its tileset
-        this.load.tilemapTiledJSON("level1", "../../assets/maps/level1.json");
-        this.load.image("desert-tiles", "../../assets/tilesets/desert.png");
+                this.load.start();
+            });
 
-        // Load the tilemap for 1-1
-        //this.load.tilemapTiledJSON("level1", "../../assets/maps/1-1.json");
-
-        // Load level1's complete JSON data (for image layers)
-        this.load.json("level1-data", "../../assets/maps/level1.json");
-        //this.load.json("level1-data", "../../assets/maps/1-1.json");
-
-        // Load on-screen input button assets
-        OnScreenInput.preload(this);
+            this.load.start();
+        });
     }
 
     public create() {
+        if (!this.assetsLoaded) {
+            return;
+        }
         // Create game objects here
         console.log("Creating game objects...");
 
@@ -697,6 +595,9 @@ class Game extends Phaser.Scene {
 
     public update() {
         // Update game objects here every frame
+        if (!this.assetsLoaded || !this.player || !this.inputController) {
+            return;
+        }
 
         const wasIgnoringInput = this.ignoreInputUntilRelease;
         if (wasIgnoringInput) {

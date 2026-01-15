@@ -1,0 +1,13 @@
+assets:
+  - type: image
+    key: "close-hills"
+    url: "../../assets/backgrounds/close-hills.png"
+  - type: image
+    key: "far-hills"
+    url: "../../assets/backgrounds/far-hills.png"
+  - type: image
+    key: "mountains"
+    url: "../../assets/backgrounds/mountains.png"
+  - type: image
+    key: "sky"
+    url: "../../assets/backgrounds/sky.png"

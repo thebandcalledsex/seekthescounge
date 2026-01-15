@@ -1,0 +1,24 @@
+assets:
+  idle:
+    - type: atlas
+      key: "rovert-idle-right"
+      texture: "../../assets/entities/rovert/idle/rovert-idle-right.png"
+      atlas: "../../assets/entities/rovert/idle/rovert-idle-right.json"
+    - type: atlas
+      key: "rovert-idle-left"
+      texture: "../../assets/entities/rovert/idle/rovert-idle-left.png"
+      atlas: "../../assets/entities/rovert/idle/rovert-idle-left.json"
+  running:
+    - type: atlas
+      key: "rovert-running-left"
+      texture: "../../assets/entities/rovert/running/rovert-running-left.png"
+      atlas: "../../assets/entities/rovert/running/rovert-running-left.json"
+    - type: atlas
+      key: "rovert-running-right"
+      texture: "../../assets/entities/rovert/running/rovert-running-right.png"
+      atlas: "../../assets/entities/rovert/running/rovert-running-right.json"
+  attacking:
+    - type: atlas
+      key: "rovert-idle-attack-right"
+      texture: "../../assets/entities/rovert/attacking/rovert-idle-attack-right.png"
+      atlas: "../../assets/entities/rovert/attacking/rovert-idle-attack-right.json"

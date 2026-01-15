@@ -1,0 +1,10 @@
+assets:
+  - type: tilemapTiledJSON
+    key: "level1"
+    url: "../../assets/maps/level1.json"
+  - type: image
+    key: "desert-tiles"
+    url: "../../assets/tilesets/desert.png"
+  - type: json
+    key: "level1-data"
+    url: "../../assets/maps/level1.json"

@@ -1,0 +1,7 @@
+manifests:
+  - "../../assets/asset-manifests/backgrounds.yaml"
+  - "../../assets/asset-manifests/dialog.yaml"
+  - "../../assets/asset-manifests/maps.yaml"
+  - "../../assets/asset-manifests/entities/rovert.yaml"
+  - "../../assets/asset-manifests/entities/shuey.yaml"
+  - "../../assets/asset-manifests/entities/pozzum.yaml"

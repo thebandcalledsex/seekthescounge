@@ -1,0 +1,13 @@
+assets:
+  - type: image
+    key: "dialog-container-head-left"
+    url: "../../assets/ui/dialog-container-head-left.png"
+  - type: image
+    key: "dialog-container-head-right"
+    url: "../../assets/ui/dialog-container-head-right.png"
+  - type: image
+    key: "rovert-head"
+    url: "../../assets/heads/rovert-head.png"
+  - type: image
+    key: "shuey-head"
+    url: "../../assets/heads/shuey-head.png"
