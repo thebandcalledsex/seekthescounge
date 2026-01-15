@@ -691,7 +691,6 @@ class Game extends Phaser.Scene {
                 });
         }
 
-
         this.debugInfo?.update();
     }
 

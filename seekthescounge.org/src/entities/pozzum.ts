@@ -10,7 +10,12 @@ const POZZUM_CONFIG: EnemyConfig = {
 };
 
 class Pozzum extends Enemy {
-    constructor(scene: Phaser.Scene, x: number, y: number, configOverrides: Partial<EnemyConfig> = {}) {
+    constructor(
+        scene: Phaser.Scene,
+        x: number,
+        y: number,
+        configOverrides: Partial<EnemyConfig> = {},
+    ) {
         super(scene, x, y, "pozzum-cruzing-left", { ...POZZUM_CONFIG, ...configOverrides });
 
         this.setBodySizeFromTextures(["pozzum-cruzing-left", "pozzum-cruzing-right"], {
@@ -42,7 +47,7 @@ interface ScoungedPozzumConfig extends EnemyConfig {
 
 const SCOUNGED_POZZUM_CONFIG: ScoungedPozzumConfig = {
     ...POZZUM_CONFIG,
-    snapiness: 0.50,
+    snapiness: 0.5,
     turnaroundDelay: 200,
 };
 

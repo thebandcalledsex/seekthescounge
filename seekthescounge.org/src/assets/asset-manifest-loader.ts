@@ -57,7 +57,11 @@ const requireString = (value: unknown, label: string, source: string, index: num
     );
 };
 
-const parseAssetManifestEntry = (value: unknown, source: string, index: number): AssetManifestEntry => {
+const parseAssetManifestEntry = (
+    value: unknown,
+    source: string,
+    index: number,
+): AssetManifestEntry => {
     if (!isRecord(value)) {
         throw new Error(`Asset manifest '${source}' entry ${index} must be an object.`);
     }
@@ -86,10 +90,7 @@ const parseAssetManifestEntry = (value: unknown, source: string, index: number):
     }
 };
 
-const parseAssetManifestAssets = (
-    assets: unknown,
-    source: string,
-): AssetManifestEntry[] => {
+const parseAssetManifestAssets = (assets: unknown, source: string): AssetManifestEntry[] => {
     if (Array.isArray(assets)) {
         return assets.map((asset, index) => parseAssetManifestEntry(asset, source, index));
     }
@@ -98,9 +99,7 @@ const parseAssetManifestAssets = (
         const entries: AssetManifestEntry[] = [];
         Object.values(assets).forEach((group, groupIndex) => {
             if (!Array.isArray(group)) {
-                throw new Error(
-                    `Asset manifest '${source}' group ${groupIndex} must be an array.`,
-                );
+                throw new Error(`Asset manifest '${source}' group ${groupIndex} must be an array.`);
             }
             group.forEach((asset, assetIndex) => {
                 entries.push(parseAssetManifestEntry(asset, source, assetIndex));
@@ -144,7 +143,9 @@ const parseAssetManifestIndex = (text: string, source: string): AssetManifestSou
             return { key: manifestKeyFromUrl(entry), url: entry };
         }
         if (!isRecord(entry)) {
-            throw new Error(`Asset manifest index '${source}' entry ${index} must be a string or map.`);
+            throw new Error(
+                `Asset manifest index '${source}' entry ${index} must be a string or map.`,
+            );
         }
         const url = requireString(entry.url, "url", source, index);
         const key = typeof entry.key === "string" && entry.key.length > 0 ? entry.key : undefined;
