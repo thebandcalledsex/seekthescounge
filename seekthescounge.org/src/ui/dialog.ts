@@ -19,6 +19,7 @@ export interface DialogTheme {
 export interface DialogConfig {
     rows?: number; // visible text rows per page (default 2)
     lineHeight?: number; // pixel line height (bitmap-ish spacing)
+    lineSpacing?: number; // extra pixels between text lines
     margin?: number; // inner padding around text
     cursorPad?: number; // room reserved for the "next" cursor on bottom line
     edgeMargin?: number; // distance from screen edge
@@ -181,6 +182,7 @@ class DialogBox {
         this.cfg = {
             rows: cfg.rows ?? 3,
             lineHeight: cfg.lineHeight ?? 15,
+            lineSpacing: cfg.lineSpacing ?? 3,
             margin: cfg.margin ?? 8,
             cursorPad: cfg.cursorPad ?? 6,
             edgeMargin: cfg.edgeMargin ?? 4,
@@ -263,6 +265,7 @@ class DialogBox {
                 this.cfg.bitmapFontSize,
             );
             bt.setLetterSpacing(0);
+            bt.setLineSpacing(this.cfg.lineSpacing);
             bt.setTint(0x000000);
             this.textObj = bt;
         } else {
@@ -272,7 +275,7 @@ class DialogBox {
                 color: "#000000",
                 wordWrap: { width: 1, useAdvancedWrap: true },
             });
-            (this.textObj as Phaser.GameObjects.Text).setLineSpacing(0);
+            (this.textObj as Phaser.GameObjects.Text).setLineSpacing(this.cfg.lineSpacing);
         }
         this.textObj.setOrigin(0, 0).setScrollFactor(0);
         this.container.add(this.textObj);
@@ -392,7 +395,7 @@ class DialogBox {
         const wrapW = this.innerWidth();
         // Support explicit page breaks without manual whitespace/newlines.
         // Usage: "First page text<pg>Second page text"
-        let remaining = text.split("<pg>").join("\f");
+        let remaining = text.replace(/\\n/g, "\n").split("<pg>").join("\f");
         let chosen: number | void = undefined;
 
         while (remaining.length > 0) {

@@ -634,7 +634,7 @@ class Game extends Phaser.Scene {
             // Trigger dialog when the player touches rovert for the first time
             void this.dialog
                 .say({
-                    text: "Brother! Do you see that?! <pg>Holy shit..",
+                    text: "Brother! \nDo you see that?! <pg>Holy shit..",
                     headSide: "left",
                 })
                 .then(() => {
