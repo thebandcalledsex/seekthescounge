@@ -27,6 +27,7 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
     protected wallSlideFallSpeedFactor: number = 1; // Multiplier applied while wall sliding; subclasses override
     protected groundDragX: number = 0; // Ground friction
     protected airDragX: number = 80; // Air resistance
+    protected airIdleDragX: number = 180; // Air resistance when no direction input
     protected attackConfig: AttackConfig = {
         width: 18,
         height: 14,
@@ -124,7 +125,10 @@ abstract class Player extends Phaser.Physics.Arcade.Sprite {
 
         const onGround = this.playerBody.onFloor();
         // Apply friction/air resistance
-        this.playerBody.setDragX(onGround ? this.groundDragX : this.airDragX);
+        const noHorizontalInput = !wantsLeft && !wantsRight;
+        this.playerBody.setDragX(
+            onGround ? this.groundDragX : noHorizontalInput ? this.airIdleDragX : this.airDragX,
+        );
 
         // Preserve horizontal momentum in air; stop on ground when no input
         let targetVelocityX = onGround ? 0 : this.playerBody.velocity.x;
