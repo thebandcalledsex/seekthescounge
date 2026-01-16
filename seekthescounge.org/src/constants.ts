@@ -1,4 +1,6 @@
-export const GAME_VERSION = "1.56";
+import versionData from "../version.json";
+
+export const GAME_VERSION = versionData.version;
 
 // game dimensions
 export const GAME_WIDTH = 286;
