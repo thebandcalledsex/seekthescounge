@@ -57,7 +57,7 @@ const isLocalhost =
     window.location.hostname === "::1" ||
     window.location.hostname.endsWith(".local");
 
-const shouldUseServiceWorker = !isLocalhost && (isMobilePlatform || isPwaExperience());
+const shouldUseServiceWorker = !isLocalhost;
 
 const dismissOverlay = () => {
     if (!overlay.isEnabled()) {

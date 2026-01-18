@@ -1,7 +1,7 @@
 const VERSION_URL = "/version.json";
 const CACHE_VERSION_FALLBACK = "0.00";
 const APP_SHELL_CACHE_PREFIX = "seekthescounge-shell-v";
-const CORE_ASSETS = ["/", "/index.html", "/manifest.webmanifest", VERSION_URL];
+const CORE_ASSETS = ["/", "/index.html", "/manifest.webmanifest", "/src/bundle.js", VERSION_URL];
 const OFFLINE_FALLBACK = "/index.html";
 
 const resolveCacheVersion = async () => {
@@ -149,7 +149,7 @@ self.addEventListener("fetch", (event) => {
                     return response;
                 })
                 .catch(async () => {
-                    const cached = await caches.match(request);
+                    const cached = await caches.match(request, { ignoreSearch: true });
                     if (cached) {
                         return cached;
                     }
