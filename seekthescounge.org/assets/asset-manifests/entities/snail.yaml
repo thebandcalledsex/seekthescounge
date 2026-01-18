@@ -1,0 +1,9 @@
+assets:
+  - type: atlas
+    key: "snail-shmovin-left"
+    texture: "../../assets/entities/snail/snail-shmovin-left.png"
+    atlas: "../../assets/entities/snail/snail-shmovin-left.json"
+  - type: atlas
+    key: "snail-shmovin-right"
+    texture: "../../assets/entities/snail/snail-shmovin-right.png"
+    atlas: "../../assets/entities/snail/snail-shmovin-right.json"

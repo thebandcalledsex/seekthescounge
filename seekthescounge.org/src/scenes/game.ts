@@ -9,6 +9,7 @@ import TrainingDummy from "../entities/training-dummy";
 import Enemy from "../entities/enemy";
 import Pozzum, { ScoungedPozzum } from "../entities/pozzum";
 import Chaser from "../entities/chaser";
+import Snail from "../entities/snail";
 import DebugInfo from "../ui/debug-info";
 import {
     getAssetManifestSourcesFromIndexCache,
@@ -484,6 +485,34 @@ class Game extends Phaser.Scene {
             });
         }
 
+        if (!this.anims.exists("snail-moving-right")) {
+            this.anims.create({
+                key: "snail-moving-right",
+                frames: this.anims.generateFrameNames("snail-shmovin-right", {
+                    prefix: "snail-shmovin-right-",
+                    start: 0,
+                    end: 3,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 4,
+                repeat: -1,
+            });
+        }
+
+        if (!this.anims.exists("snail-moving-left")) {
+            this.anims.create({
+                key: "snail-moving-left",
+                frames: this.anims.generateFrameNames("snail-shmovin-left", {
+                    prefix: "snail-shmovin-left-",
+                    start: 0,
+                    end: 3,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 4,
+                repeat: -1,
+            });
+        }
+
         const spawnX = 100;
         const spawnY = 200;
 
@@ -516,11 +545,13 @@ class Game extends Phaser.Scene {
         // Create some enemies
         this.enemies = this.physics.add.group();
         //const chaser = new Chaser(this, this.player.x + 140, this.player.y, this.player);
-        const pozzum = new Pozzum(this, 450, this.player.y);
+        const pozzum = new Pozzum(this, 501, this.player.y);
         const scoungedPozzum = new ScoungedPozzum(this, 1444, this.player.y, this.player);
+        const snail = new Snail(this, 200, this.player.y);
         //this.enemies.add(chaser);
         this.enemies.add(pozzum);
         this.enemies.add(scoungedPozzum);
+        this.enemies.add(snail);
 
         // Set the world bounds
         this.cameras.main.setBounds(
