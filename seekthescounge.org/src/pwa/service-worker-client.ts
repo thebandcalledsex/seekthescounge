@@ -74,8 +74,9 @@ export const setupServiceWorker = ({
     });
 
     window.addEventListener("load", () => {
+        const serviceWorkerUrl = `/service-worker.js?v=${encodeURIComponent(gameVersion)}`;
         navigator.serviceWorker
-            .register("/service-worker.js", { updateViaCache: "none" })
+            .register(serviceWorkerUrl, { updateViaCache: "none" })
             .then((registration) => {
                 const handleInstalling = (worker: ServiceWorker | null) => {
                     if (!worker) {
@@ -105,7 +106,6 @@ export const setupServiceWorker = ({
                         requestControllerVersion()
                             .then((version) => {
                                 if (
-                                    (version && version !== gameVersion) ||
                                     (navigator.serviceWorker.controller &&
                                         (registration.waiting || registration.installing))
                                 ) {

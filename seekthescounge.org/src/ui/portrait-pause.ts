@@ -28,7 +28,7 @@ export const initPortraitPause = (config: PortraitPauseConfig) => {
 
     const pauseOverlayElement = document.getElementById(overlayId);
     if (pauseOverlayElement) {
-        pauseOverlayElement.textContent = "Paused";
+        pauseOverlayElement.textContent = "Paused (rotate to unpause)";
     }
 
     let isPortraitPaused = false;

@@ -65,6 +65,7 @@ deploy: $(SRC_DIR)/**/* index-prod.html
 	# Also upload the manifest and service worker
 	echo "put manifest.webmanifest $(FTP_REMOTE_DIR)/manifest.webmanifest" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
 	echo "put service-worker.js $(FTP_REMOTE_DIR)/service-worker.js" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
+	echo "put version.json $(FTP_REMOTE_DIR)/version.json" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
 
 reset-version:
 	sh utilities/reset_version.sh

@@ -94,11 +94,17 @@ const isSameOrigin = (requestUrl) => {
     const reqOrigin = new URL(requestUrl, self.location.origin).origin;
     return reqOrigin === self.location.origin;
 };
+const isVersionRequest = (requestUrl) =>
+    new URL(requestUrl, self.location.origin).pathname === VERSION_URL;
 
 self.addEventListener("fetch", (event) => {
     const { request } = event;
 
     if (request.method !== "GET") {
+        return;
+    }
+
+    if (isVersionRequest(request.url)) {
         return;
     }
 
