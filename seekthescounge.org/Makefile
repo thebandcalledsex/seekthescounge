@@ -55,17 +55,21 @@ deploy: $(SRC_DIR)/**/* index-prod.html
 	@echo FTP_SERVER: $(FTP_SERVER)
 	@echo FTP_USER: $(FTP_USER)
 
-	# Upload the index.html file
-	echo "put index.html $(FTP_REMOTE_DIR)/index.html" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
+	# Upload files using rsync for incremental changes
+	rsync -avz -e "ssh -i $(FTP_PRIVATE_KEY)" \
+		index.html \
+		manifest.webmanifest \
+		service-worker.js \
+		version.json \
+		$(FTP_USER)@$(FTP_SERVER):$(FTP_REMOTE_DIR)/
 
-	# Upload the dist and assets directories
-	echo "put -r $(DIST_DIR)/* $(FTP_REMOTE_DIR)/src/" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
-	echo "put -r $(ASSETS_DIR)/* $(FTP_REMOTE_DIR)/assets/" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
+	rsync -avz -e "ssh -i $(FTP_PRIVATE_KEY)" \
+		$(DIST_DIR)/ \
+		$(FTP_USER)@$(FTP_SERVER):$(FTP_REMOTE_DIR)/src/
 
-	# Also upload the manifest and service worker
-	echo "put manifest.webmanifest $(FTP_REMOTE_DIR)/manifest.webmanifest" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
-	echo "put service-worker.js $(FTP_REMOTE_DIR)/service-worker.js" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
-	echo "put version.json $(FTP_REMOTE_DIR)/version.json" | sftp -i $(FTP_PRIVATE_KEY) $(FTP_USER)@$(FTP_SERVER)
+	rsync -avz -e "ssh -i $(FTP_PRIVATE_KEY)" \
+		$(ASSETS_DIR)/ \
+		$(FTP_USER)@$(FTP_SERVER):$(FTP_REMOTE_DIR)/assets/
 
 reset-version:
 	sh utilities/reset_version.sh
