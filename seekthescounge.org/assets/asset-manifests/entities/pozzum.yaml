@@ -7,3 +7,7 @@ assets:
     key: "pozzum-cruzing-right"
     texture: "../../assets/entities/pozzum/pozzum-cruzing-right.png"
     atlas: "../../assets/entities/pozzum/pozzum-cruzing-right.json"
+  - type: atlas
+    key: "possum-cruzin-left"
+    texture: "../../assets/entities/possum/possum-cruzin-left.png"
+    atlas: "../../assets/entities/possum/possum-cruzin-left.json"

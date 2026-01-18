@@ -1,0 +1,97 @@
+{ "frames": [
+   {
+    "filename": "POSSUM-STS #possum trot 0.aseprite",
+    "frame": { "x": 0, "y": 0, "w": 28, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 22, "y": 31, "w": 28, "h": 17 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "POSSUM-STS #possum trot 1.aseprite",
+    "frame": { "x": 28, "y": 0, "w": 28, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 22, "y": 31, "w": 28, "h": 17 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "POSSUM-STS #possum trot 2.aseprite",
+    "frame": { "x": 56, "y": 0, "w": 28, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 22, "y": 31, "w": 28, "h": 17 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "POSSUM-STS #possum trot 3.aseprite",
+    "frame": { "x": 84, "y": 0, "w": 28, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 22, "y": 31, "w": 28, "h": 17 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "POSSUM-STS #possum trot 4.aseprite",
+    "frame": { "x": 112, "y": 0, "w": 28, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 22, "y": 31, "w": 28, "h": 17 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "POSSUM-STS #possum trot 5.aseprite",
+    "frame": { "x": 140, "y": 0, "w": 28, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 22, "y": 31, "w": 28, "h": 17 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "POSSUM-STS #possum trot 6.aseprite",
+    "frame": { "x": 168, "y": 0, "w": 28, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 22, "y": 31, "w": 28, "h": 17 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   },
+   {
+    "filename": "POSSUM-STS #possum trot 7.aseprite",
+    "frame": { "x": 196, "y": 0, "w": 28, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 22, "y": 31, "w": 28, "h": 17 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 100
+   }
+ ],
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.12-x64",
+  "image": "POSSUM-STS.png",
+  "format": "RGBA8888",
+  "size": { "w": 224, "h": 17 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "possum trot", "from": 1, "to": 8, "direction": "forward", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "back leg", "opacity": 255, "blendMode": "normal" },
+   { "name": "back arm", "opacity": 255, "blendMode": "normal" },
+   { "name": "body ", "opacity": 255, "blendMode": "normal" },
+   { "name": "tail", "opacity": 255, "blendMode": "normal" },
+   { "name": "front leg", "opacity": 255, "blendMode": "normal" },
+   { "name": "front arm", "opacity": 255, "blendMode": "normal" },
+   { "name": "head", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

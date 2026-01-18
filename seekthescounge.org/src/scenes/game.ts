@@ -456,6 +456,20 @@ class Game extends Phaser.Scene {
             });
         }
 
+        if (!this.anims.exists("possum-cruzin-left")) {
+            this.anims.create({
+                key: "possum-cruzin-left",
+                frames: this.anims.generateFrameNames("possum-cruzin-left", {
+                    prefix: "POSSUM-STS #possum trot ",
+                    start: 0,
+                    end: 7,
+                    suffix: ".aseprite",
+                }),
+                frameRate: 10,
+                repeat: -1,
+            });
+        }
+
         if (!this.anims.exists("pozzum-cruzing-left")) {
             this.anims.create({
                 key: "pozzum-cruzing-left",
@@ -502,7 +516,7 @@ class Game extends Phaser.Scene {
         // Create some enemies
         this.enemies = this.physics.add.group();
         //const chaser = new Chaser(this, this.player.x + 140, this.player.y, this.player);
-        const pozzum = new Pozzum(this, 400, this.player.y);
+        const pozzum = new Pozzum(this, 450, this.player.y);
         const scoungedPozzum = new ScoungedPozzum(this, 1444, this.player.y, this.player);
         //this.enemies.add(chaser);
         this.enemies.add(pozzum);

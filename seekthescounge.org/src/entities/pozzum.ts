@@ -16,14 +16,14 @@ class Pozzum extends Enemy {
         y: number,
         configOverrides: Partial<EnemyConfig> = {},
     ) {
-        super(scene, x, y, "pozzum-cruzing-left", { ...POZZUM_CONFIG, ...configOverrides });
+        super(scene, x, y, "possum-cruzin-left", { ...POZZUM_CONFIG, ...configOverrides });
 
-        this.setBodySizeFromTextures(["pozzum-cruzing-left", "pozzum-cruzing-right"], {
+        this.setBodySizeFromTextures(["possum-cruzin-left", "pozzum-cruzing-right"], {
             trim: { left: 6, right: 10, top: 6, bottom: 0 },
             offset: { x: 0, y: 0 },
         });
 
-        this.play("pozzum-cruzing-left");
+        this.play("possum-cruzin-left");
     }
 
     public preUpdate(time: number, delta: number) {
@@ -33,7 +33,7 @@ class Pozzum extends Enemy {
 
     protected updateAnimation() {
         const desiredAnimation =
-            this.direction === 1 ? "pozzum-cruzing-right" : "pozzum-cruzing-left";
+            this.direction === 1 ? "pozzum-cruzing-right" : "possum-cruzin-left";
         if (this.anims.getName() !== desiredAnimation) {
             this.play(desiredAnimation, true);
         }
