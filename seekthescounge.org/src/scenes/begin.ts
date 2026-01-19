@@ -1,7 +1,9 @@
 import Phaser from "phaser";
+import { GAME_VERSION } from "../constants";
 
 export default class Begin extends Phaser.Scene {
     private beginButton?: Phaser.GameObjects.Image;
+    private versionText?: Phaser.GameObjects.Text;
     private isStarting: boolean = false;
 
     constructor() {
@@ -17,11 +19,14 @@ export default class Begin extends Phaser.Scene {
         this.isStarting = false;
         this.cameras.main.setBackgroundColor("#000000");
 
-        const placeButton = () => {
+        const layout = () => {
             if (!this.beginButton) {
                 return;
             }
             this.beginButton.setPosition(this.scale.width / 2, this.scale.height / 2);
+            if (this.versionText) {
+                this.versionText.setPosition(this.scale.width - 8, this.scale.height - 6);
+            }
         };
 
         this.beginButton = this.add
@@ -40,10 +45,18 @@ export default class Begin extends Phaser.Scene {
                 this.time.delayedCall(500, () => this.scene.start("Game"));
             });
 
-        this.scale.on(Phaser.Scale.Events.RESIZE, placeButton);
+        this.versionText = this.add
+            .text(this.scale.width - 8, this.scale.height - 6, `v${GAME_VERSION}`, {
+                font: "10px Courier",
+                color: "#ffffff",
+            })
+            .setOrigin(1, 1);
+
+        this.scale.on(Phaser.Scale.Events.RESIZE, layout);
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-            this.scale.off(Phaser.Scale.Events.RESIZE, placeButton);
+            this.scale.off(Phaser.Scale.Events.RESIZE, layout);
             this.beginButton = undefined;
+            this.versionText = undefined;
             this.isStarting = false;
         });
     }

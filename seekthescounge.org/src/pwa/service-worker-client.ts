@@ -39,6 +39,13 @@ const showUpdateOverlay = (
     message?: string,
 ) => overlay.show("updating", minDuration, message);
 
+const requestSkipWaiting = (worker: ServiceWorker | null) => {
+    if (!worker) {
+        return;
+    }
+    worker.postMessage({ type: "SKIP_WAITING" });
+};
+
 export const unregisterServiceWorkers = () => {
     if (!("serviceWorker" in navigator)) {
         return;
@@ -88,6 +95,7 @@ export const setupServiceWorker = ({
                     worker.addEventListener("statechange", () => {
                         if (worker.state === "installed" && navigator.serviceWorker.controller) {
                             showUpdateOverlay(overlay, minUpdateOverlayMs);
+                            requestSkipWaiting(worker);
                         }
                     });
                 };
@@ -111,9 +119,7 @@ export const setupServiceWorker = ({
                                 ) {
                                     showUpdateOverlay(overlay, minUpdateOverlayMs);
                                     if (registration.waiting) {
-                                        registration.waiting.postMessage({
-                                            type: "SKIP_WAITING",
-                                        });
+                                        requestSkipWaiting(registration.waiting);
                                     }
                                 } else {
                                     overlay.hide();
@@ -123,9 +129,7 @@ export const setupServiceWorker = ({
 
                         if (registration.waiting && navigator.serviceWorker.controller) {
                             showUpdateOverlay(overlay, minUpdateOverlayMs);
-                            registration.waiting.postMessage({
-                                type: "SKIP_WAITING",
-                            });
+                            requestSkipWaiting(registration.waiting);
                         }
                     });
             })
