@@ -4,5 +4,6 @@ manifests:
   - "../../assets/asset-manifests/maps.yaml"
   - "../../assets/asset-manifests/entities/rovert.yaml"
   - "../../assets/asset-manifests/entities/shuey.yaml"
+  - "../../assets/asset-manifests/entities/possum.yaml"
   - "../../assets/asset-manifests/entities/pozzum.yaml"
   - "../../assets/asset-manifests/entities/snail.yaml"

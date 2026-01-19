@@ -1,0 +1,5 @@
+assets:
+  - type: atlas
+    key: "possum-cruzin-left"
+    texture: "../../assets/entities/possum/possum-cruzin-left.png"
+    atlas: "../../assets/entities/possum/possum-cruzin-left.json"

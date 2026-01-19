@@ -7,7 +7,8 @@ import DialogManager from "../ui/dialog";
 import OnScreenInput from "../input/on-screen-input";
 import TrainingDummy from "../entities/training-dummy";
 import Enemy from "../entities/enemy";
-import Pozzum, { ScoungedPozzum } from "../entities/pozzum";
+import Possum from "../entities/possum";
+import { Pozzum } from "../entities/pozzum";
 import Chaser from "../entities/chaser";
 import Snail from "../entities/snail";
 import DebugInfo from "../ui/debug-info";
@@ -545,12 +546,12 @@ class Game extends Phaser.Scene {
         // Create some enemies
         this.enemies = this.physics.add.group();
         //const chaser = new Chaser(this, this.player.x + 140, this.player.y, this.player);
-        const pozzum = new Pozzum(this, 501, this.player.y);
-        const scoungedPozzum = new ScoungedPozzum(this, 1444, this.player.y, this.player);
+        const possum = new Possum(this, 501, this.player.y);
+        const pozzum = new Pozzum(this, 1444, this.player.y, this.player);
         const snail = new Snail(this, 200, this.player.y);
         //this.enemies.add(chaser);
+        this.enemies.add(possum);
         this.enemies.add(pozzum);
-        this.enemies.add(scoungedPozzum);
         this.enemies.add(snail);
 
         // Set the world bounds
@@ -592,14 +593,14 @@ class Game extends Phaser.Scene {
                 const enemy = enemyObj as Enemy;
                 enemy.tryDamage(this.player);
             },
-            (_playerObj, enemyObj) => enemyObj instanceof ScoungedPozzum,
+            (_playerObj, enemyObj) => enemyObj instanceof Pozzum,
             this,
         );
         this.physics.add.collider(
             this.enemies,
             this.trainingDummies,
             undefined,
-            (enemyObj) => enemyObj instanceof ScoungedPozzum,
+            (enemyObj) => enemyObj instanceof Pozzum,
             this,
         );
         this.physics.add.collider(
@@ -607,7 +608,7 @@ class Game extends Phaser.Scene {
             this.enemies,
             undefined,
             (enemyObj, otherObj) =>
-                enemyObj instanceof ScoungedPozzum || otherObj instanceof ScoungedPozzum,
+                enemyObj instanceof Pozzum || otherObj instanceof Pozzum,
             this,
         );
 
