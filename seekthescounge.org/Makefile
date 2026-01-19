@@ -38,38 +38,9 @@ server:
 	$(TS_COMPILER) --project $(TS_CONFIG) && npx vite
 
 # Deploy to the website
-deploy: $(SRC_DIR)/**/* index-prod.html
-
-	sh utilities/increment_version.sh
-
-	cp index-prod.html index.html
-	$(TS_COMPILER) --project $(TS_CONFIG) && $(BUNDLER) --mode production
-
-	# Bust browser caches with the new version by appending a unique timestamp to the bundle.js file ref in index.html
-	TIMESTAMP=$$(date +%Y%m%d-%H%M%S); \
-	sed -i '' -E \
-		-e 's|(src="src/[^"?]+\.js)\?v=[^"]*(")|\1?v='"$$TIMESTAMP"'\2|g' \
-		-e 's|(src="src/[^"?]+\.js)(")|\1?v='"$$TIMESTAMP"'\2|g' \
-	index.html
-
-	@echo FTP_SERVER: $(FTP_SERVER)
-	@echo FTP_USER: $(FTP_USER)
-
-	# Upload files using rsync for incremental changes
-	rsync -avz -e "ssh -i $(FTP_PRIVATE_KEY)" \
-		index.html \
-		manifest.webmanifest \
-		service-worker.js \
-		version.json \
-		$(FTP_USER)@$(FTP_SERVER):$(FTP_REMOTE_DIR)/
-
-	rsync -avz -e "ssh -i $(FTP_PRIVATE_KEY)" \
-		$(DIST_DIR)/ \
-		$(FTP_USER)@$(FTP_SERVER):$(FTP_REMOTE_DIR)/src/
-
-	rsync -avz -e "ssh -i $(FTP_PRIVATE_KEY)" \
-		$(ASSETS_DIR)/ \
-		$(FTP_USER)@$(FTP_SERVER):$(FTP_REMOTE_DIR)/assets/
+deploy:
+	@python3 -m pip install -r utilities/requirements.txt > /dev/null 2>&1
+	@python3 utilities/deploy.py
 
 reset-version:
 	sh utilities/reset_version.sh
