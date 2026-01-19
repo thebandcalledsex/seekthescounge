@@ -104,9 +104,9 @@ class Game extends Phaser.Scene {
         const map = this.make.tilemap({ key: "level1" });
         this.map = map;
         // Create the ground layer
-        const tileset = map.addTilesetImage("desert-tiles", "desert-tiles");
+        const tileset = map.addTilesetImage("yantaar", "yantaar");
         if (!tileset) {
-            throw new Error("Tileset 'desert-tiles' not found");
+            throw new Error("Tileset 'yantaar' not found");
         }
         const groundLayer = map.createLayer("Ground", tileset, 0, 0);
         if (groundLayer) {
@@ -514,8 +514,8 @@ class Game extends Phaser.Scene {
             });
         }
 
-        const spawnX = 100;
-        const spawnY = 200;
+        const spawnX = 20;
+        const spawnY = 300;
 
         // // Establish the player based on the input from the player selection scene
         // if (this.selectedPlayer === "Rovert") {
@@ -607,8 +607,7 @@ class Game extends Phaser.Scene {
             this.enemies,
             this.enemies,
             undefined,
-            (enemyObj, otherObj) =>
-                enemyObj instanceof Pozzum || otherObj instanceof Pozzum,
+            (enemyObj, otherObj) => enemyObj instanceof Pozzum || otherObj instanceof Pozzum,
             this,
         );
 

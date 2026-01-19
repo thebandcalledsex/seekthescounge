@@ -114,8 +114,8 @@ export const setupServiceWorker = ({
                         requestControllerVersion()
                             .then((version) => {
                                 if (
-                                    (navigator.serviceWorker.controller &&
-                                        (registration.waiting || registration.installing))
+                                    navigator.serviceWorker.controller &&
+                                    (registration.waiting || registration.installing)
                                 ) {
                                     showUpdateOverlay(overlay, minUpdateOverlayMs);
                                     if (registration.waiting) {

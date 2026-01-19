@@ -8,3 +8,6 @@ assets:
   - type: json
     key: "level1-data"
     url: "../../assets/maps/level1.json"
+  - type: image
+    key: "yantaar"
+    url: "../../assets/tilesets/yantaar.png"
