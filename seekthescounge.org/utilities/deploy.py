@@ -244,14 +244,20 @@ def main():
 
             # 7. Upload Dist
             task_up_dist = progress.add_task(menu_step("Uploading Bundle"), total=1)
-            rsync_cmd_2 = f"rsync -avz -e '{ssh_cmd}' dist/ {ftp_user}@{ftp_server}:{remote_dir}/src/"
+            rsync_cmd_2 = (
+                f"rsync -avz --delete -e '{ssh_cmd}' dist/ "
+                f"{ftp_user}@{ftp_server}:{remote_dir}/src/"
+            )
             out_dist = run_command(rsync_cmd_2, "Uploading dist")
             progress.update(task_up_dist, completed=1)
             print_uploaded_files(out_dist)
 
             # 8. Upload Assets
             task_up_assets = progress.add_task(menu_step("Uploading Assets"), total=1)
-            rsync_cmd_3 = f"rsync -avz -e '{ssh_cmd}' assets/ {ftp_user}@{ftp_server}:{remote_dir}/assets/"
+            rsync_cmd_3 = (
+                f"rsync -avz --delete -e '{ssh_cmd}' assets/ "
+                f"{ftp_user}@{ftp_server}:{remote_dir}/assets/"
+            )
             out_assets = run_command(rsync_cmd_3, "Uploading assets")
             progress.update(task_up_assets, completed=1)
             print_uploaded_files(out_assets)

@@ -133,7 +133,10 @@ export const setupServiceWorker = ({
                         }
                     });
             })
-            .catch((error) => console.warn("Service worker registration failed:", error));
+            .catch((error) => {
+                console.warn("Service worker registration failed:", error);
+                void overlay.hide();
+            });
     });
 
     navigator.serviceWorker.ready
@@ -145,6 +148,6 @@ export const setupServiceWorker = ({
             return undefined;
         })
         .catch(() => {
-            // Ignore
+            void overlay.hide();
         });
 };
